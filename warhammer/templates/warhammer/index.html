@@ -1,0 +1,74 @@
+{% extends 'warhammer/base.html' %}
+{% load staticfiles %}
+
+
+{% block body %}
+<div class="container">
+    {% if message %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{message}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+            {% endif %}
+    <div class="row">
+
+        {% if not user.is_authenticated %}
+        <div class="col-3"></div>
+        {% endif %}
+        <div class="col-lg-6">
+                <div class="hovereffect">
+               <img class="img-responsive" src="{% static 'warhammer/new1.jpg' %}" alt="">
+               <div class="overlay">
+                   <h2 style="font-family: 'Germania One', cursive;">Nowy Bohater</h2>
+                   <a class="info" href="{% url 'wh:race' %}">Czas rozpocząć przygodę</a>
+                </div>
+            </div>
+
+        </div>
+        {% if not user.is_authenticated %}
+        <div class="col-3"></div>
+        {% else %}
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">Twoi Bohaterowie</div>
+                {% if not your_characters %}
+                <p class="mt-3 ml-3">Wygląda na to, że nie masz żadnych bohaterów - stwórz jakiegoś</p>
+                {% else %}
+                <div class="list-group">
+                    {% for character in your_characters %}
+                  <a href="{% url 'wh:character_screen' character.pk %}" class="list-group-item list-group-item-action">
+                      <div class="row">
+                          <div class="col">
+                              {{character.name}}
+                          </div>
+                             <div class="col">
+                              {{character.race}}
+                          </div>
+                          <div class="col">
+                              {{character.profession}}
+                          </div>
+                      </div>
+
+                  </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header mb-4">Dodaj istniejacego Bohatera</div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-8"><p class="ml-3"><input name="id" class="form-control form-control-lg" type="text" placeholder="Identyfikator bohatera"></p></div>
+                    <div class="col-4 text-center"><button type="submit" class="btn btn-lg btn-dark">Dodaj</button></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+        {%endif%}
+    </div>
+
+</div>
+{% endblock %}

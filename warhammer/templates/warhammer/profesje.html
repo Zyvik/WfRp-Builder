@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% for prof in all_professions %}
+<p><a href="{% url 'wh:selected_profession' prof.slug %}"> {{prof.name}}</a></p>
+{% endfor %}
+
+</body>
+</html>

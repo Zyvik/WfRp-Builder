@@ -1,0 +1,123 @@
+{% extends 'warhammer/base.html' %}
+{% load staticfiles %}
+
+
+{% block body %}
+<div class="container">
+    <!-- Okruszki -->
+    <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'wh:race' %}">Wybierz rasę</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Wylosuj chechy oraz profesję</li>
+          </ol>
+    </nav>
+
+        <form method="post" onsubmit="return validate()">
+            {% csrf_token %}
+            <!-- Losowanie cech -->
+             <div class="card mb-3">
+                 <div class="card-header mb-4">Krok 2 - wylosuj chechy</div>
+                     <ul class="list-group list-group-flush mr-4 ml-4">
+                    {% for s_stat in s_stats %}
+                         <li class="list-group-item">
+                            <div class="row">
+                                <div class="col-3">
+                                    <a href="" data-toggle="modal" data-target="#{{s_stat.stat.short}}"> {{s_stat.stat.name}}</a>:
+                                </div>
+                                <div class="col-2">({{s_stat.stat.short}})</div>
+                                <div class="col-1">{{s_stat.base}}</div>
+                                {% if s_stat.bonus > 0 %}
+                                    <div class="col-1">+</div>
+                                    <div class="col-3">
+                                        <input placeholder="{{s_stat.bonus}}k10" class="form-control form-control-lg" required id="id_{{s_stat.stat.short}}" name="{{s_stat.stat.short}}" type="number">
+                                        <div class="invalid-feedback">
+                                            Ta wartość musi być pomiędzy {{s_stat.bonus}}, a {{s_stat.bonus}}0
+                                        </div>
+                                    </div>
+                                    <div class="col-2 text-center">
+                                        <button value="{{s_stat.bonus}}" type="button" class="btn btn-lg btn-outline-dark" id="_{{s_stat.stat.short}}" onclick="roll(this.id)">Rzuć kośćmi!</button>
+                                    </div>
+                                    {% else %}
+                                    <div class="col-1"></div>
+                                    <div class="col-3"></div>
+                                    <div class="col-2"></div>
+                                    {% endif %}
+                            </div>
+                    </li>
+                {% endfor %}
+                 </ul>
+             </div>
+
+
+            <!-- Losowanie profesji -->
+            <div class="card">
+                 <div class="card-header mb-4">Krok 3 - wylosuj profesję początkową</div>
+                 <div class="row">
+                     <div class="col-4">
+                         <p class="ml-3">Aby ustalić profesję początkową bohatera wylosuj liczbę od 1 do 100 i porównaj ją z tabelą obok.</p>
+                         <p class="ml-3">Jeśli potrzebujesz więcej informacji na temat danej profesji kliknij na jej nazwę - na nowej karcie otworzy się strona z szczegółami.</p>
+                     </div>
+                     <div class="col-3"><button data-toggle="modal" data-target="#starting_table" type="button" class="btn btn-lg btn-dark">TABELA PROFESJI POCZĄTKOWYCH</button></div>
+                     <div class="col-3">
+                         <input placeholder="1k100" class="form-control form-control-lg" required id="id_PROF" name="PROF" type="number">
+                         <div class="invalid-feedback">
+                                Ta wartość musi być pomiędzy 1, a 100.
+                         </div>
+                     </div>
+                     <div class="col-2 text-center"><button type="button" class="btn btn-lg btn-outline-dark" id="PROF" onclick="roll_profession()">Rzuć kośćmi!</button></div>
+                 </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col mb-5"><button type="submit" class="btn btn-block btn-lg btn-dark" style="font-size:medium">Nasępny krok</button></div>
+            </div>
+        </form>
+
+    <!-- tabela z profesjami -->
+
+                <div class="modal fade" id="starting_table" tabindex="-1" role="dialog" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Profesje początkowe</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body">
+                          <ul class="list-group list-group-flush mr-4 ml-4">
+                          {% for s_profession in starting_professions %}
+                              <li class="list-group-item">
+                                  <div class="row">
+                                      <div class="col"><a href="{% url 'wh:selected_profession' s_profession.profession.slug %}" target="_blank">{{s_profession.profession.name}}</a></div>
+                                      <div class="col text-center">{{s_profession.roll_range}}</div>
+                                  </div>
+                              </li>
+                          {% endfor %}
+                          </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+</div>
+
+<!-- Modale -->
+{% for stat in s_stats %}
+<div class="modal fade" id="{{stat.stat.short}}" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{stat.stat.name}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p>{{stat.stat.description | linebreaks}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+<script src="{% static 'warhammer/scripts.js' %}"></script>
+{% endblock %}
+

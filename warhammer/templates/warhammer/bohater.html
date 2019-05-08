@@ -1,0 +1,457 @@
+{% extends 'warhammer/base.html' %}
+{% load staticfiles %}
+
+{% block title %}
+<title>A</title>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    {% if message %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert"> {{message}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+
+                </div>
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        <!-- Podstawowe info -->
+        <div class="row pb-4 justify-content-center">
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header pb-2">Podstawowe informacje</div>
+                    <p class="pl-3 pr-3 pt-4">Nazwa: {{character.name}}</p>
+                    <p class="pl-3">Rasa: {{character.race.name}}</p>
+                    <p class="pl-3">Profesja: {{character.profession.name}}</p>
+                        <div class="row pb-3">
+                            <div class="col ml-3">
+                                PD: {{character.current_exp}}
+                            </div>
+                            <div class="col">
+                                <input placeholder="dodaj PD" type="number" name="value_PD" step="1" class="form-control">
+                            </div>
+                            <div class="col text-center">
+                                <button name="PD" class="btn btn-dark" type="submit" value="PD">+ / - PD</button>
+                            </div>
+                        </div>
+                </div>
+            </div>
+            <!-- aktulane chechy -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header pb-2">Aktualne cechy bohatera <span class="text-right"><button id="stats_toggle_button" type="button" class="btn btn-secondary float-right" onclick="toggle_stats()">Edytuj</button></span></div>
+
+                    <!-- aktualne podstawowe -->
+                    <div class="table-responsive" id="table_basic" style="display:block;">
+                        <table class="table table-sm">
+                            <thead class="thead-dark justify-content-center">
+                            <tr>{% for stat in stats_table %} {% if not stat.stat.is_secondary %}
+                                <th class="pl-5" scope="col"><a class="text-white" data-target="#{{stat.stat.short}}" data-toggle="modal" href="#">{{stat.stat.short}}</a></th>{% endif %} {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>{% for stat in stats_table %} {% if not stat.stat.is_secondary %}
+                                <td class="pl-5" data-container="body" data-toggle="popover" data-placement="right" data-trigger="hover" data-content="{{stat.base}} + {{stat.bonus}}">{{stat.base|add:stat.bonus}}</td>{% endif %} {% endfor %}
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- aktualne drugorzędne -->
+                    <div class="table-responsive" id="table_secondary" style="display:block;">
+                        <table class="table table-sm mt-3">
+                            <thead class="thead-dark ml-3">
+                            <tr>{% for stat in stats_table %} {% if stat.stat.is_secondary %}
+                                <th class="pl-5" scope="col"><a class="text-white" href="#" data-toggle="modal" data-target="#{{stat.stat.short}}">{{stat.stat.short}}</a></th>{% endif %} {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>{% for stat in stats_table %} {% if stat.stat.is_secondary %}
+                                <td class="pl-5" data-container="body" data-toggle="popover" data-placement="right" data-trigger="hover" data-content="{{stat.base}} + {{stat.bonus}}">{{stat.base|add:stat.bonus}}</td>{% endif %} {% endfor %}
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- formularz - cechy podstawowe -->
+                    <div class="alert alert-info" role="alert" id="form_alert" style="display:none;">
+                        Edytujesz wartości podstawowe cech - nie bierz pod uwagę rozwinięć.
+                    </div>
+                    <div class="table-responsive" style="display:none;" id="form_basic">
+                        <table class="table table-sm">
+                            <thead class="thead-dark justify-content-center">
+                            <tr>{% for stat in stats_table %} {% if not stat.stat.is_secondary %}
+                                <th class="pl-5" scope="col"><a class="text-white" data-target="#{{stat.stat.short}}" data-toggle="modal" href="#">{{stat.stat.short}}</a></th>{% endif %} {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>{% for stat in stats_table %} {% if not stat.stat.is_secondary %}
+                                <td class="pl-5"><input value="{{stat.base}}" name="{{stat.stat.short}}" class="form-control" type="number" step="1">{% endif %} {% endfor %}
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!--formularz - cechy drugorzędne -->
+                    <div class="table-responsive" style="display:none;" id="form_secondary">
+                        <table class="table table-sm mt-3">
+                            <thead class="thead-dark ml-3">
+                            <tr>{% for stat in stats_table %} {% if stat.stat.is_secondary %}
+                                <th class="pl-5" scope="col"><a class="text-white" href="#" data-toggle="modal" data-target="#{{stat.stat.short}}"></a>{{stat.stat.short}}</th>{% endif %} {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>{% for stat in stats_table %} {% if stat.stat.is_secondary %}
+                                <td class="pl-5"><input value="{{stat.base}}" name="{{stat.stat.short}}" class="form-control" type="number" step="1"></td>{% endif %} {% endfor %}
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer" id="form_footer" style="display:none"><button name="edit_stats" class="btn btn-dark" value="edit_stats" type="submit">Zapisz</button> </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Umiejętności -->
+        <div class="row pb-4 justify-content-center">
+            <div class="col-lg">
+                <div class="card pb-4">
+                    <div class="card-header wh-header">Umiejętności <button type="button" id="skills_toggle_button" class="btn btn-secondary float-right" onclick="toggle_skills()">Edytuj</button> </div>
+                    <!-- Lista umiejętności -->
+                    <ul class="list-group list-group-flush" id="display_skills" style="display:block">
+                    {% for skill in char_skills %}
+                    <li class="list-group-item ml-3 mr-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <a href="" data-target="#{{skill.skill.slug}}" data-toggle="modal" >{{skill.skill.name}}</a> {% if skill.bonus %}{{skill.bonus}}{% endif %}
+                            </div>
+                            <div class="col-3">
+                                ({{skill.skill.stat.short}})
+                            </div>
+                            <div class="col-3">
+                                + {{skill.level}}
+                            </div>
+                        </div>
+                    </li>
+                        {% endfor %}
+                    </ul>
+                    <!-- Edytuj umiejętności -->
+                     <ul class="list-group list-group-flush" id="form_skills" style="display:none">
+                    {% for skill in char_skills %}
+                        <li class="list-group-item ml-3 mr-3">
+                            <div class="row">
+                                <div class="col-6">
+                                    <a href="" data-target="#{{skill.skill.slug}}" data-toggle="modal" >{{skill.skill.name}}</a> {% if skill.bonus %}{{skill.bonus}}{% endif %}
+                                </div>
+                                <div class="col-3">
+                                    ({{skill.skill.stat.short}})
+                                </div>
+                                <div class="col-3">
+                                    <button class="btn btn-light btn-lg" name="remove_skill" value="remove_skill_{{skill.pk}}"><span class="glyphicon glyphicon-remove" style="color:red"></span></button>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                         <!-- dodaj umiejętności -->
+                         <li class="list-group-item ml-3 mr-3">
+                             <div class="row">
+                                 <div class="col-5">
+                                     <select class="form-control" name="add_skill_select">{% for skill in all_skills %}
+                                         <option value="{{skill.pk}}">{{skill.name}}</option> {% endfor %}
+                                     </select>
+                                 </div>
+                                 <div class="col-4">
+                                     <input class="form-control" type="text" placeholder="(bonus)" name="add_skill_bonus">
+                                 </div>
+                                 <div class="col-3">
+                                     <button type="submit" class="btn btn-light btn-lg" name="add_skill" value="add_skill"><span class="glyphicon glyphicon-plus" style="color:green"></span></button>
+
+                                 </div>
+                             </div>
+                         </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Zdolności -->
+            <div class="col-lg">
+                <div class="card pb-4">
+                    <div class="card-header">Zdolności<button type="button" id="abilities_toggle_button" class="btn btn-secondary float-right" onclick="toggle_abilities()">Edytuj</button></div>
+                    <!-- Lista zdolności -->
+                    <ul class="list-group list-group-flush" id="display_abilities">
+                    {% for ability in char_abilities %}
+                        <li class="list-group-item ml-3 mr-3" style="display:block"><a href="" data-toggle="modal" data-target="#{{ability.ability.slug}}">{{ability.ability.name}}</a> {% if ability.bonus %}{{ability.bonus}}{% endif %}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <!-- Usuń zdolności -->
+                    <ul class="list-group list-group-flush" id="form_abilities" style="display:none">
+                    {% for ability in char_abilities %}
+                        <li class="list-group-item ml-3 mr-3">
+                            <div class="row">
+                                <div class="col-9">
+                                    <a href="" data-toggle="modal" data-target="#{{ability.ability.slug}}">{{ability.ability.name}}</a> {% if ability.bonus %}{{ability.bonus}}{% endif %}
+                                </div>
+                                <div class="col-3">
+                                    <button class="btn btn-light btn-lg" name="remove_ability" value="remove_ability_{{ability.pk}}"><span class="glyphicon glyphicon-remove" style="color:red"></span></button>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+
+                         <!-- dodaj umiejętności -->
+                         <li class="list-group-item ml-3 mr-3">
+                             <div class="row">
+                                 <div class="col-5">
+                                     <select class="form-control" name="add_ability_select">{% for ability in all_abilities %}
+                                         <option value="{{ability.pk}}">{{ability.name}}</option> {% endfor %}
+                                     </select>
+                                 </div>
+                                 <div class="col-4">
+                                     <input class="form-control" type="text" placeholder="(bonus)" name="add_ability_bonus">
+                                 </div>
+                                 <div class="col-3">
+                                     <button type="submit" class="btn btn-light btn-lg" name="add_ability" value="add_ability"><span class="glyphicon glyphicon-plus" style="color:green"></span></button>
+
+                                 </div>
+                             </div>
+                         </li>
+                    </ul>
+
+                </div>
+            </div>
+
+            <!-- Ekwipunek -->
+            <div class="col-lg">
+                <div class="card">
+                    <div class="card-header">Ekwipunek <button id="eq_toggle_button" class="btn btn-secondary float-right" type="button" onclick="toggle_eq()">Edytuj</button> </div>
+                    <span id="display_eq" style="display:block;" class="mr-3 ml-3 mt-3">{{character.equipment|linebreaks}}</span>
+                    <textarea name="form_eq" class="form-control rounded-0" id="form_eq" rows="10" style="display:none;font-size:small;">{{character.equipment}}</textarea>
+                    <div id="eq_footer" class="card-footer" style="display:none;">
+                        <button name="edit_eq" class="btn btn-dark" type="submit" value="edit_eq">Zapisz</button>
+                    </div>
+                </div>
+                <!-- monety -->
+                <div class="card pb-4 mt-3">
+                    <div class="card-header" style="font-size:medium;font-family: 'Germania One', cursive;">Sakiewka</div>
+                    <p class=" mr-3 ml-3 mb-3 mt-3">
+                        <img src="{% static 'warhammer/zk.png' %}" style="color:gold" width="27" height="27"> zk: {{coins.0}},
+                        <img src="{% static 'warhammer/s.png' %}" style="color:gold" width="27" height="27"> s: {{coins.1}},
+                        <img src="{% static 'warhammer/p.png' %}" style="color:gold" width="27" height="27"> p: {{coins.2}}
+                    </p>
+                    <div class="row ml-2">
+                        <div class="col">
+                            <input class="form-control form-control-lg" type="number" step="1" placeholder="zk" name="zk">
+                        </div>
+                        <div class="col">
+                            <input class="form-control form-control-lg" type="number" step="1" placeholder="s" name="s">
+                        </div>
+                        <div class="col">
+                            <input class="form-control form-control-lg" type="number" step="1" placeholder="p" name="p">
+                        </div>
+                        <div class="col">
+                            <button type="submit" value="coins" name="coins" class="btn btn-dark btn-lg">+ / - </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROZWÓJ -->
+        <div class="row">
+            <div class="col">
+            <div class="card mb-5">
+                <div class="card-header">Rozwój Bohatera</div>
+                <div class="row">
+                    <!-- Rozwój cech -->
+                    <div class="col-lg-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3">Cechy podstawowe: +5 (100 PD)</li>
+                        {% for stat in develop_stats %}
+                            {% if not stat.stat.is_secondary %}
+                             <li class="list-group-item mr-3 ml-3">
+                                 <div class="row">
+                                     <div class="col">
+                                         <a href="" data-toggle="modal" data-target="#{{stat.stat.short}}">{{stat.stat.name}}</a>
+                                     </div>
+                                     <div class="col">
+                                         max: {{stat.max_bonus}}
+                                     </div>
+                                     <div class="col">
+                                         obecnie: {{stat.bonus}}
+                                     </div>
+                                     <div class="col text-center">
+                                         {% if stat.bonus < stat.max_bonus %} <button type="submit" name="dev_stat" value="{{stat.stat.short}}" class="btn btn-dark">Rozwiń</button> {% else %} <button class="btn btn-dark" disabled>Rozwinięte</button> {% endif %}
+                                     </div>
+                                 </div>
+                             </li>
+                            {%endif%}
+                        {% endfor %}
+                        </ul>
+                        <!-- secondary stats -->
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item list-group-item-secondary ml-3 mr-3 mt-4">Cechy drugorzędne: +1 (100 PD)</li>
+                        {% for stat in develop_stats %}
+                            {% if stat.stat.is_secondary %}
+                            <li class="list-group-item mr-3 ml-3">
+                                 <div class="row">
+                                     <div class="col">
+                                         <a href="" data-toggle="modal" data-target="#{{stat.stat.short}}">{{stat.stat.name}}</a>
+                                     </div>
+                                     <div class="col">
+                                         max: {{stat.max_bonus}}
+                                     </div>
+                                     <div class="col">
+                                         obecnie: {{stat.bonus}}
+                                     </div>
+                                     <div class="col text-center">
+                                         {% if stat.bonus < stat.max_bonus %} <button type="submit" name="dev_stat" value="{{stat.stat.short}}" class="btn btn-dark">Rozwiń</button> {% else %} <button class="btn btn-dark" disabled>Rozwinięte</button> {% endif %}
+                                     </div>
+                                 </div>
+                             </li>
+                            {% endif %}
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    <!-- rowzwój umijetnosci -->
+                    <div class="col-lg-3">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3">Umiejętności - rozwiń (100 PD)</li>
+                        {% for skill in dev_skills %}
+                             <li class="list-group-item mr-3 ml-3">
+                                 <div class="row">
+                                     <div class="col-7">
+                                         <a href="" data-toggle="modal" data-target="#{{skill.obj.slug}}">{{skill.name}}</a> {% if skill.bonus %}{{skill.bonus}}{% endif %}
+                                     </div>
+                                     <div class="col-5 text-center">
+                                         <button type="submit" name="dev_skill" value="{{ forloop.counter0 }}" class="btn btn-dark">Rozwiń</button>
+                                     </div>
+                                 </div>
+                             </li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    <!-- Rozwój zdolności -->
+                    <div class="col-lg-3">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3">Zdolności - wykup (100 PD)</li>
+                        {% for ability in dev_abilities %}
+                             <li class="list-group-item mr-3 ml-3">
+                                 <div class="row">
+                                     <div class="col">
+                                         <a href="" data-toggle="modal" data-target="#{{ability.obj.slug}}">{{ability.name}}</a> {% if ability.bonus %} {{ability.bonus}} {% endif %}
+                                     </div>
+                                     <div class="col text-center">
+                                          <button type="submit" name="dev_ability" value="{{ forloop.counter0 }}" class="btn btn-dark">Rozwiń</button>
+                                     </div>
+                                 </div>
+                             </li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- modale -->
+{% for stat in stats_table %}
+<div class="modal fade" id="{{stat.stat.short}}" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{stat.stat.name}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p>{{stat.stat.description | linebreaks}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% for skill in char_skills %}
+<div class="modal fade" id="{{skill.skill.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{skill.skill.name}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p>{{skill.skill.description | linebreaks}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% for skill in dev_skills %}
+<div class="modal fade" id="{{skill.obj.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{skill.name}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p>{{skill.obj.description | linebreaks}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% for ability in char_abilities %}
+<div class="modal fade" id="{{ability.ability.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ability.ability.name}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p>{{ability.ability.description | linebreaks}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% for ability in dev_abilities %}
+<div class="modal fade" id="{{ability.obj.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ability.name}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p>{{ability.obj.description | linebreaks}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+<script>
+$(document).ready(function(){
+    $('[data-toggle="popover"]').popover();
+});
+</script>
+<script src="{% static 'warhammer/scripts.js' %}"></script>
+{% endblock %}

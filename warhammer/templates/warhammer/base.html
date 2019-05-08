@@ -1,0 +1,63 @@
+{% load static %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css?family=Germania+One" rel="stylesheet">
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'warhammer/style.css' %}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>WfRp Builder</title>
+    {% block title %}
+    {% endblock %}
+</head>
+<body>
+
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-5">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'wh:index' %}" style="font-size:large; font-family: 'Germania One', cursive;">
+            <img src="{% static 'warhammer/wh.png' %}" width="50" height="50" alt="">
+            WfRpBuilder
+        </a>
+        {% if not user.is_authenticated %}
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item mr-3">
+                <a class="nav-link" style="font-size:medium;" href="{% url 'wh:contact' %}"><img src="{% static 'warhammer/QUILL.png' %}" height="24" width="24">Kontakt</a>
+            </li>
+            <li class="nav-item-active">
+                <a class="nav-link" href="{% url 'wh:login' %}" style="font-size:medium">Logowanie</a>
+            </li>
+        </ul>
+        {% else %}
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item mr-3">
+                <a class="nav-link" style="font-size:medium;" href="{% url 'wh:contact' %}"><img src="{% static 'warhammer/QUILL.png' %}" height="24" width="24">Kontakt</a>
+            </li>
+            <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown" style="font-size:medium">
+                          <span class="glyphicon glyphicon-user"></span>
+                          {{user.username}}
+                      </a>
+                      <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#" style="font-size:medium">Profil</a>
+                            <a class="dropdown-item" href="#" style="font-size:medium">Ustawienia</a>
+                            <a class="dropdown-item" href="{% url 'wh:logout' %}" style="font-size:medium">
+                                <span class="glyphicon glyphicon-off"></span> Wyloguj się
+                            </a>
+                      </div>
+                </li>
+        </ul>
+        {% endif %}
+    </div>
+</nav>
+
+{% block body %}
+{% endblock %}
+<footer class="footer mt-4">
+    <div class="text-center bg-dark py-3 pt-6">
+        <p class="text-white pt-4"> Strona powstała jako projekt do nauki frameworku Django. Jeśli naruszam Twoje prawa autorkie proszę skontaktuj się ze mną poprzez <a href="{% url 'wh:contact' %}" class="text-white">formularz kontaktowy</a>, a nie prawnika.</p>
+        <p class="text-white"> Zyvik.pl</p>
+    </div>
+</footer>
