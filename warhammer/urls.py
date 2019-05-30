@@ -14,6 +14,8 @@ urlpatterns = [
     path('rejestracja', views.register, name='register'),
     path('login', views.login_view, name='login'),
     path('logout',views.logout_view, name='logout'),
-    path('kontakt',views.contact, name='contact')
+    path('kontakt',views.contact, name='contact'),
+    path('api/chat/<slug:game_id>', views.ChatView.as_view(), name='api-chat'),
+    path('chat', views.chat)
 
 ]
