@@ -17,20 +17,19 @@
         {% if not user.is_authenticated %}
         <div class="col-3"></div>
         {% endif %}
-        <div class="col-lg-6">
-                <div class="hovereffect">
+        <div class="col-6">
+            <div class="hovereffect">
                <img class="img-responsive" src="{% static 'warhammer/new1.jpg' %}" alt="">
                <div class="overlay">
                    <h2 style="font-family: 'Germania One', cursive;">Nowy Bohater</h2>
                    <a class="info" href="{% url 'wh:race' %}">Czas rozpocząć przygodę</a>
                 </div>
             </div>
-
         </div>
         {% if not user.is_authenticated %}
         <div class="col-3"></div>
         {% else %}
-        <div class="col-lg-6">
+        <div class="col-6">
             <div class="card">
                 <div class="card-header">Twoi Bohaterowie</div>
                 {% if not your_characters %}
@@ -55,6 +54,7 @@
                     {% endfor %}
                 </div>
             </div>
+            {%endif%}
             <div class="card">
                 <div class="card-header mb-4">Dodaj istniejacego Bohatera</div>
                 <form method="post">
@@ -67,7 +67,6 @@
             </div>
         </div>
         {% endif %}
-        {%endif%}
     </div>
 
 </div>

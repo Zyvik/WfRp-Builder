@@ -6,12 +6,19 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from .libs import process_string, DevelopStat, StatDisplay, process_string_dev
 from django.core.mail import send_mail
-import time
+import time, requests
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import ChatSerializer, MapSerializer
+from braces.views import CsrfExemptMixin
 # Create your views here.
 
 
 def test(request):
-    return render(request, 'warhammer/test.html', {})
+    url = 'http://ddragon.leagueoflegends.com/cdn/6.24.1/data/en_US/champion.json'
+    response = requests.get(url).json()
+    champions = response['data']['Aatrox']['name']
+    return HttpResponse(champions)
 
 
 def index(request):
@@ -748,11 +755,50 @@ def character_screen(request, pk):
             except (ObjectDoesNotExist, ValueError, IndexError, TypeError):
                 pass
 
+        # Edit notes
+        if request.POST.get('edit_notes', None):
+            try:
+                notes = request.POST.get('form_notes', character.notes)
+                character.notes = notes
+                character.save()
+                character = CharacterModel.objects.get(pk=pk)
+            except:
+                message = 'Hmmm... Coś poszło nie tak - chyba znalazłeś buga.'
+
+        # Change profession
+        if request.POST.get('change_profession', None):
+            new_profession = request.POST.get('profession', '0')
+            try:
+                new_profession = ProfessionModel.objects.get(pk=int(new_profession))
+                character.profession = new_profession
+                # new stats
+                new_stats = new_profession.stats.split('\n')
+                for i,stat in enumerate(new_stats,0):
+                    if stat.find('-') == -1:
+                        maslo = char_stats[i]
+                        maslo.max_bonus = int(stat)
+                        maslo.save()
+                    else:
+                        maslo = char_stats[i]
+                        maslo.max_bonus = 0
+                        maslo.save()
+
+                for skill in char_skills:
+                    skill.is_developed = False
+                    skill.save()
+
+                character.save()
+                return redirect('wh:character_screen', pk=character.pk)
+
+            except (ValueError, ObjectDoesNotExist, TypeError):
+                pass
+    all_professions = ProfessionModel.objects.all()
     all_abilities = AbilitiesModel.objects.all()
     all_skills = SkillsModel.objects.exclude(name='axz').order_by('name')
     context = {
         'all_abilities': all_abilities,
         'all_skills': all_skills,
+        'all_professions': all_professions,
         'character': character,
         'stats_table': char_stats,
         'char_skills': char_skills,
@@ -764,6 +810,8 @@ def character_screen(request, pk):
         'dev_skills': dev_skills,
         'coins': coins,
         'message':message,
+        'rows':range(10),
+        'columns':range(7)
 
     }
     return render(request, 'warhammer/bohater.html', context)
@@ -838,3 +886,35 @@ def contact(request):
             message = 'Coś nie wyszło - wyślij maila na pawel86@gmail.com'
 
     return render(request,'warhammer/contact.html', {'message':message})
+
+# Dice roller and MAP API
+class ChatView(CsrfExemptMixin, APIView):
+    authentication_classes = []
+    def get(self, request, game_id):
+        game = get_object_or_404(GameModel, id=game_id)
+        messages = MessagesModel.objects.filter(game=game).order_by('-id')[:15]
+        map = MapModel.objects.get(game=game)
+        serializer = ChatSerializer(messages, many=True)
+        map_serializer = MapSerializer(map, many=False)
+        return Response({
+            'chat': serializer.data,
+            'map': map_serializer.data
+        })
+
+    def post(self, request, game_id):
+        try:
+            if request.data.get('message'):
+                MessagesModel.objects.create(
+                    game=GameModel.objects.get(id=game_id),
+                    author=request.data.get('author'),
+                    message=request.data.get('message')
+                )
+            else:
+                game = GameModel.objects.get(id=game_id)
+                map_obj = MapModel.objects.get(game=game)
+                map_obj.map = request.data.get('map')
+                map_obj.counter += 1
+                map_obj.save()
+        except:
+            pass
+        return HttpResponse("git majonez")

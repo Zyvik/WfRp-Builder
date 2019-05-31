@@ -11,60 +11,44 @@
     <div class="row">
         <!-- człowiek -->
         <div class="col-md mb-5">
-                    <div class="hovereffect">
-                        <div class="row">
-                            <div class="col">
-                       <img class="img-responsive" src="{% static 'warhammer/human1.jpg' %}" alt="">
-                       <div class="overlay">
-                           <h2 style="font-family: 'Germania One', cursive;">Człowiek</h2>
-                           <a class="info" href="{% url 'wh:stats' 'czlowiek' %}">{{all_races.0.description}}</a>
-                        </div>
-                    </div>
+            <div class="hovereffect">
+               <img class="img-responsive" src="{% static 'warhammer/human1.jpg' %}" alt="">
+               <div class="overlay">
+                   <h2 style="font-family: 'Germania One', cursive;">Człowiek</h2>
+                   <a class="info" href="{% url 'wh:stats' 'czlowiek' %}">{{all_races.0.description}}</a>
                 </div>
             </div>
         </div>
         <!-- elf -->
        <div class="col-md mb-5">
             <div class="hovereffect">
-                <div class="row">
-                   <div class="col">
-                       <img class="img-responsive" src="{% static 'warhammer/elf1.jpg' %}" alt="">
-                       <div class="overlay">
-                           <h2 style="font-family: 'Germania One', cursive;">Elf</h2>
-                           <a class="info" href="{% url 'wh:stats' 'elf' %}">{{all_races.1.description}}</a>
-                        </div>
-                    </div>
-               </div>
-           </div>
+               <img class="img-responsive" src="{% static 'warhammer/elf1.jpg' %}" alt="">
+               <div class="overlay">
+                   <h2 style="font-family: 'Germania One', cursive;">Elf</h2>
+                   <a class="info" href="{% url 'wh:stats' 'elf' %}">{{all_races.1.description}}</a>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="row">
-         <div class="col-md mb-5">
+        <div class="col-md mb-5">
             <div class="hovereffect">
-                <div class="row">
-                   <div class="col">
-                       <img class="img-responsive" src="{% static 'warhammer/dwarf1.jpg' %}" alt="">
-                       <div class="overlay">
-                           <h2 style="font-family: 'Germania One', cursive;">Krasnolud</h2>
-                           <a class="info" href="{% url 'wh:stats' 'krasnolud' %}">{{all_races.2.description}}</a>
-                        </div>
-                    </div>
-               </div>
-           </div>
+               <img class="img-responsive" src="{% static 'warhammer/dwarf1.jpg' %}" alt="">
+               <div class="overlay">
+                   <h2 style="font-family: 'Germania One', cursive;">Krasnolud</h2>
+                   <a class="info" href="{% url 'wh:stats' 'krasnolud' %}">{{all_races.2.description}}</a>
+                </div>
+            </div>
         </div>
         <div class="col-md mb-5">
             <div class="hovereffect">
-                <div class="row">
-                   <div class="col">
-                       <img class="img-responsive" src="{% static 'warhammer/halfling1.jpg' %}" alt="">
-                       <div class="overlay">
-                           <h2 style="font-family: 'Germania One', cursive;">Niziołek</h2>
-                           <a class="info" href="{% url 'wh:stats' 'niziolek' %}">{{all_races.3.description}}</a>
-                        </div>
-                    </div>
-               </div>
-           </div>
+               <img class="img-responsive" src="{% static 'warhammer/halfling1.jpg' %}" alt="">
+               <div class="overlay">
+                   <h2 style="font-family: 'Germania One', cursive;">Niziołek</h2>
+                   <a class="info" href="{% url 'wh:stats' 'niziolek' %}">{{all_races.3.description}}</a>
+                </div>
+            </div>
         </div>
 
     </div>

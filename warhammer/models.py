@@ -150,6 +150,7 @@ class CharacterModel(models.Model):
     current_exp = models.IntegerField(default=0)
     total_exp = models.IntegerField(default=0)
     coins = models.IntegerField(default=0)
+    notes = models.TextField(max_length=5000, default='NOTATKI')
 
 
 class CharacterSkills(models.Model):
@@ -192,3 +193,20 @@ class RandomAbilityModel(models.Model):
 
     def __str__(self):
         return str(self.race) + str(self.roll_range)
+
+class GameModel(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=30)
+    admin = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+class MessagesModel(models.Model):
+    game = models.ForeignKey(GameModel, on_delete=models.CASCADE)
+    author = models.TextField(max_length=100)
+    message = models.TextField(max_length=1000)
+
+
+class MapModel(models.Model):
+    game = models.ForeignKey(GameModel, on_delete=models.CASCADE)
+    map = models.TextField(max_length=1000)
+    counter = models.IntegerField(default=1)
