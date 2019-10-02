@@ -129,17 +129,31 @@ function roll(d){
 function roll_custom(){
     var n = parseInt(document.getElementById('n').value);
     var d = parseInt(document.getElementById('d').value);
+    // display bonus
+    var bonus = parseInt(document.getElementById('roll_bonus').value)
     if (n > 0 && d > 0 && n <= 1000 && d<=1000 ){
       let i;
-      var string = n.toString() + "k"+ d.toString() + ": " + "<strong>" + "suma" + "</strong><br>(";
+      var sum = 0;
+      var bonus_string ='';
+      if (bonus && !isNaN(bonus)){
+        if (bonus>0){
+            bonus_string = ' + ';
+        }
+        else{
+            bonus_string = ' - '
+        }
+        bonus_string +=  Math.abs(bonus);
+        sum = bonus;
+      }
+
+      var string = n.toString() + "k"+ d.toString() + bonus_string + ": " + "<strong>" + "suma" + "</strong><br>(";
       let x;
-      let sum = 0;
       for (i=0; i<n; i++){
         x = Math.floor(Math.random()*d)+1;
         sum += x;
         string += x.toString() + " + ";
       }
-      string = string.substring(0, string.length-3)+") ";
+      string = string.substring(0, string.length-3)+")"+bonus_string;
       string = string.replace("suma",sum.toString());
 
 
