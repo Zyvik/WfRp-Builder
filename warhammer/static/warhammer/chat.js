@@ -204,6 +204,14 @@ function roll_stat(short){
     send_message(string, "roll");
 }
 
+function roll_initiative(){
+    var dexterity = parseInt(document.getElementById('R_ZR').innerHTML);
+    var roll = Math.floor(Math.random()*10)+1;    
+    var string = 'Inicjatywa: <strong>'+ (dexterity+ roll).toString() + '</strong><br>('+ dexterity.toString()+ '+' + roll.toString() + ')';
+    send_message(string, "roll");
+
+}
+
 //#######################MAP###########################
     var token_nr = 14;
 const empties = document.querySelectorAll('.empty');
