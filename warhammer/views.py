@@ -11,24 +11,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
 from braces.views import CsrfExemptMixin
-# Create your views here.
-
-
-def test(request):
-    url = 'http://ddragon.leagueoflegends.com/cdn/6.24.1/data/en_US/champion.json'
-    response = requests.get(url).json()
-    champions = response['data']['Aatrox']['name']
-    return HttpResponse(champions)
 
 
 def index(request):
-    message = None
-
+    """Landing site"""
+    message = None  # error message for claiming existing character
+    # if user is logged in display their characters
     if request.user.is_authenticated:
         your_characters = CharacterModel.objects.filter(user=request.user)
     else:
         your_characters = []
 
+    # if logged user claims character check if character exists and isn't claimed
     if request.method == 'POST':
         id = request.POST.get('id','0')
         id = id.replace(' ','')
@@ -46,17 +40,19 @@ def index(request):
 
 
 def choose_race(request):
-
+    """Step 1 of character creation - choose race"""
     all_races = RaceModel.objects.all()
 
     return render(request,'warhammer/rasa.html', {'all_races': all_races})
 
 
 class RollStats(View):
+    """Step 2 of character creation - roll / choose stats and profession"""
     def get(self, request, race_slug):
 
-        race = get_object_or_404(RaceModel,slug=race_slug)
-        s_stats = StartingStatsModel.objects.filter(race=race).order_by('-bonus')
+        race = get_object_or_404(RaceModel,slug=race_slug)  # match race slug to race type
+        s_stats = StartingStatsModel.objects.filter(race=race).order_by('-bonus')  # get correct stat bonuses
+        # get correct starting professions
         if race == RaceModel.objects.get(pk=1):
             starting_professions = HumanStartingProfession.objects.all().order_by('profession')
         elif race == RaceModel.objects.get(pk=2):
@@ -83,6 +79,7 @@ class RollStats(View):
 
         # manual validation because apparently I have too much time
         form_is_valid = True
+        # this will throw error if user gives string in number input
         try:
             WW = int(request.POST['WW'])
             US = int(request.POST['US'])
@@ -101,28 +98,31 @@ class RollStats(View):
         if form_is_valid:
             verification_list1 = [WW,US,ZR,K,Odp,Int,SW,Ogd]
 
+            # checks if stats are between 2 and 20
             for form_input in verification_list1:
                 if form_input not in range(2,21):
                     form_is_valid = False
-
+            # Vit and PP can be between 1 and 10, PROF 1-100 (those have separate tables)
             if Vit not in range(1,11) or PP not in range(1,11) or PROF not in range(1,101):
                 form_is_valid = False
-
+            # if there are no mistakes - create temporary entry in database (with stats), and redirect to step 3
             if form_is_valid:
                 string = str(WW) + ',' + str(US) + ',' + str(K) + ',' + str(Odp) + ',' + str(ZR) + ',' + str(Int) + ',' + str(SW) + ',' + str(Ogd) + ',' + str(Vit) + ',' + str(PP) + ',' + str(PROF)
                 step = Step1Model(WW=WW,US=US,ZR=ZR,K=K,Odp=Odp,Int=Int,SW=SW,Vit=Vit,PP=PP,PROF=PROF, string=string)
                 step.save()
                 return redirect('wh:custom', race_slug=race_slug, pk=step.pk)
+        # there is browser side validation so no need for error message - user has to change HTML to get to this point
         return render(request, 'warhammer/staty.html', {'s_stats': s_stats, 'starting_professions': starting_professions})
 
 
 def CustomizeCharacter(request,race_slug,pk):
+    # Step 3 - choose skills, pick name etc.
     s_time = time.time()
     step1 = get_object_or_404(Step1Model,pk=pk)
     race = get_object_or_404(RaceModel,slug=race_slug)
     starting_profession = ProfessionModel.objects.get(pk=1)  # just in case
 
-    # gets professions table
+    # gets professions table - there are different ones for different races
     if race == RaceModel.objects.get(pk=1):
         starting_professions = HumanStartingProfession.objects.all()
     elif race == RaceModel.objects.get(pk=2):
@@ -134,7 +134,7 @@ def CustomizeCharacter(request,race_slug,pk):
 
     # gets profession from table
     for prof in starting_professions:
-        if prof.roll_range.find('-') != -1:
+        if prof.roll_range.find('-') != -1:  # checks if profession has a range or is single number
             roll_range = prof.roll_range.split('-')
             if step1.PROF in range(int(roll_range[0]), int(roll_range[1])+1):
                 starting_profession = prof.profession
@@ -159,17 +159,20 @@ def CustomizeCharacter(request,race_slug,pk):
     s1 = step1.string.split(',')
     character_stats = []  # its list with ALL current stats (in order)
 
-    # basic stats
+    # calculates values of basic stats - based on step 2 and selected race
     basic_stats = StatsModel.objects.filter(is_secondary=False)
     for i,stat in enumerate(basic_stats, 0):
         base = StartingStatsModel.objects.get(race=race, stat=stat)
         value = base.base + int(s1[i])
         character_stats.append(value)
+
     # secondary stats
     character_stats.append(1)  # A
     # Żyw
     vit = VitalityModel.objects.get(race=race)
     vit_roll = int(s1[8])
+
+    # awful, hardcoded table in python
     if vit_roll in range(1,4):
         character_stats.append(vit.v_1_3)
     elif vit_roll in range(4,7):
@@ -187,13 +190,16 @@ def CustomizeCharacter(request,race_slug,pk):
     # PP
     fate = FateModel.objects.get(race=race)
     fate_roll = int(s1[9])
+
+    # another hardcoded table xD
     if fate_roll in range(1, 5):
         character_stats.append(fate.f_1_4)
     elif fate_roll in range(5, 8):
         character_stats.append(fate.f_5_7)
     else:
         character_stats.append(fate.f_8_10)
-    # Develop stat form
+
+    # Develop stat form - when creating character you can develop one stat for free
     all_stats = StatsModel.objects.all()
     prof_stats = starting_profession.stats.split('\n')
     develop_stat_inputs = []
@@ -210,9 +216,9 @@ def CustomizeCharacter(request,race_slug,pk):
         else:
             prof_stats[i] = 0
 
-    # random abilities
+    # random abilities - humans get 2 random abilities, halfligs get 1
     random_table = []
-    race_couter = 0
+    race_couter = 0  # how many random abilities character gets
     if race.pk == 1:
         race_couter = 2
     elif race.pk == 4:
@@ -221,6 +227,7 @@ def CustomizeCharacter(request,race_slug,pk):
     if race_couter > 0:
         random_table = RandomAbilityModel.objects.filter(race=race).order_by('roll_range')
 
+    # its just for displaying stats in template
     stats_table =[]
     for i,stat in enumerate(all_stats,0):
         maslo = StatDisplay()
@@ -236,10 +243,12 @@ def CustomizeCharacter(request,race_slug,pk):
 
     ##########################  POST   ###########################################
     if request.method == 'POST':
+        # gets name, eq and coins from form
         name = request.POST.get('name','dlaczego kombinujesz?')
         equipment = request.POST.get('eq','nic')
-
         coins = request.POST.get('coins','0')
+
+        # verify coins number - if user cheats they get nothing
         try:
             coins = int(coins)
             if coins < 2 or coins > 20:
@@ -248,6 +257,8 @@ def CustomizeCharacter(request,race_slug,pk):
                 coins = coins*240
         except:
             coins = 0
+
+        # if user is logged link this character to them
         if request.user.is_authenticated:
             new_character = CharacterModel(name=name, profession=starting_profession, race=race, equipment=equipment, coins=coins, user=request.user)
             new_character.save()
@@ -303,8 +314,8 @@ def CustomizeCharacter(request,race_slug,pk):
                 pass
             else:
                 skill = skill.lower()
-                skill = skill.replace(skill[0], skill[0].upper(),1)
-                bonus = None
+                skill = skill.replace(skill[0], skill[0].upper(),1)  # change 1st letter to capital
+                bonus = None  # bonus is word in brackets ex: Language(Polish) - Language is skill, Polish - bonus
                 if skill.find(' (') != -1:
                     skill = skill.split(' (')
                     bonus = '(' + skill[1]
@@ -323,6 +334,7 @@ def CustomizeCharacter(request,race_slug,pk):
                 except:
                     pass
 
+        # repeated code!!!!
         selected_skills = prof_skills[3] + selected_prof_skills #
         for i, skill in enumerate(selected_skills, 0):
             if skill == '':
@@ -417,13 +429,13 @@ def CustomizeCharacter(request,race_slug,pk):
 
 
 def professions(request):
-    if not request.user.is_authenticated:
-        return redirect('wh:login')
+    """Displays all professions"""
     all_professions = ProfessionModel.objects.all()
     return render(request, 'warhammer/profesje.html', {'all_professions':all_professions})
 
 
 def selected_profession(request, profession_slug):
+    """displays profession based on slug"""
     prof = get_object_or_404(ProfessionModel, slug=profession_slug)
     all_skills = SkillsModel.objects.all()
     skills_string = prof.skills
@@ -469,6 +481,7 @@ def selected_profession(request, profession_slug):
 
 
 def character_screen(request, pk):
+    """Character screen"""
     character = get_object_or_404(CharacterModel, pk=pk)
     char_stats = CharactersStats.objects.filter(character=character)
     char_skills = CharacterSkills.objects.filter(character=character).order_by('skill')
@@ -478,7 +491,7 @@ def character_screen(request, pk):
         message = 'Aktualnie każdy kto ma link do tej postaci jest w stanie dowolnie ją edytować.' \
                   'Jeśli chcesz mieć nad tym kontrolę to zaloguj się i użyj opcji: \'dodaj istniejącego bohatera\' wykorzysująć identyfikator: ' + str(character.pk)
 
-    if character.user and character.user != request.user:
+    if character.user and character.user != request.user and not request.user.is_staff:
         return redirect('wh:index')
     develop_stats = char_stats.filter(max_bonus__gt=0)
     dev_basic = []
@@ -523,7 +536,7 @@ def character_screen(request, pk):
         if request.POST.get('PD') == 'PD':
             try:
                 value = int(request.POST.get('value_PD'))
-                if character.current_exp + value > 0:
+                if character.current_exp + value >= 0:
                     character.current_exp += value
                     character.total_exp += value
                     character.save()
@@ -544,7 +557,6 @@ def character_screen(request, pk):
                 message = 'Hmmm... Coś poszło nie tak - chyba znalazłeś buga.'
 
         if request.POST.get('coins') == 'coins':
-            print('poszlo')
             zk = request.POST.get('zk', 0)
             s = request.POST.get('s', 0)
             p = request.POST.get('p', 0)
@@ -794,7 +806,7 @@ def character_screen(request, pk):
                 pass
     all_professions = ProfessionModel.objects.all()
     all_abilities = AbilitiesModel.objects.all()
-    all_skills = SkillsModel.objects.exclude(name='axz').order_by('name')
+    all_skills = SkillsModel.objects.all().order_by('name')
     context = {
         'all_abilities': all_abilities,
         'all_skills': all_skills,
@@ -818,6 +830,7 @@ def character_screen(request, pk):
 
 
 def register(request):
+    """Register site"""
     if request.user.is_authenticated:
         return redirect('wh:index')
     message = None
@@ -827,6 +840,7 @@ def register(request):
         r_password = request.POST.get('r_password','nic1')
         mail = request.POST.get('email', 'abc@example.com')
 
+        # login and password requirements:
         if len(username) >= 4 and username.find(' ') == -1:
             if len(password) >= 5:
                 if password == r_password:
@@ -840,7 +854,7 @@ def register(request):
                     else:
                         message = 'Login zajęty'
                 else:
-                    message = 'Hasła muszo byc jednakowe'
+                    message = 'Hasła muszą byc jednakowe'
             else:
                 message = 'Hasło musi mieć minimum 5 znaków'
         else:
@@ -849,6 +863,7 @@ def register(request):
 
 
 def login_view(request):
+    """login site"""
     if request.user.is_authenticated:
         return redirect('wh:index')
     message = None
@@ -889,6 +904,7 @@ def contact(request):
 
 # Dice roller and MAP API
 class ChatView(CsrfExemptMixin, APIView):
+    """Api view for dice roller and map"""
     authentication_classes = []
     def get(self, request, game_id):
         game = get_object_or_404(GameModel, id=game_id)
@@ -918,3 +934,47 @@ class ChatView(CsrfExemptMixin, APIView):
         except:
             pass
         return HttpResponse("git majonez")
+
+
+def game_master_room(request, game_id):
+    """Unfinished concept - right now there is one game and no option to create your own"""
+    game = get_object_or_404(GameModel, pk=game_id)
+    if request.user == game.admin:
+        npcs = NPCModel.objects.filter(game=game)
+        if request.method == 'POST':
+            # Adding NPC's
+            if request.POST.get('add_npc'):
+                try:
+                    NPC = NPCModel(
+                        game=game,
+                        name=request.POST.get('npc_name', 'boring name'),
+                        WW=int(request.POST.get('npc_WW', '0')),
+                        US=int(request.POST.get('npc_US', '0')),
+                        notes=request.POST.get('npc_notes')
+                    )
+                    NPC.save()
+                except ValueError:
+                    pass
+
+            # deleting NPC's
+            if request.POST.get('delete_npc'):
+                npc = NPCModel.objects.get(pk=int(request.POST.get('delete_npc')))
+                # checks if npc belongs to this game
+                if npc.game == game:
+                    npc.delete()
+
+        return render(request, 'warhammer/DMRoom.html', {'game': game, 'npcs': npcs, 'columns': range(7), 'rows': range(10)})
+    else:
+        login_error = 'Nie jestesteś mistrzem tej gry - zawróć.'
+        return render(request, 'warhammer/DMRoom.html', {'game': game, 'login_error':login_error})
+
+
+def skills_list(request):
+    skills = SkillsModel.objects.order_by("name")
+    return render(request, 'warhammer/skills_list.html', {'skills': skills})
+
+
+def abilities_list(request):
+    abilities = AbilitiesModel.objects.all()
+    return render(request, 'warhammer/abilities_list.html', {'abilities': abilities})
+
