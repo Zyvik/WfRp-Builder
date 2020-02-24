@@ -2,9 +2,13 @@
 Character creator for Warhammer Fantasy Roleplay[PL].
 
 Programming language: Python 3.7
+
 Web Framework: Django
+
 Database: SqLite
+
 API: Django REST API
+
 Front-end: bootstrap 4, JavaScript
 
 ## Features:
