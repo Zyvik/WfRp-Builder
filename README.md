@@ -1,6 +1,10 @@
 # WfRp-Builder [[LIVE LINK]](https://zyv1k.eu.pythonanywhere.com/warhammer/)
 Character creator for Warhammer Fantasy Roleplay[PL].
 
+> ###**Notice!** 
+>I wrote this app when I was making my first steps in django so **the code is terrible** and has to be rewritten. I keep this project here beacuse I belive it's original and rather impressive from functionality standpoint.
+> For more recent code please take a look at [DiceUp](https://github.com/Zyvik/DiceUp).
+
 Programming language: Python 3.7
 
 Web Framework: Django
