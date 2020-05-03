@@ -7,7 +7,9 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'warhammer/style.css' %}">
 
+
 <head>
+    <link rel="icon" href="{% static 'home/favicon.png' %}"/>
     <meta charset="UTF-8">
     {% block title %}
     {% endblock %}
@@ -21,6 +23,19 @@
             <img src="{% static 'warhammer/wh.png' %}" width="50" height="50" alt="">
             WfRpBuilder
         </a>
+        <ul class="navbar-nav text-right">
+            <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="navbardrop1" data-toggle="dropdown" style="font-size:medium">
+                      Kompendium
+                  </a>
+                  <div class="dropdown-menu">
+                      <a class="dropdown-item" href="{% static 'warhammer/krytyki.pdf' %}" target="_blank" style="font-size:medium">Tabela krytyków</a>
+                        <a class="dropdown-item" href="{% url 'wh:skills_list' %}" style="font-size:medium">Umiejętności</a>
+                        <a class="dropdown-item" href="{% url 'wh:abilities_list' %}" style="font-size:medium">Zdolności</a>
+                      <a class="dropdown-item" href="{% url 'wh:professions' %}" style="font-size:medium">Profesje</a>
+                  </div>
+            </li>
+         </ul>
         {% if not user.is_authenticated %}
         <ul class="navbar-nav ml-auto">
             <li class="nav-item mr-3">
@@ -31,6 +46,7 @@
             </li>
         </ul>
         {% else %}
+
         <ul class="navbar-nav ml-auto">
             <li class="nav-item mr-3">
                 <a class="nav-link" style="font-size:medium;" href="{% url 'wh:contact' %}"><img src="{% static 'warhammer/QUILL.png' %}" height="24" width="24">Kontakt</a>

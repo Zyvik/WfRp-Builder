@@ -26,13 +26,11 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for prof in all_professions %}
+                {% for ability in abilities %}
                 <tr>
-                    <td><a href="{% url 'wh:selected_profession' prof.slug %}"> {{prof.name}}</a></td>
+                    <td><a href="" data-toggle="modal" data-target="#{{ability.slug}}">{{ability.name}}</a></td>
                 </tr>
-
                 {% endfor %}
-
                 </tbody>
             </table>
         </div>

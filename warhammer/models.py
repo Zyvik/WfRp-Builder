@@ -210,3 +210,12 @@ class MapModel(models.Model):
     game = models.ForeignKey(GameModel, on_delete=models.CASCADE)
     map = models.TextField(max_length=1000)
     counter = models.IntegerField(default=1)
+
+
+class NPCModel(models.Model):
+    game = models.ForeignKey(GameModel, on_delete=models.CASCADE)
+    name = models.CharField(max_length=50)
+    WW = models.IntegerField()
+    US = models.IntegerField()
+    notes = models.TextField(max_length=1000)
+

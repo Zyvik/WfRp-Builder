@@ -137,7 +137,7 @@ font-family: 'Germania One', cursive;
     right: 0;
 }
 
-#dismiss {
+#dismiss-right {
     text-align: center;
     cursor: pointer;
     -webkit-transition: all 0.3s;
@@ -145,10 +145,15 @@ font-family: 'Germania One', cursive;
     transition: all 0.3s;
 }
 
-#dismiss:hover {
-    color: #7386D5;
+#dismiss-right:hover {
+    color: #d2d2d2;
 }
 
+#dismiss-left:hover{
+    color: #d2d2d2;
+}
+
+}
 a[data-toggle="collapse"] {
     position: relative;
 }
@@ -190,10 +195,6 @@ input[type=number] {
     display:none;
 }
 
-.table-map{
-    position:relative;
-    left:18px;
-}
 .map {
 
 }

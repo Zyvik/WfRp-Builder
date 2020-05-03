@@ -4,11 +4,13 @@ $(document).ready(function () {
         theme: "minimal"
     });
 
-    $('#dismiss, .overlay').on('click', function () {
+    $('#dismiss-right').on('click', function () {
+        chat_bool=toggleAPI(chat_bool,map_bool);
         $('#sidebar').removeClass('active');
     });
 
     $('#sidebarCollapse').on('click', function () {
+        chat_bool=toggleAPI(chat_bool,map_bool);
         $('#sidebar').toggleClass('active');
         $('.collapse.in').toggleClass('in');
         $('a[aria-expanded=true]').attr('aria-expanded', 'false');
@@ -21,11 +23,13 @@ $(document).ready(function () {
         theme: "minimal"
     });
 
-    $('#dismiss-left, .overlay').on('click', function () {
+    $('#dismiss-left').on('click', function () {
+        map_bool=toggleAPI(map_bool,chat_bool);
         $('#sidebar-left').removeClass('active');
     });
 
     $('#sidebarCollapse-left').on('click', function () {
+        map_bool=toggleAPI(map_bool,chat_bool);
         $('#sidebar-left').toggleClass('active');
         $('.collapse.in').toggleClass('in');
         $('a[aria-expanded=true]').attr('aria-expanded', 'false');
@@ -33,8 +37,8 @@ $(document).ready(function () {
 });
 
 // On load
-var game_id = window.location.pathname;
-game_id = "6c181fc6-911e-41af-b2e4-3eed713a68db";
+const host = window.location.host;
+const game_id = "bbf0d882-3718-42d4-bc26-a7dd4b6df9c2";
 var chat_box = document.getElementById('chat_box');
 var message_counter = 0;
 var map_counter = 0;
@@ -45,6 +49,7 @@ var reload_messages;
 
 //checks if sidebars are open and sets interval accordingly
 function toggleAPI(clicked_bool, other_bool){
+    console.log(clicked_bool);
     clicked_bool = !clicked_bool;
     if (clicked_bool && other_bool){
         // do nothing because interval has been already set
@@ -62,7 +67,7 @@ function toggleAPI(clicked_bool, other_bool){
 //contrary to name - it also gets map
 function get_message(){
         var Httpreq = new XMLHttpRequest();
-        Httpreq.open("GET",'http://127.0.0.1:8000/api/chat/' + game_id, true);
+        Httpreq.open("GET",'http://' + host + '/warhammer/api/game/' + game_id, true);
         Httpreq.onload = function(){
             var json = JSON.parse(Httpreq.responseText);
             var json_map = json.map;
@@ -98,7 +103,7 @@ function get_message(){
 function send_message(message, type){
     var author = document.getElementById("Name").innerHTML.replace("Nazwa: ", "");
     var Httpreq = new XMLHttpRequest();
-    Httpreq.open("POST",'http://127.0.0.1:8000/api/chat/' + game_id, true);
+    Httpreq.open("POST",'http://' + host + '/warhammer/api/game/' + game_id, true);
 
     // send message or map??
     if (type=="roll"){
@@ -113,7 +118,7 @@ function send_message(message, type){
       clearInterval(reload_messages);
       get_message();
       reload_messages = setInterval(get_message, 4000);
-    }
+    };
 
     Httpreq.send(JSON.stringify(post_data));
 }
@@ -129,11 +134,12 @@ function roll(d){
 function roll_custom(){
     var n = parseInt(document.getElementById('n').value);
     var d = parseInt(document.getElementById('d').value);
-    // display bonus
     var bonus = parseInt(document.getElementById('roll_bonus').value)
+
     if (n > 0 && d > 0 && n <= 1000 && d<=1000 ){
       let i;
       var sum = 0;
+      // prepare bonus string
       var bonus_string ='';
       if (bonus && !isNaN(bonus)){
         if (bonus>0){
@@ -145,8 +151,9 @@ function roll_custom(){
         bonus_string +=  Math.abs(bonus);
         sum = bonus;
       }
-
+    //create string to send
       var string = n.toString() + "k"+ d.toString() + bonus_string + ": " + "<strong>" + "suma" + "</strong><br>(";
+      // roll and calculate sum
       let x;
       for (i=0; i<n; i++){
         x = Math.floor(Math.random()*d)+1;
@@ -160,7 +167,6 @@ function roll_custom(){
       send_message(string, "roll");
   }
 }
-
 //rolls, checks for success, for WW and US check location of hit
 function roll_stat(short){
     var stat = document.getElementById(short).innerHTML;
@@ -206,7 +212,7 @@ function roll_stat(short){
 
 function roll_initiative(){
     var dexterity = parseInt(document.getElementById('R_ZR').innerHTML);
-    var roll = Math.floor(Math.random()*10)+1;    
+    var roll = Math.floor(Math.random()*10)+1;
     var string = 'Inicjatywa: <strong>'+ (dexterity+ roll).toString() + '</strong><br>('+ dexterity.toString()+ '+' + roll.toString() + ')';
     send_message(string, "roll");
 

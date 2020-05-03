@@ -10,7 +10,7 @@
         <div class="card-header">
             <div class="row">
                 <div class="col">
-                    Zdolności
+                    Umiejętności
                 </div>
                 <div class="col">
                     <input id="search" class="form-control form-control-lg" type="text" placeholder="Szukaj" onkeyup="">
@@ -23,34 +23,42 @@
                 <thead>
                 <tr>
                     <th>Nazwa</th>
+                    <th>Cecha</th>
+                    <th>Rodzaj</th>
                 </tr>
                 </thead>
                 <tbody>
-                {% for prof in all_professions %}
+                {% for skill in skills %}
                 <tr>
-                    <td><a href="{% url 'wh:selected_profession' prof.slug %}"> {{prof.name}}</a></td>
+                    <td><a href="" data-toggle="modal" data-target="#{{skill.slug}}">{{skill.name}}</a></td>
+                    <td>{{skill.stat}}</td>
+                    <td>
+                        {% if skill.is_basic %}
+                        podstawowa
+                        {% else %}
+                        zaawansowana
+                        {% endif %}
+                    </td>
                 </tr>
-
                 {% endfor %}
-
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-{% for ability in abilities %}
-<div class="modal fade" id="{{ability.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
+{% for skill in skills %}
+<div class="modal fade" id="{{skill.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{ability.name}}</h5>
+        <h5 class="modal-title">{{skill.name}}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{ability.description | linebreaks}}</p>
+          <p>{{skill.description | linebreaks}}</p>
       </div>
     </div>
   </div>

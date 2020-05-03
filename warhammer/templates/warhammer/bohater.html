@@ -1,5 +1,5 @@
 {% extends 'warhammer/base.html' %}
-{% load staticfiles %}
+{% load static %}
 
 {% block title %}
 <title>WfRp - {{character.name}}</title>
@@ -9,22 +9,17 @@
     <!-- Scrollbar Custom CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
 
-    <!-- Font Awesome JS -->
-    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
-    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
-
-
     <div class="wrapper">
         <!-- Sidebar Kostko-turlacz  -->
         <nav id="sidebar" class="bg-dark">
 
             <div class="sidebar-header">
-                <h2>
-                    <i id="dismiss" class="fas fa-arrow-right ml-3 mr-2 mt-3" onclick="chat_bool=toggleAPI(chat_bool,map_bool);"></i>
-                    <span style="font-family: 'Germania One', cursive;">Kostko-turlacz</span>
+                <h2 class="ml-3 mt-3">
+                    <span id="dismiss-right" class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
+                    <span style="font-family: 'Germania One', cursive; font-size:x-large;">Kostko-turlacz</span>
                 </h2>
             </div>
-            
+
             <div class="card ml-3 mr-3 mb-3">
                 <div class="btn-group justify-content-center" role="group" aria-label="Basic example" style="font-size:lg;">
                   <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_WW')">WW</button>
@@ -44,9 +39,9 @@
                 <div class="row form-inline ml-1 mr-1">
                     <div class="col-9">
                     	<input class="form-control w-25" type="number" value="1" min="1" id="n">
-                    	<span style="color: black;" class="mr-2 ml-2">K</span> 
+                    	<span style="color: black;" class="mr-2 ml-2">K</span>
                     	<input class="form-control w-25" type="number" value="100" min="1" id="d">
-                    	<span style="color: black;" class="">+</span> 
+                    	<span style="color: black;" class="">+</span>
                     	<input class="form-control w-25" type="number" value="0" id="roll_bonus">
                     </div>
                     <div class="col-3">
@@ -68,10 +63,10 @@
             <div class="row">
                 <div class="col">
                     <div class="sidebar-header float-right">
-                    <h2>
-                        <span style="font-family: 'Germania One', cursive;">Mapa taktyczna</span>
-                        <i id="dismiss-left" class="fas fa-arrow-left ml-3 mr-2 mt-3" onclick="map_bool=toggleAPI(map_bool,chat_bool);"></i>
-                    </h2>
+                        <h2 class="mr-3 mt-3">
+                            <span style="font-family: 'Germania One', cursive; font-size:x-large;">Mapa taktyczna</span>
+                            <span id="dismiss-left" class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+                        </h2>
                     </div>
                 </div>
             </div>
@@ -79,7 +74,7 @@
             <div class="row mt-3">
                 <div class="col">
                     <h3 class="ml-4 mb-3">Tokeny:</h3>
-                     <div class="map" style="position:relative; left:16px;">
+                     <div class="map" style="margin-left:16px;">
 
                         <div class="empty"><div data-token="0" class="filled" draggable="true"><img src="{% static 'warhammer/token0.png' %}" class="img-fluid"></div></div>
                         <div class="empty"><div data-token="1" class="filled" draggable="true"><img id="token1" class="img-fluid" src="{% static 'warhammer/token1.png' %}"></div></div>
@@ -98,7 +93,7 @@
                         <br>
                          </div>
 
-                         <table class="map mt-5">
+                         <table class="map mt-5" style="margin-left:18px;">
                             {% for y in rows %}
                             <tr class="map table-map">
                                 {% for x in columns %}
@@ -129,13 +124,13 @@
     {% endif %}
     <!--przycisk mapy-->
 
-    <button type="button" id="sidebarCollapse-left" class="btn btn-dark btn-lg" onclick="map_bool=toggleAPI(map_bool,chat_bool);">
+    <button type="button" id="sidebarCollapse-left" class="btn btn-dark btn-lg">
         <img src="{% static 'warhammer/mapa.png' %}" class="img-fluid" style="height:20px;">
         <span> Mapa taktyczna</span>
     </button>
 
     <!--przycisk kostkoturlacza -->
-    <button type="button" id="sidebarCollapse" class="btn btn-dark btn-lg float-right" onclick="chat_bool=toggleAPI(chat_bool,map_bool);">
+    <button type="button" id="sidebarCollapse" class="btn btn-dark btn-lg float-right">
         <span>Kostko-turlacz</span>
         <img src="{% static 'warhammer/kostki.png' %}" class="img-fluid" style="height:20px;">
     </button>
