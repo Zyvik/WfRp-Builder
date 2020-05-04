@@ -6,62 +6,106 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from .libs import process_string, DevelopStat, StatDisplay, process_string_dev
 from django.core.mail import send_mail
-import time, requests
+import time
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
 
+from .forms import RollStatsForm
+from .character_creation import get_starting_professions
+from . import character_creation
+
 
 def index(request):
+    """
+    Landing page - displays user's characters and gives option to claim existing character
+    """
     message = None
+    your_characters = []
 
     if request.user.is_authenticated:
         your_characters = CharacterModel.objects.filter(user=request.user)
-    else:
-        your_characters = []
 
     if request.method == 'POST':
-        id = request.POST.get('id','0')
-        id = id.replace(' ','')
+        pk = request.POST.get('id', '0')
         try:
-            character = CharacterModel.objects.get(pk=id)
+            character = CharacterModel.objects.get(pk=pk)
             if not character.user:
                 character.user = request.user
                 character.save()
             else:
                 message = 'Ta postać już do kogoś należy.'
-        except:
+        except ObjectDoesNotExist:
             message = 'Postać o takim identyfikatorze nie istnieje.'
 
-    return render(request, 'warhammer/index.html', {'your_characters':your_characters, 'message':message})
+    return render(request, 'warhammer/index.html', {'your_characters': your_characters, 'message': message})
 
 
 def choose_race(request):
-
+    """
+    1st step in character creation - choosing race
+    """
     all_races = RaceModel.objects.all()
-
-    return render(request,'warhammer/rasa.html', {'all_races': all_races})
+    return render(request, 'warhammer/race.html', {'all_races': all_races})
 
 
 class RollStats(View):
+    """
+    2nd step in character creation - rolling for stats
+    """
     def get(self, request, race_slug):
+        stats_form = RollStatsForm(request.GET)
+        race = get_object_or_404(RaceModel, slug=race_slug)
+        starting_stats = StartingStatsModel.objects.filter(race=race).order_by('-bonus')
+        starting_professions = get_starting_professions(race)
 
-        race = get_object_or_404(RaceModel,slug=race_slug)
-        s_stats = StartingStatsModel.objects.filter(race=race).order_by('-bonus')
-        if race == RaceModel.objects.get(pk=1):
-            starting_professions = HumanStartingProfession.objects.all().order_by('profession')
-        elif race == RaceModel.objects.get(pk=2):
-            starting_professions = ElfStartingProfession.objects.all().order_by('profession')
-        elif race == RaceModel.objects.get(pk=3):
-            starting_professions = DwarfStartingProfession.objects.all().order_by('profession')
-        else:
-            starting_professions = HalflingStartingProfession.objects.all().order_by('profession')
+        if stats_form.is_valid():
+            starting_profession = character_creation.get_exact_profession(starting_professions, stats_form.cleaned_data['prof'])
 
+            all_skills = SkillsModel.objects.all()
+            all_abilities = AbilitiesModel.objects.all()
 
-        return render(request,'warhammer/staty.html', {'s_stats': s_stats,'starting_professions':starting_professions})
+            prof_skills = character_creation.prepare_skill_form(starting_profession.skills, all_skills, 'prof_skills')
+            race_skills = character_creation.prepare_skill_form(race.skills, all_skills, 'race_skills')
+
+            prof_abilities = character_creation.prepare_skill_form(starting_profession.abilities, all_abilities, 'prof_abilities')
+            race_abilities = character_creation.prepare_skill_form(race.abilities, all_abilities, 'race_abilities')
+
+            character_stats = character_creation.create_character_stats(stats_form, race)
+
+            develop_stats = character_creation.prepare_develop_stat_form(starting_profession)
+            random_table, race_counter = character_creation.prepare_random_ability_table(race)
+            stats_table = character_creation.prepare_stats_table(character_stats)
+
+            context = {
+                'profession': starting_profession,
+                'mandatory_prof_skills': prof_skills[1],
+                'optional_prof_skills': prof_skills[0],
+                'mandatory_race_skills': race_skills[1],
+                'optional_race_skills': race_skills[0],
+                'mandatory_prof_abilities': prof_abilities[1],
+                'optional_prof_abilities': prof_abilities[0],
+                'mandatory_race_abilities': race_abilities[1],
+                'optional_race_abilities': race_abilities[0],
+                'character_stats': character_stats,
+                'develop_stats': develop_stats,
+                'random_table': random_table,
+                'race_counter': race_counter,
+                'race': race,
+                'all_stats': StatsModel.objects.all(),
+                'stats_table': stats_table,
+                'qs_skills': all_skills,
+                'qs_abilities': all_abilities,
+                't': 12,
+                'equipment': starting_profession.equipment
+            }
+
+            return render(request, 'warhammer/dostosuj_rase_profesje.html', context)
+
+        return render(request, 'warhammer/roll_stats.html', {'s_stats': starting_stats, 'starting_professions': starting_professions, 'stats_form': stats_form})
 
     def post(self,request, race_slug):
-        race = get_object_or_404(RaceModel,slug=race_slug)
+        race = get_object_or_404(RaceModel, slug=race_slug)
         s_stats = StartingStatsModel.objects.filter(race=race).order_by('-bonus')
         if race == RaceModel.objects.get(pk=1):
             starting_professions = HumanStartingProfession.objects.all().order_by('profession')
@@ -104,7 +148,7 @@ class RollStats(View):
                 step = Step1Model(WW=WW,US=US,ZR=ZR,K=K,Odp=Odp,Int=Int,SW=SW,Vit=Vit,PP=PP,PROF=PROF, string=string)
                 step.save()
                 return redirect('wh:custom', race_slug=race_slug, pk=step.pk)
-        return render(request, 'warhammer/staty.html', {'s_stats': s_stats, 'starting_professions': starting_professions})
+        return render(request, 'warhammer/roll_stats.html', {'s_stats': s_stats, 'starting_professions': starting_professions})
 
 
 def CustomizeCharacter(request,race_slug,pk):

@@ -12,6 +12,11 @@
           </ol>
     </nav>
 
+    <form method="get">
+        {{ stats_form.as_p }}
+        <button type="submit"> submit</button>
+    </form>
+
         <form method="post" onsubmit="return validate()">
             {% csrf_token %}
             <!-- Losowanie cech -->
