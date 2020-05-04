@@ -49,407 +49,84 @@ def choose_race(request):
     return render(request, 'warhammer/race.html', {'all_races': all_races})
 
 
-class RollStats(View):
-    """
-    2nd step in character creation - rolling for stats
-    """
-    def get(self, request, race_slug):
-        stats_form = RollStatsForm(request.GET)
-        race = get_object_or_404(RaceModel, slug=race_slug)
-        starting_stats = StartingStatsModel.objects.filter(race=race).order_by('-bonus')
-        starting_professions = get_starting_professions(race)
+def roll_stats(request, race_slug):
+    stats_form = RollStatsForm(request.GET)
+    race = get_object_or_404(RaceModel, slug=race_slug)
+    starting_stats = StartingStatsModel.objects.filter(race=race).order_by('-bonus')
+    starting_professions = get_starting_professions(race)
 
-        if stats_form.is_valid():
-            starting_profession = character_creation.get_exact_profession(starting_professions, stats_form.cleaned_data['prof'])
+    if stats_form.is_valid():
+        starting_profession = character_creation.get_exact_profession(starting_professions, stats_form.cleaned_data['prof'])
 
-            all_skills = SkillsModel.objects.all()
-            all_abilities = AbilitiesModel.objects.all()
+        all_skills = SkillsModel.objects.all()
+        all_abilities = AbilitiesModel.objects.all()
 
-            prof_skills = character_creation.prepare_skill_form(starting_profession.skills, all_skills, 'prof_skills')
-            race_skills = character_creation.prepare_skill_form(race.skills, all_skills, 'race_skills')
+        prof_skills = character_creation.prepare_skill_form(starting_profession.skills, all_skills, 'prof_skills')
+        race_skills = character_creation.prepare_skill_form(race.skills, all_skills, 'race_skills')
 
-            prof_abilities = character_creation.prepare_skill_form(starting_profession.abilities, all_abilities, 'prof_abilities')
-            race_abilities = character_creation.prepare_skill_form(race.abilities, all_abilities, 'race_abilities')
+        prof_abilities = character_creation.prepare_skill_form(starting_profession.abilities, all_abilities, 'prof_abilities')
+        race_abilities = character_creation.prepare_skill_form(race.abilities, all_abilities, 'race_abilities')
 
-            character_stats = character_creation.create_character_stats(stats_form, race)
+        character_stats = character_creation.create_character_stats(stats_form, race)
 
-            develop_stats = character_creation.prepare_develop_stat_form(starting_profession)
-            random_table, race_counter = character_creation.prepare_random_ability_table(race)
-            stats_table = character_creation.prepare_stats_table(character_stats)
+        develop_stats, prof_stats = character_creation.prepare_develop_stat_form(starting_profession)
+        random_table, race_counter = character_creation.prepare_random_ability_table(race)
+        stats_table = character_creation.prepare_stats_table(character_stats)
 
-            context = {
-                'profession': starting_profession,
-                'mandatory_prof_skills': prof_skills[1],
-                'optional_prof_skills': prof_skills[0],
-                'mandatory_race_skills': race_skills[1],
-                'optional_race_skills': race_skills[0],
-                'mandatory_prof_abilities': prof_abilities[1],
-                'optional_prof_abilities': prof_abilities[0],
-                'mandatory_race_abilities': race_abilities[1],
-                'optional_race_abilities': race_abilities[0],
-                'character_stats': character_stats,
-                'develop_stats': develop_stats,
-                'random_table': random_table,
-                'race_counter': race_counter,
-                'race': race,
-                'all_stats': StatsModel.objects.all(),
-                'stats_table': stats_table,
-                'qs_skills': all_skills,
-                'qs_abilities': all_abilities,
-                't': 12,
-                'equipment': starting_profession.equipment
-            }
+        if request.method == 'POST':
+            name = request.POST.get('name', 'your_name')
+            equipment = request.POST.get('eq', 'nic')
+            coins = character_creation.clean_coins(request.POST.get('coins', '0'))
 
-            return render(request, 'warhammer/dostosuj_rase_profesje.html', context)
-
-        return render(request, 'warhammer/roll_stats.html', {'s_stats': starting_stats, 'starting_professions': starting_professions, 'stats_form': stats_form})
-
-    def post(self,request, race_slug):
-        race = get_object_or_404(RaceModel, slug=race_slug)
-        s_stats = StartingStatsModel.objects.filter(race=race).order_by('-bonus')
-        if race == RaceModel.objects.get(pk=1):
-            starting_professions = HumanStartingProfession.objects.all().order_by('profession')
-        elif race == RaceModel.objects.get(pk=2):
-            starting_professions = ElfStartingProfession.objects.all().order_by('profession')
-        elif race == RaceModel.objects.get(pk=3):
-            starting_professions = DwarfStartingProfession.objects.all().order_by('profession')
-        else:
-            starting_professions = HalflingStartingProfession.objects.all().order_by('profession')
-
-        # manual validation because apparently I have too much time
-        form_is_valid = True
-        try:
-            WW = int(request.POST['WW'])
-            US = int(request.POST['US'])
-            ZR = int(request.POST['ZR'])
-            K = int(request.POST['K'])
-            Odp = int(request.POST['Odp'])
-            Ogd = int(request.POST['Ogd'])
-            Int = int(request.POST['Int'])
-            SW = int(request.POST['SW'])
-            Vit = int(request.POST['Żyw'])
-            PP = int(request.POST['PP'])
-            PROF = int(request.POST['PROF'])
-        except:
-            form_is_valid = False
-
-        if form_is_valid:
-            verification_list1 = [WW,US,ZR,K,Odp,Int,SW,Ogd]
-
-            for form_input in verification_list1:
-                if form_input not in range(2,21):
-                    form_is_valid = False
-
-            if Vit not in range(1,11) or PP not in range(1,11) or PROF not in range(1,101):
-                form_is_valid = False
-
-            if form_is_valid:
-                string = str(WW) + ',' + str(US) + ',' + str(K) + ',' + str(Odp) + ',' + str(ZR) + ',' + str(Int) + ',' + str(SW) + ',' + str(Ogd) + ',' + str(Vit) + ',' + str(PP) + ',' + str(PROF)
-                step = Step1Model(WW=WW,US=US,ZR=ZR,K=K,Odp=Odp,Int=Int,SW=SW,Vit=Vit,PP=PP,PROF=PROF, string=string)
-                step.save()
-                return redirect('wh:custom', race_slug=race_slug, pk=step.pk)
-        return render(request, 'warhammer/roll_stats.html', {'s_stats': s_stats, 'starting_professions': starting_professions})
-
-
-def CustomizeCharacter(request,race_slug,pk):
-    s_time = time.time()
-    step1 = get_object_or_404(Step1Model,pk=pk)
-    race = get_object_or_404(RaceModel,slug=race_slug)
-    starting_profession = ProfessionModel.objects.get(pk=1)  # just in case
-
-    # gets professions table
-    if race == RaceModel.objects.get(pk=1):
-        starting_professions = HumanStartingProfession.objects.all()
-    elif race == RaceModel.objects.get(pk=2):
-        starting_professions = ElfStartingProfession.objects.all()
-    elif race == RaceModel.objects.get(pk=3):
-        starting_professions = DwarfStartingProfession.objects.all()
-    else:
-        starting_professions = HalflingStartingProfession.objects.all()
-
-    # gets profession from table
-    for prof in starting_professions:
-        if prof.roll_range.find('-') != -1:
-            roll_range = prof.roll_range.split('-')
-            if step1.PROF in range(int(roll_range[0]), int(roll_range[1])+1):
-                starting_profession = prof.profession
-                break
-        else:
-            if step1.PROF == int(prof.roll_range):
-                starting_profession = prof.profession
-                break
-
-    # creates radio and modals for skills
-    all_skills = SkillsModel.objects.all()
-    all_abilities = AbilitiesModel.objects.all()
-
-    prof_skills = process_string(starting_profession.skills, all_skills, 'prof_skills')
-    race_skills = process_string(race.skills, all_skills, 'race_skills')
-
-    prof_abilities = process_string(starting_profession.abilities, all_abilities, 'prof_abilities')
-    race_abilities = process_string(race.abilities, all_abilities, 'race_abilities')
-    # process_strings returns list[options_modals, counter, mandatory_modals, mandatory_plain_text, query_set]
-
-    # process stats for display, creating character
-    s1 = step1.string.split(',')
-    character_stats = []  # its list with ALL current stats (in order)
-
-    # basic stats
-    basic_stats = StatsModel.objects.filter(is_secondary=False)
-    for i,stat in enumerate(basic_stats, 0):
-        base = StartingStatsModel.objects.get(race=race, stat=stat)
-        value = base.base + int(s1[i])
-        character_stats.append(value)
-    # secondary stats
-    character_stats.append(1)  # A
-    # Żyw
-    vit = VitalityModel.objects.get(race=race)
-    vit_roll = int(s1[8])
-    if vit_roll in range(1,4):
-        character_stats.append(vit.v_1_3)
-    elif vit_roll in range(4,7):
-        character_stats.append(vit.v_4_6)
-    elif vit_roll in range(7,10):
-        character_stats.append(vit.v_7_9)
-    else:
-        character_stats.append(vit.v_10)
-    character_stats.append(int(character_stats[2]/10))  # S
-    character_stats.append(int(character_stats[3]/10))  # Wt
-    Sz = StartingStatsModel.objects.get(race=race, stat=13)
-    character_stats.append(Sz.base)  # Sz
-    character_stats.append(0)  # Mag
-    character_stats.append(0)  # PO
-    # PP
-    fate = FateModel.objects.get(race=race)
-    fate_roll = int(s1[9])
-    if fate_roll in range(1, 5):
-        character_stats.append(fate.f_1_4)
-    elif fate_roll in range(5, 8):
-        character_stats.append(fate.f_5_7)
-    else:
-        character_stats.append(fate.f_8_10)
-    # Develop stat form
-    all_stats = StatsModel.objects.all()
-    prof_stats = starting_profession.stats.split('\n')
-    develop_stat_inputs = []
-    for i,stat in enumerate(all_stats, 0):
-        prof_stats[i] = prof_stats[i].replace('\r','')
-        if prof_stats[i] != '-':
-            dev_stat = DevelopStat()
-            dev_stat.stat = stat
-            if stat.is_secondary:
-                dev_stat.bonus = '+1'
-            else:
-                dev_stat.bonus = '+5'
-            develop_stat_inputs.append(dev_stat)
-        else:
-            prof_stats[i] = 0
-
-    # random abilities
-    random_table = []
-    race_couter = 0
-    if race.pk == 1:
-        race_couter = 2
-    elif race.pk == 4:
-        race_couter = 1
-
-    if race_couter > 0:
-        random_table = RandomAbilityModel.objects.filter(race=race).order_by('roll_range')
-
-    stats_table =[]
-    for i,stat in enumerate(all_stats,0):
-        maslo = StatDisplay()
-        maslo.stat = stat
-        maslo.value = character_stats[i]
-        stats_table.append(maslo)
-
-    # Query Set for MODALS (actually its list)
-    qs_skills = race_skills[4] + prof_skills[4]
-    qs_abilities = race_abilities[4] + prof_abilities[4]
-
-    equipment = starting_profession.equipment + '\n ubranie podróżne, sztylet, wybrana broń jednoręczna, plecak z podstawowym wyposażeniem'
-
-    ##########################  POST   ###########################################
-    if request.method == 'POST':
-        name = request.POST.get('name','dlaczego kombinujesz?')
-        equipment = request.POST.get('eq','nic')
-
-        coins = request.POST.get('coins','0')
-        try:
-            coins = int(coins)
-            if coins < 2 or coins > 20:
-                coins = 0
-            else:
-                coins = coins*240
-        except:
-            coins = 0
-        if request.user.is_authenticated:
-            new_character = CharacterModel(name=name, profession=starting_profession, race=race, equipment=equipment, coins=coins, user=request.user)
-            new_character.save()
-        else:
-            new_character = CharacterModel(name=name, profession=starting_profession, race=race, equipment=equipment, coins=coins, user=None)
+            new_character = CharacterModel(
+                name=name,
+                profession=starting_profession,
+                race=race,
+                equipment=equipment,
+                coins=coins,
+                user=request.user if request.user.is_authenticated else None
+            )
             new_character.save()
 
-        selected_prof_skills = []
-        # creates lists with skills and abilities of user's choice
-        for i in range(0, prof_skills[1]):
-            selected_prof_skills.append(request.POST[str(i)+'prof_skills'])
-        selected_race_skills = []
-        for i in range(0, race_skills[1]):
-            selected_race_skills.append(request.POST[str(i)+'race_skills'])
-        selected_prof_abilities = []
-        for i in range(0, prof_abilities[1]):
-            selected_prof_abilities.append(request.POST[str(i)+'prof_abilities'])
-        selected_race_abilities = []
-        for i in range(0, race_abilities[1]):
-            selected_race_abilities.append(request.POST[str(i)+'race_abilities'])
-        developed_stat = StatsModel.objects.get(short = request.POST['develop_stat'])
+            selected_prof_skills, selected_race_skills = character_creation.clean_selected_skills(request, 'skills', prof_skills[0], race_skills[0])
+            selected_prof_abilities, selected_race_abilities = character_creation.clean_selected_skills(request, 'abilities', prof_abilities[0], race_abilities[0])
+            random_abilities = character_creation.clean_random_abilities(request, race_counter, random_table)
+            selected_abilities = prof_abilities[2] + race_abilities[2] \
+                                 + selected_prof_abilities + selected_race_abilities + random_abilities
 
-        #  random abilities
-        random_abilities =[]
-        if race_couter == 1:
-            r_a = request.POST['0_random_ability']
-            random_abilities.append(r_a)
-        elif race_couter == 2:
-            random_abilities.append(request.POST['0_random_ability'])
-            random_abilities.append(request.POST['1_random_ability'])
+            character_creation.save_abilities(selected_abilities, new_character)
+            character_creation.save_skills(race_skills[2] + selected_race_skills, new_character, 'race')
+            character_creation.save_skills(prof_skills[2] + selected_prof_skills, new_character, 'profession')
+            character_creation.save_stats(character_stats, new_character, prof_stats, request)
 
-        # validate random inputs
-        for i,ability in enumerate(random_abilities, 0):
-            try:
-                if int(ability) in range(1,101):
-                    for rand in random_table:
-                        if rand.roll_range.find('-') != -1:
-                            roll_range = rand.roll_range.split('-')
-                            if int(ability) in range(int(roll_range[0]), int(roll_range[1]) + 1):
-                                random_abilities[i] = rand.ability.name
-                                break
-                        else:
-                            if int(ability) == int(rand.roll_range):
-                                random_abilities[i] = rand.ability.name
-                                break
-            except:
-                pass
+            return redirect('wh:character_screen', pk=new_character.pk)
 
-        # adds skills
-        selected_skills = race_skills[3] + selected_race_skills
-        for i, skill in enumerate(selected_skills, 0):
-            if skill == '':
-                pass
-            else:
-                skill = skill.lower()
-                skill = skill.replace(skill[0], skill[0].upper(),1)
-                bonus = None
-                if skill.find(' (') != -1:
-                    skill = skill.split(' (')
-                    bonus = '(' + skill[1]
-                    skill = skill[0]
-                    if bonus[-1] =='\r':
-                        bonus = bonus[:-1]
-                if skill[-1] == '\r':
-                    skill = skill[:-1]
-                a_skill = SkillsModel.objects.get(name=skill)
-                char_skill, created = CharacterSkills.objects.get_or_create(character=new_character, skill=a_skill,bonus=bonus)
-                char_skill.is_developed = False
-                if not created:
-                    char_skill.level += 10
-                try:
-                    char_skill.save()
-                except:
-                    pass
+        context = {
+            'profession': starting_profession,
+            'mandatory_prof_skills': prof_skills[1],
+            'optional_prof_skills': prof_skills[0],
+            'mandatory_race_skills': race_skills[1],
+            'optional_race_skills': race_skills[0],
+            'mandatory_prof_abilities': prof_abilities[1],
+            'optional_prof_abilities': prof_abilities[0],
+            'mandatory_race_abilities': race_abilities[1],
+            'optional_race_abilities': race_abilities[0],
+            'character_stats': character_stats,
+            'develop_stats': develop_stats,
+            'random_table': random_table,
+            'race_counter': race_counter,
+            'race': race,
+            'all_stats': StatsModel.objects.all(),
+            'stats_table': stats_table,
+            'qs_skills': all_skills,
+            'qs_abilities': all_abilities,
+            't': 12,
+            'equipment': starting_profession.equipment
+        }
 
-        selected_skills = prof_skills[3] + selected_prof_skills #
-        for i, skill in enumerate(selected_skills, 0):
-            if skill == '':
-                pass
-            else:
-                skill = skill.lower()
-                skill = skill.replace(skill[0], skill[0].upper(),1)
-                bonus = None
-                if skill.find(' (') != -1:
-                    skill = skill.split(' (')
-                    bonus = '(' + skill[1]
-                    skill = skill[0]
-                    if bonus[-1] =='\r':
-                        bonus = bonus[:-1]
-                if skill[-1] == '\r':
-                    skill = skill[:-1]
-                a_skill = SkillsModel.objects.get(name=skill)
-                char_skill, created = CharacterSkills.objects.get_or_create(character=new_character, skill=a_skill,bonus=bonus)
-                if not created:
-                    char_skill.level += 10
-                    char_skill.is_developed = True
-                try:
-                    char_skill.save()
-                except:
-                    pass
+        return render(request, 'warhammer/dostosuj_rase_profesje.html', context)
 
-        # adds abilities
-        selected_abilities = prof_abilities[3] + race_abilities[3] + selected_prof_abilities + selected_race_abilities + random_abilities
-        for i, skill in enumerate(selected_abilities, 0):
-            if skill == '' or skill[0] == '2' or skill[0] == '1':
-                pass
-            else:
-                bonus = None
-                skill = skill.lower()
-                skill = skill.replace(skill[0], skill[0].upper(),1)
-                if skill.find('(') != -1:
-                    skill = skill.split('(')
-                    bonus = '(' + skill[1]
-                    skill = skill[0][:-1]
-                if skill[-1] == '\r':
-                    skill = skill[:-1]
-
-                try:
-                    skill = AbilitiesModel.objects.get(name=skill)
-                    char_skill = CharacterAbilities.objects.get_or_create(character=new_character, ability=skill, bonus=bonus)
-                    char_skill.save()
-                except:
-                    pass
-
-        # adds stats
-        for i,stat in enumerate(all_stats,0):
-            add_stat = CharactersStats()
-            add_stat.character = new_character
-            add_stat.stat = stat
-            add_stat.base = character_stats[i]
-            add_stat.max_bonus = int(prof_stats[i])
-            if stat == developed_stat:
-                if stat.is_secondary:
-                    add_stat.bonus = 1
-                else:
-                    add_stat.bonus = 5
-            else:
-                add_stat.bonus = 0
-            add_stat.save()
-
-        return redirect('wh:character_screen', pk=new_character.pk)
-
-    context = {
-        'profession': starting_profession,
-        'mandatory_prof_skills': prof_skills[2],
-        'optional_prof_skills': prof_skills[0],
-        'mandatory_race_skills': race_skills[2],
-        'optional_race_skills': race_skills[0],
-        'mandatory_prof_abilities': prof_abilities[2],
-        'optional_prof_abilities': prof_abilities[0],
-        'mandatory_race_abilities': race_abilities[2],
-        'optional_race_abilities': race_abilities[0],
-        'character_stats': character_stats,
-        'develop_stats': develop_stat_inputs,
-        'random_table': random_table,
-        'race_counter': race_couter,
-        'race': race,
-        'all_stats': all_stats,
-        'stats_table': stats_table,
-        'qs_skills': qs_skills,
-        'qs_abilities': qs_abilities,
-        't':time.time() - s_time,
-        'equipment':equipment
-    }
-
-    return render(request, 'warhammer/dostosuj_rase_profesje.html', context)
-
+    return render(request, 'warhammer/roll_stats.html', {'s_stats': starting_stats, 'starting_professions': starting_professions, 'stats_form': stats_form})
 
 def professions(request):
     all_professions = ProfessionModel.objects.all()

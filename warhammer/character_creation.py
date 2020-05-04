@@ -1,6 +1,7 @@
 from warhammer import models
 
 
+"""For GET"""
 class DevelopStat():
     stat = ''
     bonus = ''
@@ -48,16 +49,18 @@ def prepare_skill_form(skill_string, object_list, name):
     """
     free_skills = []
     choices = []
+    raw_skills = []
     skill_list = skill_string.split('\n')
     for skill in skill_list:
         if ' / ' in skill:
             choices.append(skill)
         else:
             free_skills.append(skill)
+            raw_skills.append(skill)
     radio_buttons = create_radio_for_choices(choices, name)
     radio_buttons = create_modal_links(object_list, radio_buttons)  # radio buttons now have modals in them
     free_skills = create_modal_links(object_list, free_skills)  # its now list of HTML <a> elements
-    return [radio_buttons, free_skills]
+    return [radio_buttons, free_skills, raw_skills]
 
 
 def create_radio_for_choices(skill_choices, name):
@@ -170,7 +173,7 @@ def prepare_develop_stat_form(starting_profession):
             develop_stat_inputs.append(dev_stat)
         else:
             prof_stats[i] = 0
-    return develop_stat_inputs
+    return develop_stat_inputs, prof_stats
 
 
 def prepare_random_ability_table(race):
@@ -196,3 +199,124 @@ def prepare_stats_table(character_stats):
         maslo.value = character_stats[i]
         stats_table.append(maslo)
     return stats_table
+
+
+"""For POST"""
+
+
+def clean_coins(coins_string):
+    try:
+        coins = int(coins_string)
+        if coins in range(2, 21):
+            return coins * 240
+    except ValueError:
+        pass
+    return 0
+
+
+def clean_selected_skills(request, type, prof_list, race_list):
+    selected_prof_skills = []
+    for i in range(0, len(prof_list)):
+        selected_prof_skills.append(request.POST[str(i) + '_prof_' + type])
+    selected_race_skills = []
+    for i in range(0, len(race_list)):
+        selected_race_skills.append(request.POST[str(i) + '_race_' + type])
+    return selected_prof_skills, selected_race_skills
+
+
+def clean_random_abilities(request, race_counter, random_table):
+    random_abilities = []
+    try:
+        if race_counter == 1:
+            r_a = request.POST['0_random_ability']
+            random_abilities.append(r_a)
+        elif race_counter == 2:
+            random_abilities.append(int(request.POST['0_random_ability']))
+            random_abilities.append(int(request.POST['1_random_ability']))
+    except ValueError:
+        pass
+
+    for i, ability in enumerate(random_abilities):
+        if ability in range(1, 101):
+            for value in random_table:
+                range_list = value.roll_range.split('-')
+                if len(range_list) == 1 and ability == range_list[0]:
+                    random_abilities[i] = value.ability.name
+                    break
+                elif len(range_list) == 2 and ability in range(int(range_list[0]), int(range_list[1])+1):
+                    random_abilities[i] = value.ability.name
+                    break
+
+    return random_abilities
+
+
+def save_skills(selected_skills, character, source):
+    for i, skill in enumerate(selected_skills, 0):
+        if skill:
+            skill = skill.lower()
+            skill = skill.replace(skill[0], skill[0].upper(), 1)
+            bonus = None
+            if ' (' in skill:
+                skill = skill.split(' (')
+                bonus = '(' + skill[1]
+                skill = skill[0]
+                bonus = bonus[:-1] if bonus[-1] == '\r' else bonus
+
+            skill = skill[:-1] if skill[-1] == '\r' else skill
+            skill = models.SkillsModel.objects.get(name=skill)
+            char_skill, created = models.CharacterSkills.objects.get_or_create(character=character, skill=skill,
+                                                                               bonus=bonus)
+            char_skill.is_developed = False
+            if not created:
+                char_skill.level += 10
+                char_skill.is_developed = True if source == 'profession' else False
+            try:
+                char_skill.save()
+            except:
+                pass
+
+
+def save_abilities(selected_abilities, character):
+    for i, skill in enumerate(selected_abilities, 0):
+        # wtf is '2' or '1' ? xD - have no idea, will leave it here in case its important
+        if skill != '' or skill[0] != '2' or skill[0] != '1':
+            bonus = None  # Can abilities even have bonuses?
+            skill = skill.lower()
+            skill = skill.replace(skill[0], skill[0].upper(), 1)
+            if skill.find('(') != -1:
+                skill = skill.split('(')
+                bonus = '(' + skill[1]
+                skill = skill[0][:-1]
+            if skill[-1] == '\r':
+                skill = skill[:-1]
+
+            try:
+                skill = models.AbilitiesModel.objects.get(name=skill)
+                char_skill = models.CharacterAbilities.objects.get_or_create(character=character, ability=skill,
+                                                                             bonus=bonus)
+                char_skill.save()
+            except:
+                pass
+
+
+def save_stats(character_stats, character, prof_stats, request):
+    developed_stat = models.StatsModel.objects.get(short=request.POST['develop_stat'])
+    all_stats = models.StatsModel.objects.all()
+    for i, stat in enumerate(all_stats, 0):
+        add_stat = models.CharactersStats(
+            character=character,
+            stat=stat,
+            base=character_stats[i]
+        )
+        add_stat.character = character
+        add_stat.stat = stat
+        add_stat.base = character_stats[i]
+        add_stat.max_bonus = int(prof_stats[i])
+        if stat == developed_stat:
+            if stat.is_secondary:
+                add_stat.bonus = 1
+            else:
+                add_stat.bonus = 5
+        else:
+            add_stat.bonus = 0
+        add_stat.save()

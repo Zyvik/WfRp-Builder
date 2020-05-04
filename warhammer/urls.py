@@ -3,10 +3,9 @@ from . import views
 
 app_name = 'wh'
 urlpatterns = [
-    path('', views.index, name = 'index'),
+    path('', views.index, name='index'),
     path('nowy/', views.choose_race, name='race'),
-    path('nowy/<slug:race_slug>', views.RollStats.as_view(), name='stats'),
-    path('nowy/<slug:race_slug>/<slug:pk>', views.CustomizeCharacter, name='custom'),
+    path('nowy/<slug:race_slug>', views.roll_stats, name='stats'),
     path('profesja/', views.professions, name='professions'),
     path('profesja/<slug:profession_slug>', views.selected_profession, name='selected_profession'),
     path('bohater/<slug:pk>', views.character_screen, name='character_screen'),
