@@ -1,12 +1,10 @@
 from django.shortcuts import render,redirect,HttpResponse, get_object_or_404
 from .models import *
-from django.views import View
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from .libs import process_string, DevelopStat, StatDisplay, process_string_dev
+from .libs import process_string_dev
 from django.core.mail import send_mail
-import time
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
@@ -14,6 +12,7 @@ from .serializers import ChatSerializer, MapSerializer
 from .forms import RollStatsForm
 from .character_creation import get_starting_professions
 from . import character_creation
+from warhammer import profession_detail_lib as prof_detail
 
 
 def index(request):
@@ -128,54 +127,31 @@ def roll_stats(request, race_slug):
 
     return render(request, 'warhammer/roll_stats.html', {'s_stats': starting_stats, 'starting_professions': starting_professions, 'stats_form': stats_form})
 
+
 def professions(request):
     all_professions = ProfessionModel.objects.all()
-    return render(request, 'warhammer/profesje.html', {'all_professions':all_professions})
+    return render(request, 'warhammer/profesje.html', {'all_professions': all_professions})
 
 
 def selected_profession(request, profession_slug):
-    prof = get_object_or_404(ProfessionModel, slug=profession_slug)
+    profession = get_object_or_404(ProfessionModel, slug=profession_slug)
     all_skills = SkillsModel.objects.all()
-    skills_string = prof.skills
-
-    prof_skills = []
-    for skill in all_skills:
-        modal_link = "<a href=\"#\" data-toggle=\"modal\" data-target=\"#" + skill.slug + "\">" + skill.name + "</a>"
-        if skills_string.find(skill.name) != -1:
-            skills_string = skills_string.replace(skill.name, modal_link)
-            prof_skills.append(skill)
-
     all_abilities = AbilitiesModel.objects.all()
-    abilities_string = prof.abilities
-    prof_abilities = []
-    for skill in all_abilities:
-        modal_link = "<a href=\"#\" data-toggle=\"modal\" data-target=\"#" + skill.slug + "\">" + skill.name + "</a>"
-        if abilities_string.find(skill.name) != -1:
-            abilities_string = abilities_string.replace(skill.name, modal_link)
-            prof_abilities.append(skill)
 
-    stats_list = prof.stats.split('\n')
-    all_stats = StatsModel.objects.all()
-    prof_stats = []
-    prof_stats_bonus = []
-    for i,stat in enumerate(all_stats, 0):
-        if stats_list[i].replace('\r','') != '-':
-            prof_stats.append(stat)
-            prof_stats_bonus.append(stats_list[i])
-    stats_list = zip(prof_stats,prof_stats_bonus)
+    skills_string = prof_detail.create_modals(all_skills, profession.skills)
+    abilities_string = prof_detail.create_modals(all_abilities, profession.abilities)
+    stats_list = prof_detail.prepare_stats_for_display(profession)
 
-    context ={
+    context = {
         'abilities': abilities_string,
-        'prof_abilities': prof_abilities,  # abilities objects
+        'prof_abilities': all_abilities,  # abilities objects
         'skills': skills_string,
-        'prof_skills': prof_skills,  # skills objects from SkillModel
-        'stats_list':stats_list,
-        'profession': prof,  # profession object
-
-
+        'prof_skills': all_skills,  # skills objects from SkillModel
+        'stats_list': stats_list,
+        'profession': profession,  # profession object
     }
 
-    return render(request, 'warhammer/profesja_szczegol.html', context )
+    return render(request, 'warhammer/profesja_szczegol.html', context)
 
 
 def character_screen(request, pk):
