@@ -46,7 +46,7 @@ class CharacterCustomizeForm:
             name='prof_abilities'
         )
         self.race_a_radio, self.race_a_free, self.race_a_raw = prepare_skill_form(
-            skill_string=self.profession.abilities,
+            skill_string=self.race.abilities,
             object_list=self.all_abilities,
             name='race_abilities'
         )

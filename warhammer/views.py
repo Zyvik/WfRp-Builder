@@ -59,22 +59,7 @@ def roll_stats(request, race_slug):
 
     if stats_form.is_valid():
         # preparing form for 3rd step - customizing character
-        starting_profession = character_creation.get_exact_profession(starting_professions, stats_form.cleaned_data['prof'])
-
-        all_skills = SkillsModel.objects.all()
-        all_abilities = AbilitiesModel.objects.all()
-
-        prof_skills = character_creation.prepare_skill_form(starting_profession.skills, all_skills, 'prof_skills')
-        race_skills = character_creation.prepare_skill_form(race.skills, all_skills, 'race_skills')
-
-        prof_abilities = character_creation.prepare_skill_form(starting_profession.abilities, all_abilities, 'prof_abilities')
-        race_abilities = character_creation.prepare_skill_form(race.abilities, all_abilities, 'race_abilities')
-
-        character_stats = character_creation.create_character_stats(stats_form, race)
-
-        develop_stats, prof_stats = character_creation.prepare_develop_stat_form(starting_profession)
-        random_table, race_counter = character_creation.prepare_random_ability_table(race)
-        stats_table = character_creation.prepare_stats_table(character_stats)
+        customize_form = character_creation.CharacterCustomizeForm(race, stats_form)
 
         if request.method == 'POST':
             name = request.POST.get('name', 'your_name')
@@ -105,26 +90,26 @@ def roll_stats(request, race_slug):
             return redirect('wh:character_screen', pk=new_character.pk)
 
         context = {
-            'profession': starting_profession,
-            'mandatory_prof_skills': prof_skills[1],
-            'optional_prof_skills': prof_skills[0],
-            'mandatory_race_skills': race_skills[1],
-            'optional_race_skills': race_skills[0],
-            'mandatory_prof_abilities': prof_abilities[1],
-            'optional_prof_abilities': prof_abilities[0],
-            'mandatory_race_abilities': race_abilities[1],
-            'optional_race_abilities': race_abilities[0],
-            'character_stats': character_stats,
-            'develop_stats': develop_stats,
-            'random_table': random_table,
-            'race_counter': race_counter,
+            'profession': customize_form.profession,
+            'mandatory_prof_skills': customize_form.prof_s_free,
+            'optional_prof_skills': customize_form.prof_s_radio,
+            'mandatory_race_skills': customize_form.race_s_free,
+            'optional_race_skills': customize_form.race_s_radio,
+            'mandatory_prof_abilities': customize_form.prof_a_free,
+            'optional_prof_abilities': customize_form.prof_a_radio,
+            'mandatory_race_abilities': customize_form.race_a_free,
+            'optional_race_abilities': customize_form.race_a_radio,
+            'character_stats': customize_form.character_stats,
+            'develop_stats': customize_form.develop_stats_form,
+            'random_table': customize_form.random_table,
+            'race_counter': customize_form.race_counter,
             'race': race,
             'all_stats': StatsModel.objects.all(),
-            'stats_table': stats_table,
-            'qs_skills': all_skills,
-            'qs_abilities': all_abilities,
+            'stats_table': customize_form.stats_table,
+            'qs_skills': customize_form.all_skills,
+            'qs_abilities': customize_form.all_abilities,
             't': 12,
-            'equipment': starting_profession.equipment
+            'equipment': customize_form.profession.equipment
         }
 
         return render(request, 'warhammer/dostosuj_rase_profesje.html', context)
