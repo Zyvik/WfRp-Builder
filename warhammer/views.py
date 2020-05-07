@@ -9,7 +9,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
 
-from .forms import RollStatsForm
+from django.views import View
+from .forms import RollStatsForm, RegisterForm
 from .character_creation import get_starting_professions
 from . import character_creation
 from warhammer import profession_detail_lib as prof_detail
@@ -467,35 +468,23 @@ def character_screen(request, pk):
     return render(request, 'warhammer/bohater.html', context)
 
 
-def register(request):
-    if request.user.is_authenticated:
-        return redirect('wh:index')
-    message = None
-    if request.method == 'POST':
-        username = request.POST.get('login','nic')
-        password = request.POST.get('password','nic')
-        r_password = request.POST.get('r_password','nic1')
-        mail = request.POST.get('email', 'abc@example.com')
+class RegisterView(View):
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('wh:index')
+        form = RegisterForm()
+        return render(request, 'warhammer/register.html', {'form': form})
 
-        if len(username) >= 4 and username.find(' ') == -1:
-            if len(password) >= 5:
-                if password == r_password:
-                    if not User.objects.filter(username__iexact=username).exists():
-                        user = User.objects.create_user(username, mail, password)  # creates user
-                        user = authenticate(request, username=username, password=password)
-                        if user is not None:
-                            login(request, user)
-                            return redirect('wh:index')
-                        return HttpResponse('Udało się!')
-                    else:
-                        message = 'Login zajęty'
-                else:
-                    message = 'Hasła muszo byc jednakowe'
-            else:
-                message = 'Hasło musi mieć minimum 5 znaków'
-        else:
-            message = 'Login musi mieć minimum 4 znaki i nie może zawierać spacji.'
-    return render(request,'warhammer/register.html', {'message':message})
+    def post(self, request):
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('login')
+            password = form.cleaned_data.get('password')
+            user = User.objects.create_user(username=username, password=password)  # creates user
+            user = authenticate(request, username=username, password=password)
+            login(request, user)
+            return redirect('wh:index')
+        return render(request, 'warhammer/register.html', {'form': form})
 
 
 def login_view(request):

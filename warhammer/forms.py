@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.models import User
 from .models import Step1Model
 
 
@@ -23,6 +24,32 @@ class RollStatsForm(forms.Form):
         self.fields['zyw'].widget.attrs['placeholder'] = '1k10'
         self.fields['pp'].widget.attrs['placeholder'] = '1k10'
         self.fields['prof'].widget.attrs['placeholder'] = '1k100'
+
+
+class RegisterForm(forms.Form):
+    login = forms.CharField(min_length=3, max_length=30)
+    password = forms.CharField(min_length=5, max_length=30, widget=forms.PasswordInput)
+    confirm_password = forms.CharField(min_length=5, max_length=30, widget=forms.PasswordInput)
+
+    login.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
+    password.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
+    confirm_password.widget.attrs.update({'class': 'form-control form-control-lg'})
+
+    def clean_login(self):
+        login = self.cleaned_data['login']
+
+        if ' ' in login:
+            raise forms.ValidationError('Login nie może zawierać spacji.')
+        if User.objects.filter(username__iexact=login).exists():
+            raise forms.ValidationError('Użytkownik o takim loginie już istnieje.')
+        return login
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data['password']
+        confirm_password = cleaned_data.get('confirm_password')
+        if password != confirm_password:
+            self.add_error('password', 'Hasła muszą być jednakowe.')
 
 
 class Step1Form(forms.ModelForm):
