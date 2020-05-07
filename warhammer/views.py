@@ -49,12 +49,16 @@ def choose_race(request):
 
 
 def roll_stats(request, race_slug):
+    """
+    2nd step in character creation - rolling for stats
+    """
     stats_form = RollStatsForm(request.GET)
     race = get_object_or_404(RaceModel, slug=race_slug)
     starting_stats = StartingStatsModel.objects.filter(race=race).order_by('-bonus')
     starting_professions = get_starting_professions(race)
 
     if stats_form.is_valid():
+        # preparing form for 3rd step - customizing character
         starting_profession = character_creation.get_exact_profession(starting_professions, stats_form.cleaned_data['prof'])
 
         all_skills = SkillsModel.objects.all()

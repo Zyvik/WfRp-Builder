@@ -1,17 +1,6 @@
 from warhammer import models
 
 
-"""For GET"""
-class DevelopStat():
-    stat = ''
-    bonus = ''
-
-
-class StatDisplay():
-    stat = ''
-    value = ''
-
-
 def get_starting_professions(race):
     """
     Gets starting professions for provided race
@@ -27,19 +16,100 @@ def get_starting_professions(race):
     return starting_professions
 
 
-def get_exact_profession(profession_list, index):
-    """
-    Gets profession from provided "table"
-    """
-    for prof in profession_list:
-        # check if index is in range if roll_range is actually range
-        if prof.roll_range.find('-') != -1:
-            roll_range = prof.roll_range.split('-')
-            if index in range(int(roll_range[0]), int(roll_range[1])+1):
+class CharacterCustomizeForm:
+    all_skills = models.SkillsModel.objects.all()
+    all_abilities = models.AbilitiesModel.objects.all()
+
+    def __init__(self, race, stats_form):
+        self.race = race
+        self.profession_index = stats_form.cleaned_data['prof']
+        self.starting_professions = get_starting_professions(race)
+        self.profession = self.get_exact_profession()
+        self.character_stats = create_character_stats(stats_form, race)
+        self.develop_stats_form, self.prof_stats = self.prepare_develop_stat_form()
+        self.random_table, self.race_counter = self.prepare_random_ability_table()
+        self.stats_table = self.prepare_stats_table()
+
+        self.prof_s_radio, self.prof_s_free, self.prof_s_raw = prepare_skill_form(
+            skill_string=self.profession.skills,
+            object_list=self.all_skills,
+            name='prof_skills'
+        )
+        self.race_s_radio, self.race_s_free, self.race_s_raw = prepare_skill_form(
+            skill_string=self.race.skills,
+            object_list=self.all_skills,
+            name='race_skills'
+        )
+        self.prof_a_radio, self.prof_a_free, self.prof_a_raw = prepare_skill_form(
+            skill_string=self.profession.abilities,
+            object_list=self.all_abilities,
+            name='prof_abilities'
+        )
+        self.race_a_radio, self.race_a_free, self.race_a_raw = prepare_skill_form(
+            skill_string=self.profession.abilities,
+            object_list=self.all_abilities,
+            name='race_abilities'
+        )
+
+    def get_exact_profession(self):
+        """
+        Gets profession from provided "table"
+        """
+        for prof in self.starting_professions:
+            # check if index is in range if roll_range is actually range
+            if '-' in prof.roll_range:
+                roll_range = prof.roll_range.split('-')
+                if self.profession_index in range(int(roll_range[0]), int(roll_range[1]) + 1):
+                    return prof.profession
+            # if roll_range is not range:
+            elif self.profession_index == int(prof.roll_range):
                 return prof.profession
-        # if roll_range is not range:
-        elif index == int(prof.roll_range):
-            return prof.profession
+
+    def prepare_develop_stat_form(self):
+        class DevelopStat:
+            stat = None
+            bonus = None
+
+        all_stats = models.StatsModel.objects.all()
+        prof_stats = self.profession.stats.split('\n')
+        develop_stat_inputs = []
+        for i, stat in enumerate(all_stats):
+            prof_stats[i] = prof_stats[i].replace('\r', '')
+            if prof_stats[i] != '-':
+                dev_stat = DevelopStat()
+                dev_stat.stat = stat
+                if stat.is_secondary:
+                    dev_stat.bonus = '+1'
+                else:
+                    dev_stat.bonus = '+5'
+                develop_stat_inputs.append(dev_stat)
+            else:
+                prof_stats[i] = 0
+        return develop_stat_inputs, prof_stats
+
+    def prepare_random_ability_table(self):
+        # random abilities
+        race_dict = {1: 2, 4: 1}
+        race_counter = race_dict.get(self.race.pk, 0)
+
+        random_table = []
+        if race_counter > 0:
+            random_table = models.RandomAbilityModel.objects.filter(race=self.race).order_by('roll_range')
+        return random_table, race_counter
+
+    def prepare_stats_table(self):
+        all_stats = models.StatsModel.objects.all()
+        stats_table = []
+        for i, stat in enumerate(all_stats, 0):
+            maslo = StatDisplay()
+            maslo.stat = stat
+            maslo.value = self.character_stats[i]
+            stats_table.append(maslo)
+        return stats_table
+"""For GET"""
+class StatDisplay():
+    stat = ''
+    value = ''
 
 
 def prepare_skill_form(skill_string, object_list, name):
@@ -60,7 +130,7 @@ def prepare_skill_form(skill_string, object_list, name):
     radio_buttons = create_radio_for_choices(choices, name)
     radio_buttons = create_modal_links(object_list, radio_buttons)  # radio buttons now have modals in them
     free_skills = create_modal_links(object_list, free_skills)  # its now list of HTML <a> elements
-    return [radio_buttons, free_skills, raw_skills]
+    return radio_buttons, free_skills, raw_skills
 
 
 def create_radio_for_choices(skill_choices, name):
@@ -150,56 +220,6 @@ def get_pp_value(roll, race):
     if roll in range(5, 8):
         return fate.f_5_7
     return fate.f_8_10
-
-
-def prepare_develop_stat_form(starting_profession):
-    """
-    Do poprawy
-    :param starting_profession:
-    :return:
-    """
-    all_stats = models.StatsModel.objects.all()
-    prof_stats = starting_profession.stats.split('\n')
-    develop_stat_inputs = []
-    for i,stat in enumerate(all_stats, 0):
-        prof_stats[i] = prof_stats[i].replace('\r','')
-        if prof_stats[i] != '-':
-            dev_stat = DevelopStat()
-            dev_stat.stat = stat
-            if stat.is_secondary:
-                dev_stat.bonus = '+1'
-            else:
-                dev_stat.bonus = '+5'
-            develop_stat_inputs.append(dev_stat)
-        else:
-            prof_stats[i] = 0
-    return develop_stat_inputs, prof_stats
-
-
-def prepare_random_ability_table(race):
-    # random abilities
-    random_table = []
-    race_couter = 0
-    if race.pk == 1:
-        race_couter = 2
-    elif race.pk == 4:
-        race_couter = 1
-
-    if race_couter > 0:
-        random_table = models.RandomAbilityModel.objects.filter(race=race).order_by('roll_range')
-    return random_table, race_couter
-
-
-def prepare_stats_table(character_stats):
-    all_stats = models.StatsModel.objects.all()
-    stats_table = []
-    for i, stat in enumerate(all_stats, 0):
-        maslo = StatDisplay()
-        maslo.stat = stat
-        maslo.value = character_stats[i]
-        stats_table.append(maslo)
-    return stats_table
-
 
 """For POST"""
 
