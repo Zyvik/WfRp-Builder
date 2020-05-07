@@ -62,31 +62,7 @@ def roll_stats(request, race_slug):
         customize_form = character_creation.CharacterCustomizeForm(race, stats_form)
 
         if request.method == 'POST':
-            name = request.POST.get('name', 'your_name')
-            equipment = request.POST.get('eq', 'nic')
-            coins = character_creation.clean_coins(request.POST.get('coins', '0'))
-
-            new_character = CharacterModel(
-                name=name,
-                profession=starting_profession,
-                race=race,
-                equipment=equipment,
-                coins=coins,
-                user=request.user if request.user.is_authenticated else None
-            )
-            new_character.save()
-
-            selected_prof_skills, selected_race_skills = character_creation.clean_selected_skills(request, 'skills', prof_skills[0], race_skills[0])
-            selected_prof_abilities, selected_race_abilities = character_creation.clean_selected_skills(request, 'abilities', prof_abilities[0], race_abilities[0])
-            random_abilities = character_creation.clean_random_abilities(request, race_counter, random_table)
-            selected_abilities = prof_abilities[2] + race_abilities[2] \
-                                 + selected_prof_abilities + selected_race_abilities + random_abilities
-
-            character_creation.save_abilities(selected_abilities, new_character)
-            character_creation.save_skills(race_skills[2] + selected_race_skills, new_character, 'race')
-            character_creation.save_skills(prof_skills[2] + selected_prof_skills, new_character, 'profession')
-            character_creation.save_stats(character_stats, new_character, prof_stats, request)
-
+            new_character = character_creation.create_new_character(request, customize_form)
             return redirect('wh:character_screen', pk=new_character.pk)
 
         context = {

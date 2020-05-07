@@ -224,6 +224,39 @@ def get_pp_value(roll, race):
 """For POST"""
 
 
+def create_new_character(request, customize_form):
+    name = request.POST.get('name', 'your_name')
+    equipment = request.POST.get('eq', 'nic')
+    coins = clean_coins(request.POST.get('coins', '0'))
+
+    new_character = models.CharacterModel(
+        name=name,
+        profession=customize_form.profession,
+        race=customize_form.race,
+        equipment=equipment,
+        coins=coins,
+        user=request.user if request.user.is_authenticated else None
+    )
+    new_character.save()
+
+    sel_prof_s, sel_race_s = clean_selected_skills(request, 'skills',
+                                                   customize_form.prof_s_radio,
+                                                   customize_form.race_s_radio)
+
+    sel_prof_a, sel_race_a = clean_selected_skills(request, 'abilities',
+                                                   customize_form.prof_a_radio,
+                                                   customize_form.race_a_radio)
+
+    random_abilities = clean_random_abilities(request, customize_form.race_counter, customize_form.random_table)
+    selected_abilities = customize_form.prof_a_raw + customize_form.race_a_raw + sel_prof_a + sel_race_a + random_abilities
+
+    save_abilities(selected_abilities, new_character)
+    save_skills(customize_form.race_s_raw + sel_race_s, new_character, 'race')
+    save_skills(customize_form.prof_s_raw + sel_prof_s, new_character, 'profession')
+    save_stats(customize_form.character_stats, new_character, customize_form.prof_stats, request)
+    return new_character
+
+
 def clean_coins(coins_string):
     try:
         coins = int(coins_string)
