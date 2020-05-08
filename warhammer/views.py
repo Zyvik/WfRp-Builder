@@ -10,35 +10,43 @@ from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
 
 from django.views import View
-from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm
+from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm
 from .character_creation import get_starting_professions
 from . import character_creation
 from warhammer import profession_detail_lib as prof_detail
 
 
-def index(request):
+class IndexView(View):
     """
     Landing page - displays user's characters and gives option to claim existing character
     """
-    message = None
-    your_characters = []
+    def get(self, request):
+        if request.user.is_authenticated:
+            your_characters = CharacterModel.objects.filter(user=request.user)
+            form = ClaimCharacterForm()
+            return render(request, 'warhammer/index.html', {'your_characters': your_characters, 'form': form})
+        return render(request, 'warhammer/index.html', {'your_characters': None, 'form': None})
 
-    if request.user.is_authenticated:
-        your_characters = CharacterModel.objects.filter(user=request.user)
-
-    if request.method == 'POST':
-        pk = request.POST.get('id', '0')
-        try:
-            character = CharacterModel.objects.get(pk=pk)
-            if not character.user:
-                character.user = request.user
-                character.save()
-            else:
-                message = 'Ta postać już do kogoś należy.'
-        except ObjectDoesNotExist:
-            message = 'Postać o takim identyfikatorze nie istnieje.'
-
-    return render(request, 'warhammer/index.html', {'your_characters': your_characters, 'message': message})
+    def post(self, request):
+        if request.user.is_authenticated:
+            message = None
+            form = ClaimCharacterForm(request.POST)
+            if form.is_valid():
+                pk = form.cleaned_data.get('pk')
+                try:
+                    character = CharacterModel.objects.get(pk=pk)
+                    if character.user is None:
+                        character.user = request.user
+                        character.save()
+                        return redirect('wh:index')
+                    else:
+                        message = 'Ta postać już do kogoś należy.'
+                except ObjectDoesNotExist:
+                    message = 'Postać o takim identyfikatorze nie istnieje.'
+            your_characters = CharacterModel.objects.filter(user=request.user)
+            return render(request, 'warhammer/index.html', {'your_characters': your_characters,
+                                                            'form': form, 'message': message})
+        return render(request, 'warhammer/index.html', {'your_characters': None, 'form': None})
 
 
 def choose_race(request):
@@ -527,7 +535,7 @@ class ContactView(View):
         message = None
         form = ContactForm(request.POST)
         if form.is_valid():
-            subject = form.cleaned_data.get('subject','no subject')
+            subject = form.cleaned_data.get('subject', 'no subject')
             email = form.cleaned_data.get('email', 'no email')
             content = form.cleaned_data.get('content', 'no content') + '\nemail: ' + email
             try:
@@ -538,9 +546,11 @@ class ContactView(View):
 
         return render(request, 'warhammer/contact.html', {'form': form, 'message': message})
 
+
 # Dice roller and MAP API
 class ChatView(APIView):
     authentication_classes = []
+
     def get(self, request, game_id):
         game = get_object_or_404(GameModel, id=game_id)
         messages = MessagesModel.objects.filter(game=game).order_by('-id')[:15]

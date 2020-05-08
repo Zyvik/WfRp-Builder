@@ -1,6 +1,20 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import Step1Model
+from uuid import UUID
+
+
+class ClaimCharacterForm(forms.Form):
+    pk = forms.CharField(label='', min_length=36, max_length=36)
+    pk.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 'Identyfikator bohatera'})
+
+    def clean_pk(self):
+        pk = self.cleaned_data['pk']
+        try:
+            test_uuid = UUID(pk, version=4)
+        except ValueError:
+            raise forms.ValidationError('To nie jest identyfikator postaci')
+        return pk
 
 
 class RollStatsForm(forms.Form):

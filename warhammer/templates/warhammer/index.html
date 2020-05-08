@@ -60,7 +60,7 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="row">
-                        <div class="col-8"><p class="ml-3"><input name="id" class="form-control form-control-lg" type="text" placeholder="Identyfikator bohatera"></p></div>
+                        <div class="col-8"><p class="ml-3">{{ form }}</p></div>
                     <div class="col-4 text-center"><button type="submit" class="btn btn-lg btn-dark">Dodaj</button></div>
                     </div>
                 </form>
