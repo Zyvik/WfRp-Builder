@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
 
 from django.views import View
-from .forms import RollStatsForm, RegisterForm
+from .forms import RollStatsForm, RegisterForm, LoginForm
 from .character_creation import get_starting_professions
 from . import character_creation
 from warhammer import profession_detail_lib as prof_detail
@@ -491,20 +491,23 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect('wh:index')
     message = None
+    form = LoginForm()
     if request.method == 'POST':
-        username = request.POST.get('login', 'a')
-        password = request.POST.get('password', 'a')
-        try:
-            user = User.objects.get(username__iexact=username)
-            user = authenticate(request, username=user.username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('wh:index')
-            else:
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('login')
+            password = form.cleaned_data.get('password')
+            try:
+                user = User.objects.get(username__iexact=username)
+                user = authenticate(request, username=user.username, password=password)
+                if user is not None:
+                    login(request, user)
+                    return redirect('wh:index')
+                else:
+                    message = 'Podano złą kombinację loginu i hasła.'
+            except ObjectDoesNotExist:
                 message = 'Podano złą kombinację loginu i hasła.'
-        except ObjectDoesNotExist:
-            message = 'Podano złą kombinację loginu i hasła.'
-    return render(request,'warhammer/login.html',{'message':message})
+    return render(request, 'warhammer/login.html', {'message': message, 'form': form})
 
 
 def logout_view(request):

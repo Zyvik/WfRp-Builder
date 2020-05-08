@@ -52,6 +52,14 @@ class RegisterForm(forms.Form):
             self.add_error('password', 'Hasła muszą być jednakowe.')
 
 
+class LoginForm(forms.Form):
+    login = forms.CharField(min_length=3, max_length=30)
+    password = forms.CharField(min_length=5, max_length=30, widget=forms.PasswordInput, label='Hasło')
+
+    login.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
+    password.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
+
+
 class Step1Form(forms.ModelForm):
     class Meta:
         model = Step1Model

@@ -30,21 +30,7 @@
                                 <h3>Login</h3>
                             </div>
                         </div>
-                         <div class="row">
-                            <div class="col">
-                                <input required name="login" class="form-control form-control-lg mb-5" type="text" placeholder="Login">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <h3 class="mt-4">Hasło</h3>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <input required name="password" class="form-control form-control-lg mb-4" type="password" placeholder="Hasło">
-                            </div>
-                        </div>
+                        {{ form.as_p }}
                         <div class="row">
                             <div class="col">
                                 <p class="mt-4">Nie masz konta? <a href="{% url 'wh:register' %}">Zarejestruj się!</a></p>
