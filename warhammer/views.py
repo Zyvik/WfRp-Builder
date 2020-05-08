@@ -487,12 +487,15 @@ class RegisterView(View):
         return render(request, 'warhammer/register.html', {'form': form})
 
 
-def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('wh:index')
-    message = None
-    form = LoginForm()
-    if request.method == 'POST':
+class LoginView(View):
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('wh:index')
+        form = LoginForm()
+        return render(request, 'warhammer/login.html', {'form': form})
+
+    def post(self, request):
+        message = None
         form = LoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('login')
@@ -507,7 +510,7 @@ def login_view(request):
                     message = 'Podano złą kombinację loginu i hasła.'
             except ObjectDoesNotExist:
                 message = 'Podano złą kombinację loginu i hasła.'
-    return render(request, 'warhammer/login.html', {'message': message, 'form': form})
+        return render(request, 'warhammer/login.html', {'message': message, 'form': form})
 
 
 def logout_view(request):
