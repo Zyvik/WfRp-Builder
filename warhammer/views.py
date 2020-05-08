@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
 
 from django.views import View
-from .forms import RollStatsForm, RegisterForm, LoginForm
+from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm
 from .character_creation import get_starting_professions
 from . import character_creation
 from warhammer import profession_detail_lib as prof_detail
@@ -518,19 +518,25 @@ def logout_view(request):
     return redirect('wh:index')
 
 
-def contact(request):
-    message = None
-    if request.method == 'POST':
-        subject = request.POST.get('subject','no subject')
-        email = request.POST.get('email', 'no email')
-        content = request.POST.get('content', 'no content') + '\nemail: '+ email
-        try:
-            send_mail(subject,content,'zyvik.kontakt@wp.pl',['pawel86gw2@gmail.com'])
-            message = 'Wiadomość wysłana!'
-        except:
-            message = 'Coś nie wyszło - wyślij maila na pawel86@gmail.com'
+class ContactView(View):
+    def get(self, request):
+        form = ContactForm()
+        return render(request, 'warhammer/contact.html', {'form': form})
 
-    return render(request,'warhammer/contact.html', {'message':message})
+    def post(self, request):
+        message = None
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            subject = form.cleaned_data.get('subject','no subject')
+            email = form.cleaned_data.get('email', 'no email')
+            content = form.cleaned_data.get('content', 'no content') + '\nemail: ' + email
+            try:
+                send_mail(subject, content, 'zyvik.kontakt@wp.pl', ['pawel86gw2@gmail.com'])
+                message = 'Wiadomość wysłana!'
+            except:
+                message = 'Coś nie wyszło - wyślij maila na pawel86@gmail.com'
+
+        return render(request, 'warhammer/contact.html', {'form': form, 'message': message})
 
 # Dice roller and MAP API
 class ChatView(APIView):

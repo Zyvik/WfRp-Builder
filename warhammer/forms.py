@@ -60,6 +60,23 @@ class LoginForm(forms.Form):
     password.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
 
 
+class ContactForm(forms.Form):
+    email = forms.EmailField(required=False, label='')
+    subject = forms.CharField(label='')
+    message = forms.CharField(widget=forms.Textarea, label='')
+
+    message_widget = {
+        'class': 'form-control',
+        'placeholder': 'Treść wiadomości',
+        'rows': '8',
+        'cols': '20',
+        'style': 'font-size:small'
+    }
+    email.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 'Email (opcjonalnie)'})
+    subject.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 'Temat'})
+    message.widget.attrs.update(message_widget)
+
+
 class Step1Form(forms.ModelForm):
     class Meta:
         model = Step1Model

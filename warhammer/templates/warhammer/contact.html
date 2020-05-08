@@ -15,9 +15,10 @@
             <div class="card">
                 <div class="card-header">Kontakt</div>
                 {% csrf_token %}
-                <input class="form-control form-control-lg" placeholder="Email (opcjonalnie)" type="email" name="email">
+                {{ form }}
+               <!-- <input class="form-control form-control-lg" placeholder="Email (opcjonalnie)" type="email" name="email">
                 <input required class="form-control form-control-lg" placeholder="Temat" type="text" name="subject">
-                <textarea required placeholder="Treść wiadomości" class="form-control" rows="8" cols="50" name="content" style="font-size:small"></textarea>
+                <textarea required placeholder="Treść wiadomości" class="form-control" rows="8" cols="50" name="content" style="font-size:small"></textarea> -->
             </div>
                  <button class="btn btn-dark btn-lg btn-block" type="submit">Wyślij</button>
                  </form>
