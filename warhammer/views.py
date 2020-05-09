@@ -10,10 +10,11 @@ from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
 
 from django.views import View
-from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm
+from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm, ExperienceForm
 from .character_creation import get_starting_professions
 from . import character_creation
 from warhammer import profession_detail_lib as prof_detail
+from warhammer import character_screen_lib as csl
 
 
 class IndexView(View):
@@ -140,6 +141,7 @@ def character_screen(request, pk):
 
     if character.user and character.user != request.user and not request.user.is_staff:
         return redirect('wh:index')
+
     develop_stats = char_stats.filter(max_bonus__gt=0)
     dev_basic = []
     dev_secondary =[]
@@ -178,20 +180,14 @@ def character_screen(request, pk):
     p = int(character.coins - zk * 240 - s * 12)
     coins = [zk,s,p]
 
+    exp_form = ExperienceForm()
     if request.method == 'POST':
+        exp_form = ExperienceForm(request.POST)
         # Add / subtract PD
-        if request.POST.get('PD') == 'PD':
-            try:
-                value = int(request.POST.get('value_PD'))
-                if character.current_exp + value >= 0:
-                    character.current_exp += value
-                    character.total_exp += value
-                    character.save()
-                    character = CharacterModel.objects.get(pk=pk)
-                else:
-                    message = 'Punkty doświadczenia muszą być dodatnie.'
-            except(ValueError,TypeError):
-                message = 'Dodana / odjęta wartość musi być liczbą całkowitą.'
+        if exp_form.is_valid():
+            exp_value = exp_form.cleaned_data.get('exp', 0)
+            csl.update_exp(exp_value, character)
+            return redirect('wh:character_screen', pk=character.pk)
 
         # Edit_eq
         if request.POST.get('edit_eq') == 'edit_eq':
@@ -469,6 +465,7 @@ def character_screen(request, pk):
         'dev_skills': dev_skills,
         'coins': coins,
         'message':message,
+        'exp_form': exp_form,
         'rows':range(10),
         'columns':range(7)
 

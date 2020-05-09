@@ -91,6 +91,21 @@ class ContactForm(forms.Form):
     message.widget.attrs.update(message_widget)
 
 
+class CoinsForm(forms.Form):
+    gold = forms.IntegerField(label='', required=False)
+    silver = forms.IntegerField(label='', required=False)
+    bronze = forms.IntegerField(label='', required=False)
+
+    gold.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 'zk'})
+    silver.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 's'})
+    bronze.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 'p'})
+
+
+class ExperienceForm(forms.Form):
+    exp = forms.IntegerField(label='')
+    exp.widget.attrs.update({'class': 'form-control', 'placeholder': 'dodaj PD'})
+
+
 class Step1Form(forms.ModelForm):
     class Meta:
         model = Step1Model
