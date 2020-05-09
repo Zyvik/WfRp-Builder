@@ -316,38 +316,40 @@
                     </ul>
 
                     <!-- Usuń zdolności -->
-                    <form method="post">
-                        {% csrf_token %}
                         <ul class="list-group list-group-flush" id="form_abilities" style="display:none">
-                        {% for ability in char_abilities %}
-                            <li class="list-group-item ml-3 mr-3">
-                                <div class="row">
-                                    <div class="col-9">
-                                        <a href="" data-toggle="modal" data-target="#{{ability.ability.slug}}">{{ability.ability.name}}</a> {% if ability.bonus %}{{ability.bonus}}{% endif %}
+                            <form method="post">
+                            {% csrf_token %}
+                                {% for ability in char_abilities %}
+                                <li class="list-group-item ml-3 mr-3">
+                                    <div class="row">
+                                        <div class="col-9">
+                                            <a href="" data-toggle="modal" data-target="#{{ability.ability.slug}}">{{ability.ability.name}}</a> {% if ability.bonus %}{{ability.bonus}}{% endif %}
+                                        </div>
+                                        <div class="col-3">
+                                            <button class="btn btn-light btn-lg" name="remove_ability" value="{{ability.pk}}"><span class="glyphicon glyphicon-remove" style="color:red"></span></button>
+                                        </div>
                                     </div>
-                                    <div class="col-3">
-                                        <button class="btn btn-light btn-lg" name="remove_ability" value="remove_ability_{{ability.pk}}"><span class="glyphicon glyphicon-remove" style="color:red"></span></button>
-                                    </div>
-                                </div>
-                            </li>
-                            {% endfor %}
-
+                                </li>
+                                {% endfor %}
+                            </form>
                              <!-- dodaj umiejętności -->
                              <li class="list-group-item ml-3 mr-3">
-                                 <div class="row">
-                                     <div class="col-5">
-                                         <select class="form-control" name="add_ability_select">{% for ability in all_abilities %}
-                                             <option value="{{ability.pk}}">{{ability.name}}</option> {% endfor %}
-                                         </select>
+                                 <form method="post">
+                                 {% csrf_token %}
+                                     <div class="row">
+                                         <div class="col-5">
+                                             <select class="form-control" name="add_ability_select">{% for ability in all_abilities %}
+                                                 <option value="{{ability.pk}}">{{ability.name}}</option> {% endfor %}
+                                             </select>
+                                         </div>
+                                         <div class="col-4">
+                                             <input class="form-control" type="text" placeholder="(bonus)" name="add_ability_bonus">
+                                         </div>
+                                         <div class="col-3">
+                                             <button type="submit" class="btn btn-light btn-lg" name="add_ability" value="add_ability"><span class="glyphicon glyphicon-plus" style="color:green"></span></button>
+                                         </div>
                                      </div>
-                                     <div class="col-4">
-                                         <input class="form-control" type="text" placeholder="(bonus)" name="add_ability_bonus">
-                                     </div>
-                                     <div class="col-3">
-                                         <button type="submit" class="btn btn-light btn-lg" name="add_ability" value="add_ability"><span class="glyphicon glyphicon-plus" style="color:green"></span></button>
-
-                                     </div>
-                                 </div>
+                                 </form>
                              </li>
                         </ul>
                     </form>

@@ -83,3 +83,26 @@ def add_skill(cleaned_data, character):
     )
     new_skill.save()
     return None
+
+
+def remove_ability(ability_pk, character):
+    """
+
+    :param ability_pk: string representation of int
+    :param character: models.CharacterModel object
+    :return: str - error code
+    """
+    try:
+        ability_pk = int(ability_pk)
+    except ValueError:
+        return '420'  # error code
+
+    try:
+        ability = models.CharacterAbilities.objects.get(pk=ability_pk)
+    except ObjectDoesNotExist:
+        return '2'  # Ability doesnt exists
+
+    if ability.character == character:
+        ability.delete()
+        return None
+    return '3'  # 'Ability doesnt belong to character

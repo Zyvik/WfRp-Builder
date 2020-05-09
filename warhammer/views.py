@@ -238,21 +238,11 @@ def character_screen(request, pk):
             return redirect('wh:character_screen', pk=character.pk)
 
         # Remove abilities
-        try:
-            if request.POST.get('remove_ability').find('remove_ability_') != -1:
-                try:
-                    ability_pk = request.POST.get('remove_ability').split('remove_ability_')
-                    ability_pk = int(ability_pk[1])
-                    ability_to_removal = CharacterAbilities.objects.get(pk=ability_pk)
-                    if ability_to_removal.character == character:
-                        ability_to_removal.delete()
-                        return redirect('wh:character_screen', pk=character.pk)
-                    else:
-                        message = 'Próbujesz usunąć zdolność która nie należy do tego Bohatera.'
-                except(ValueError, TypeError, ObjectDoesNotExist):
-                    message = 'Próbujesz usunąć zdolność która nie istnieje.'
-        except(AttributeError):
-            pass
+        if request.POST.get('remove_ability'):
+            error = csl.remove_ability(request.POST['remove_ability'], character)
+            if error:
+                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+            return redirect('wh:character_screen', pk=character.pk)
 
         # Add ability
         if request.POST.get('add_ability') == 'add_ability':
