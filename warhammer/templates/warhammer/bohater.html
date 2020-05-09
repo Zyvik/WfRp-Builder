@@ -367,13 +367,13 @@
                     </p>
                     <div class="row ml-2">
                         <div class="col">
-                            <input class="form-control form-control-lg" type="number" step="1" placeholder="zk" name="zk">
+                            {{ coins_form.gold }}
                         </div>
                         <div class="col">
-                            <input class="form-control form-control-lg" type="number" step="1" placeholder="s" name="s">
+                            {{ coins_form.silver }}
                         </div>
                         <div class="col">
-                            <input class="form-control form-control-lg" type="number" step="1" placeholder="p" name="p">
+                            {{ coins_form.bronze }}
                         </div>
                         <div class="col">
                             <button type="submit" value="coins" name="coins" class="btn btn-dark btn-lg">+ / - </button>
@@ -381,13 +381,13 @@
                     </div>
                 </div>
                 </form>
-
+                <!-- EQ form -->
                 <form method="post">
                 {% csrf_token %}
                 <div class="card">
                     <div class="card-header">Ekwipunek <button id="eq_toggle_button" class="btn btn-secondary float-right" type="button" onclick="toggle_eq()">Edytuj</button> </div>
                     <span id="display_eq" style="display:block;" class="mr-3 ml-3 mt-3">{{character.equipment|linebreaks}}</span>
-                    <textarea name="form_eq" class="form-control rounded-0" id="form_eq" rows="10" style="display:none;font-size:small;">{{character.equipment}}</textarea>
+                    {{ eq_form }}
                     <div id="eq_footer" class="card-footer" style="display:none;">
                         <button name="edit_eq" class="btn btn-dark" type="submit" value="edit_eq">Zapisz</button>
                     </div>

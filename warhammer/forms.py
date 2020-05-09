@@ -106,6 +106,18 @@ class ExperienceForm(forms.Form):
     exp.widget.attrs.update({'class': 'form-control', 'placeholder': 'dodaj PD'})
 
 
+class EquipmentForm(forms.Form):
+    eq = forms.CharField(label='', widget=forms.Textarea)
+
+    eq_widget = {
+        'id': 'form_eq',
+        'class': 'form-control rounded-0',
+        'rows': '10',
+        'style': 'display: none; font-size: small'
+    }
+    eq.widget.attrs.update(eq_widget)
+
+
 class Step1Form(forms.ModelForm):
     class Meta:
         model = Step1Model

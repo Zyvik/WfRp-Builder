@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
 
 from django.views import View
-from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm, ExperienceForm
+from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm, ExperienceForm, EquipmentForm, CoinsForm
 from .character_creation import get_starting_professions
 from . import character_creation
 from warhammer import profession_detail_lib as prof_detail
@@ -181,46 +181,31 @@ def character_screen(request, pk):
     coins = [zk,s,p]
 
     exp_form = ExperienceForm()
+    eq_form = EquipmentForm(initial={'eq': character.equipment})
+    coins_form = CoinsForm()
     if request.method == 'POST':
-        exp_form = ExperienceForm(request.POST)
+
         # Add / subtract PD
+        exp_form = ExperienceForm(request.POST)
         if exp_form.is_valid():
             exp_value = exp_form.cleaned_data.get('exp', 0)
             csl.update_exp(exp_value, character)
             return redirect('wh:character_screen', pk=character.pk)
 
         # Edit_eq
-        if request.POST.get('edit_eq') == 'edit_eq':
-            try:
-                eq = request.POST['form_eq']
-                character.equipment = eq
-                character.save()
-                character = CharacterModel.objects.get(pk=pk)
-            except:
-                message = 'Hmmm... Coś poszło nie tak - chyba znalazłeś buga.'
+        eq_form = EquipmentForm(request.POST)
+        if eq_form.is_valid():
+            character.equipment = eq_form.cleaned_data.get('eq')
+            character.save()
+            return redirect('wh:character_screen', pk=character.pk)
 
-        if request.POST.get('coins') == 'coins':
-            zk = request.POST.get('zk', 0)
-            s = request.POST.get('s', 0)
-            p = request.POST.get('p', 0)
-            if not zk:
-                zk = 0
-            if not s:
-                s = 0
-            if not p:
-                p = 0
-            try:
-                new_coins = int(zk) * 240 + int(s)*12 + int(p)
-                new_coins = character.coins + new_coins
-                if new_coins >= 0:
-                    character.coins = new_coins
-                    character.save()
-                    return redirect('wh:character_screen', pk=character.pk)
-                else:
-                    message = 'Twoje fundusze nie mogą być na minusie.'
-
-            except(ValueError, TypeError):
-                message = 'Monety są liczbami całkowitymi...'
+        # Edit coins
+        coins_form = CoinsForm(request.POST)
+        if coins_form.is_valid():
+            validate_coins = csl.update_coins(coins_form.cleaned_data, character)
+            if validate_coins:
+                return redirect('wh:character_screen', pk=character.pk)
+            message = 'Nie możesz mieć ujemnych pieniążków :('
 
         # Edit_stats
         if request.POST.get('edit_stats') == 'edit_stats':
@@ -466,6 +451,8 @@ def character_screen(request, pk):
         'coins': coins,
         'message':message,
         'exp_form': exp_form,
+        'eq_form': eq_form,
+        'coins_form': coins_form,
         'rows':range(10),
         'columns':range(7)
 
