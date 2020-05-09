@@ -399,7 +399,7 @@
                     {% csrf_token %}
                     <div class="card">
                     <div class="card-header">Notatki</div>
-                    <textarea name="form_notes" class="form-control rounded-0" id="form_notes" rows="10" style="font-size:small;">{{character.notes}}</textarea>
+                    {{ notes_form }}
                     <div id="notes_footer" class="card-footer">
                         <button name="edit_notes" class="btn btn-dark" type="submit" value="edit_notes">Zapisz</button>
                     </div>

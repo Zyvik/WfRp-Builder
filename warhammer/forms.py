@@ -138,6 +138,18 @@ class AddAbilityForm(forms.Form):
     ability_bonus.widget.attrs.update({'class': 'form-control', 'placeholder': 'bonus'})
 
 
+class NotesForm(forms.Form):
+    notes = forms.CharField(label='', widget=forms.Textarea)
+
+    notes_widget = {
+        'id': 'form_notes',
+        'class': 'form-control rounded-0',
+        'rows': '10',
+        'style': 'font-size: small'
+    }
+    notes.widget.attrs.update(notes_widget)
+
+
 class Step1Form(forms.ModelForm):
     class Meta:
         model = Step1Model

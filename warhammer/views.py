@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
 
 from django.views import View
-from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm, ExperienceForm, EquipmentForm, CoinsForm, AddSkillForm, AddAbilityForm
+from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm, ExperienceForm, EquipmentForm, CoinsForm, AddSkillForm, AddAbilityForm, NotesForm
 from .character_creation import get_starting_professions
 from . import character_creation
 from warhammer import profession_detail_lib as prof_detail
@@ -185,6 +185,7 @@ def character_screen(request, pk):
     coins_form = CoinsForm()
     add_skill_form = AddSkillForm()
     add_ability_form = AddAbilityForm()
+    notes_form = NotesForm(initial={'notes': character.notes})
     if request.method == 'POST':
 
         # Add / subtract PD
@@ -251,6 +252,13 @@ def character_screen(request, pk):
             error = csl.add_ability(add_ability_form.cleaned_data, character)
             if error:
                 return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+            return redirect('wh:character_screen', pk=character.pk)
+
+        # Edit notes
+        notes_form = NotesForm(request.POST)
+        if notes_form.is_valid():
+            character.notes = notes_form.cleaned_data.get('notes')
+            character.save()
             return redirect('wh:character_screen', pk=character.pk)
 
         # Develop_Stats
@@ -357,16 +365,6 @@ def character_screen(request, pk):
             except (ObjectDoesNotExist, ValueError, IndexError, TypeError):
                 pass
 
-        # Edit notes
-        if request.POST.get('edit_notes', None):
-            try:
-                notes = request.POST.get('form_notes', character.notes)
-                character.notes = notes
-                character.save()
-                character = CharacterModel.objects.get(pk=pk)
-            except:
-                message = 'Hmmm... Coś poszło nie tak - chyba znalazłeś buga.'
-
         # Change profession
         if request.POST.get('change_profession', None):
             new_profession = request.POST.get('profession', '0')
@@ -417,8 +415,9 @@ def character_screen(request, pk):
         'coins_form': coins_form,
         'add_skill_form': add_skill_form,
         'add_ability_form': add_ability_form,
-        'rows':range(10),
-        'columns':range(7)
+        'notes_form': notes_form,
+        'rows': range(10),
+        'columns': range(7)
 
     }
     return render(request, 'warhammer/bohater.html', context)
