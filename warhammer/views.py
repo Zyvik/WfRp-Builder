@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
 
 from django.views import View
-from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm, ExperienceForm, EquipmentForm, CoinsForm, AddSkillForm
+from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm, ExperienceForm, EquipmentForm, CoinsForm, AddSkillForm, AddAbilityForm
 from .character_creation import get_starting_professions
 from . import character_creation
 from warhammer import profession_detail_lib as prof_detail
@@ -184,6 +184,7 @@ def character_screen(request, pk):
     eq_form = EquipmentForm(initial={'eq': character.equipment})
     coins_form = CoinsForm()
     add_skill_form = AddSkillForm()
+    add_ability_form = AddAbilityForm()
     if request.method == 'POST':
 
         # Add / subtract PD
@@ -245,22 +246,12 @@ def character_screen(request, pk):
             return redirect('wh:character_screen', pk=character.pk)
 
         # Add ability
-        if request.POST.get('add_ability') == 'add_ability':
-            try:
-                ability_pk = request.POST.get('add_ability_select')
-                ability_pk = int(ability_pk)
-                ability_to_add = AbilitiesModel.objects.get(pk=ability_pk)
-                ability_to_add_bonus = request.POST.get('add_ability_bonus')
-                new_ability = CharacterAbilities()
-                new_ability.character = character
-                new_ability.ability = ability_to_add
-                if ability_to_add_bonus:
-                    new_ability.bonus = ability_to_add_bonus
-                new_ability.save()
-                return redirect('wh:character_screen', pk=character.pk)
-
-            except(ValueError, ObjectDoesNotExist, TypeError):
-                message = 'Chciałeś dodać nieistniejącą umiejętność. Dziwne...'
+        add_ability_form = AddAbilityForm(request.POST)
+        if add_ability_form.is_valid() and request.POST.get('add_ability'):
+            error = csl.add_ability(add_ability_form.cleaned_data, character)
+            if error:
+                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+            return redirect('wh:character_screen', pk=character.pk)
 
         # Develop_Stats
         if request.POST.get('dev_stat'):
@@ -425,6 +416,7 @@ def character_screen(request, pk):
         'eq_form': eq_form,
         'coins_form': coins_form,
         'add_skill_form': add_skill_form,
+        'add_ability_form': add_ability_form,
         'rows':range(10),
         'columns':range(7)
 

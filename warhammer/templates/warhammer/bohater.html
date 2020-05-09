@@ -338,15 +338,13 @@
                                  {% csrf_token %}
                                      <div class="row">
                                          <div class="col-5">
-                                             <select class="form-control" name="add_ability_select">{% for ability in all_abilities %}
-                                                 <option value="{{ability.pk}}">{{ability.name}}</option> {% endfor %}
-                                             </select>
+                                            {{ add_ability_form.add_ability }}
                                          </div>
                                          <div class="col-4">
-                                             <input class="form-control" type="text" placeholder="(bonus)" name="add_ability_bonus">
+                                             {{ add_ability_form.ability_bonus }}
                                          </div>
                                          <div class="col-3">
-                                             <button type="submit" class="btn btn-light btn-lg" name="add_ability" value="add_ability"><span class="glyphicon glyphicon-plus" style="color:green"></span></button>
+                                             <button type="submit" class="btn btn-light btn-lg" name="add_ability_btn" value="add_ability"><span class="glyphicon glyphicon-plus" style="color:green"></span></button>
                                          </div>
                                      </div>
                                  </form>

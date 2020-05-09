@@ -106,3 +106,26 @@ def remove_ability(ability_pk, character):
         ability.delete()
         return None
     return '3'  # 'Ability doesnt belong to character
+
+
+def add_ability(cleaned_data, character):
+    """
+
+    :param cleaned_data: from AddAbilityForm
+    :param character: CharacterModel object
+    :return: str - error code
+    """
+    ability_pk = cleaned_data.get('add_ability')
+    bonus = cleaned_data.get('ability_bonus')
+    try:
+        ability_to_add = models.AbilitiesModel.objects.get(pk=ability_pk)
+    except ObjectDoesNotExist:
+        return '4'  # Ability doesnt exist
+
+    new_ability = models.CharacterAbilities(
+        ability=ability_to_add,
+        bonus=bonus,
+        character=character
+    )
+    new_ability.save()
+    return None
