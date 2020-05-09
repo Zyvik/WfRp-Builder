@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect,HttpResponse, get_object_or_404
+from django.shortcuts import render,redirect,HttpResponse, get_object_or_404, reverse
 from .models import *
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
@@ -201,11 +201,11 @@ def character_screen(request, pk):
 
         # Edit coins
         coins_form = CoinsForm(request.POST)
-        if coins_form.is_valid():
-            validate_coins = csl.update_coins(coins_form.cleaned_data, character)
-            if validate_coins:
-                return redirect('wh:character_screen', pk=character.pk)
-            message = 'Nie możesz mieć ujemnych pieniążków :('
+        if coins_form.is_valid() and request.POST.get('coins'):
+            error = csl.update_coins(coins_form.cleaned_data, character)
+            if error:
+                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+            return redirect('wh:character_screen', pk=character.pk)
 
         # Edit_stats
         if request.POST.get('edit_stats') == 'edit_stats':
@@ -222,21 +222,11 @@ def character_screen(request, pk):
                     message = 'Nie zapisano jednej (bądź więcej) cech, ponieważ coś jest nie tak z input\'ami.'
 
         # Remove skills
-        try:
-            if request.POST.get('remove_skill').find('remove_skill_') != -1:
-                try:
-                    skill_pk = request.POST.get('remove_skill').split('remove_skill_')
-                    skill_pk = int(skill_pk[1])
-                    skill_to_removal = CharacterSkills.objects.get(pk=skill_pk)
-                    if skill_to_removal.character == character:
-                        skill_to_removal.delete()
-                        return redirect('wh:character_screen', pk=character.pk)
-                    else:
-                        message = 'Próbujesz usunąć umiejętność która nie należy do tego Bohatera.'
-                except(ValueError, TypeError, ObjectDoesNotExist):
-                    message = 'Próbujesz usunąć umiejętność która nie istnieje.'
-        except(AttributeError):
-            pass
+        if request.POST.get('remove_skill'):
+            error = csl.remove_skill(request.POST.get('remove_skill'), character)
+            if error:
+                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+            return redirect('wh:character_screen', pk=character.pk)
 
         # Add skills
         if request.POST.get('add_skill') == 'add_skill':
