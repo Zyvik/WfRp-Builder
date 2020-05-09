@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Step1Model
+from .models import Step1Model, SkillsModel
 from uuid import UUID
 
 
@@ -117,6 +117,15 @@ class EquipmentForm(forms.Form):
     }
     eq.widget.attrs.update(eq_widget)
 
+
+class AddSkillForm(forms.Form):
+    choices = [('', '')] + [(skill.pk, skill.name) for skill in SkillsModel.objects.all()]
+
+    add_skill = forms.ChoiceField(choices=choices, label='')
+    skill_bonus = forms.CharField(label='', required='')
+
+    add_skill.widget.attrs.update({'class': 'form-control'})
+    skill_bonus.widget.attrs.update({'class': 'form-control', 'placeholder': 'bonus'})
 
 class Step1Form(forms.ModelForm):
     class Meta:

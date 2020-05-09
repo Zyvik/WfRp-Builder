@@ -262,44 +262,45 @@
                     </li>
                         {% endfor %}
                     </ul>
-                    <form method="post">
-                        {% csrf_token %}
                     <!-- Edytuj umiejętności -->
                      <ul class="list-group list-group-flush" id="form_skills" style="display:none">
-                    {% for skill in char_skills %}
-                        <li class="list-group-item ml-3 mr-3">
-                            <div class="row">
-                                <div class="col-6">
-                                    <a href="" data-target="#{{skill.skill.slug}}" data-toggle="modal" >{{skill.skill.name}}</a> {% if skill.bonus %}{{skill.bonus}}{% endif %}
+                         <form method="post">
+                            {% csrf_token %}
+                            {% for skill in char_skills %}
+                            <li class="list-group-item ml-3 mr-3">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <a href="" data-target="#{{skill.skill.slug}}" data-toggle="modal" >{{skill.skill.name}}</a> {% if skill.bonus %}{{skill.bonus}}{% endif %}
+                                    </div>
+                                    <div class="col-3">
+                                        ({{skill.skill.stat.short}})
+                                    </div>
+                                    <div class="col-3">
+                                        <button type="submit" class="btn btn-light btn-lg" name="remove_skill" value="{{skill.pk}}"><span class="glyphicon glyphicon-remove" style="color:red"></span></button>
+                                    </div>
                                 </div>
-                                <div class="col-3">
-                                    ({{skill.skill.stat.short}})
-                                </div>
-                                <div class="col-3">
-                                    <button type="submit" class="btn btn-light btn-lg" name="remove_skill" value="{{skill.pk}}"><span class="glyphicon glyphicon-remove" style="color:red"></span></button>
-                                </div>
-                            </div>
-                        </li>
-                        {% endfor %}
+                             </li>
+                             {% endfor %}
+                         </form>
                          <!-- dodaj umiejętności -->
-                         <li class="list-group-item ml-3 mr-3">
-                             <div class="row">
-                                 <div class="col-5">
-                                     <select class="form-control" name="add_skill_select">{% for skill in all_skills %}
-                                         <option value="{{skill.pk}}">{{skill.name}}</option> {% endfor %}
-                                     </select>
+                         <form method="post">
+                             {% csrf_token %}
+                             <li class="list-group-item ml-3 mr-3">
+                                 <div class="row">
+                                     <div class="col-5">
+                                        {{ add_skill_form.add_skill }}
+                                     </div>
+                                     <div class="col-4">
+                                         {{ add_skill_form.skill_bonus }}
+                                     </div>
+                                     <div class="col-3">
+                                         <button type="submit" class="btn btn-light btn-lg" name="add_skill_btn" value="add_skill"><span class="glyphicon glyphicon-plus" style="color:green"></span></button>
+                                     </div>
                                  </div>
-                                 <div class="col-4">
-                                     <input class="form-control" type="text" placeholder="(bonus)" name="add_skill_bonus">
-                                 </div>
-                                 <div class="col-3">
-                                     <button type="submit" class="btn btn-light btn-lg" name="add_skill" value="add_skill"><span class="glyphicon glyphicon-plus" style="color:green"></span></button>
-
-                                 </div>
-                             </div>
-                         </li>
+                             </li>
+                         </form>
                     </ul>
-                    </form>
+
                 </div>
             </div>
 

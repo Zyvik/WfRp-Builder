@@ -60,3 +60,26 @@ def remove_skill(skill_pk, character):
         skill_to_removal.delete()
         return None
     return '3'  # 'Próbujesz usunąć umiejętność która nie należy do tego Bohatera.'
+
+
+def add_skill(cleaned_data, character):
+    """
+
+    :param cleaned_data: from AddSkillForm
+    :param character: CharacterModel object
+    :return: str - error code
+    """
+    skill_pk = cleaned_data.get('add_skill')
+    bonus = cleaned_data.get('skill_bonus')
+    try:
+        skill_to_add = models.SkillsModel.objects.get(pk=skill_pk)
+    except ObjectDoesNotExist:
+        return '4'  # Skill doesnt exist
+
+    new_skill = models.CharacterSkills(
+        skill=skill_to_add,
+        bonus=bonus,
+        character=character
+    )
+    new_skill.save()
+    return None

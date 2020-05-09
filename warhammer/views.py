@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
 
 from django.views import View
-from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm, ExperienceForm, EquipmentForm, CoinsForm
+from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm, ExperienceForm, EquipmentForm, CoinsForm, AddSkillForm
 from .character_creation import get_starting_professions
 from . import character_creation
 from warhammer import profession_detail_lib as prof_detail
@@ -183,6 +183,7 @@ def character_screen(request, pk):
     exp_form = ExperienceForm()
     eq_form = EquipmentForm(initial={'eq': character.equipment})
     coins_form = CoinsForm()
+    add_skill_form = AddSkillForm()
     if request.method == 'POST':
 
         # Add / subtract PD
@@ -229,22 +230,12 @@ def character_screen(request, pk):
             return redirect('wh:character_screen', pk=character.pk)
 
         # Add skills
-        if request.POST.get('add_skill') == 'add_skill':
-            try:
-                skill_pk = request.POST.get('add_skill_select')
-                skill_pk = int(skill_pk)
-                skill_to_add = SkillsModel.objects.get(pk=skill_pk)
-                skill_to_add_bonus = request.POST.get('add_skill_bonus')
-                new_skill = CharacterSkills()
-                new_skill.character = character
-                new_skill.skill = skill_to_add
-                if skill_to_add_bonus:
-                    new_skill.bonus = skill_to_add_bonus
-                new_skill.save()
-                return redirect('wh:character_screen', pk=character.pk)
-
-            except(ValueError, ObjectDoesNotExist, TypeError):
-                message = 'Chciałeś dodać nieistniejącą umiejętność. Dziwne...'
+        add_skill_form = AddSkillForm(request.POST)
+        if add_skill_form.is_valid() and request.POST.get('add_skill'):
+            error = csl.add_skill(add_skill_form.cleaned_data, character)
+            if error:
+                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+            return redirect('wh:character_screen', pk=character.pk)
 
         # Remove abilities
         try:
@@ -443,6 +434,7 @@ def character_screen(request, pk):
         'exp_form': exp_form,
         'eq_form': eq_form,
         'coins_form': coins_form,
+        'add_skill_form': add_skill_form,
         'rows':range(10),
         'columns':range(7)
 
