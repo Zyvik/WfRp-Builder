@@ -257,46 +257,10 @@ def character_screen(request, pk):
 
         # Develop_Stats
         if request.POST.get('dev_stat'):
-            try:
-                short = request.POST.get('dev_stat')
-                stat = StatsModel.objects.get(short=short)
-                stat_to_dev = char_stats.get(stat=stat)
-                if stat_to_dev.bonus < stat_to_dev.max_bonus and character.current_exp >= 100:
-                    if stat.is_secondary:
-                        stat_to_dev.bonus += 1
-                        stat_to_dev.save()
-                        character.current_exp -= 100
-                        character.save()
-                        character = CharacterModel.objects.get(pk=pk)
-                    else:
-                        if stat.short == 'K':
-                            pre_val = int((stat_to_dev.base + stat_to_dev.bonus)/10)
-                            post_val = int((stat_to_dev.base + stat_to_dev.bonus + 5)/10)
-                            if post_val > pre_val:
-                                krzepa = StatsModel.objects.get(short='S')
-                                krzepa = char_stats.get(stat=krzepa)
-                                krzepa.base += 1
-                                krzepa.save()
-
-                        if stat.short == 'Odp':
-                            pre_val = int((stat_to_dev.base + stat_to_dev.bonus)/10)
-                            post_val = int((stat_to_dev.base + stat_to_dev.bonus + 5)/10)
-                            if post_val > pre_val:
-                                krzepa = StatsModel.objects.get(short='Wt')
-                                krzepa = char_stats.get(stat=krzepa)
-                                krzepa.base += 1
-                                krzepa.save()
-
-                        stat_to_dev.bonus += 5
-                        stat_to_dev.save()
-                        character.current_exp -= 100
-                        character.save()
-                        character = CharacterModel.objects.get(pk=pk)
-                else:
-                    message = 'Masz za mało PD żeby rozwinąć jakąkolwiek cechę.'
-                develop_stats = char_stats.filter(max_bonus__gt=0)
-            except ObjectDoesNotExist:
-                message = 'Zmieniałeś coś w inputach?'
+            error = csl.develop_skill(request, character)
+            if error:
+                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+            return redirect('wh:character_screen', pk=character.pk)
 
         # Develop_Abilities
         if request.POST.get('dev_ability'):

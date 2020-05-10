@@ -409,8 +409,7 @@
         </div>
 
         <!-- ROZWÓJ -->
-    <form method="post">
-        {% csrf_token %}
+
         <div class="row">
             <div class="col">
             <div class="card mb-5">
@@ -418,6 +417,8 @@
                 <div class="row">
                     <!-- Rozwój cech -->
                     <div class="col-lg-6">
+                    <form method="post">
+                    {% csrf_token %}
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3">Cechy podstawowe: +5 (100 PD)</li>
                         {% for stat in develop_stats %}
@@ -465,9 +466,12 @@
                             {% endif %}
                         {% endfor %}
                         </ul>
+                    </form>
                     </div>
                     <!-- rowzwój umijetnosci -->
                     <div class="col-lg-6">
+                    <form method="post">
+                    {% csrf_token %}
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3">Umiejętności - rozwiń (100 PD)</li>
                         {% for skill in dev_skills %}
@@ -483,11 +487,14 @@
                              </li>
                         {% endfor %}
                         </ul>
+                    </form>
                     </div>
                 </div>
                 <div class="row mt-4 pb-4">
                     <!-- Rozwój zdolności -->
                     <div class="col-lg">
+                    <form method="post">
+                    {% csrf_token %}
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3">Zdolności - wykup (100 PD)</li>
                         {% for ability in dev_abilities %}
@@ -503,9 +510,12 @@
                              </li>
                         {% endfor %}
                         </ul>
+                    </form>
                     </div>
                     <!-- Zmiana profesji -->
                     <div class="col-lg">
+                        <form method="post">
+                            {% csrf_token %}
                         <ul class="list-group list-group-flush mb-3">
                             <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3">Zmień profesję</li>
                         </ul>
@@ -521,12 +531,13 @@
                                 <button value="xD" name="change_profession" class="btn btn-dark btn-lg">Zmień</button>
                             </div>
                         </div>
+                        </form>
                     </div>
                 </div>
             </div>
             </div>
         </div>
-    </form>
+
 </div>
     </div>
 </div>

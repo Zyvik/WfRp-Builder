@@ -176,3 +176,40 @@ def change_profession(cleaned_data, character):
     character.save()
     return None
 
+
+def develop_skill(request, character):
+    char_stats = models.CharactersStats.objects.filter(character=character)
+    short = request.POST.get('dev_stat')
+    try:
+        stat = models.StatsModel.objects.get(short=short)
+    except ObjectDoesNotExist:
+        return '8'  # this stat doesnt exists
+
+    stat_to_dev = char_stats.get(stat=stat)
+    if stat_to_dev.bonus < stat_to_dev.max_bonus and character.current_exp >= 100:
+        if stat.is_secondary:
+            stat_to_dev.bonus += 1
+            stat_to_dev.save()
+            character.current_exp -= 100
+            character.save()
+        else:  # aka. if stat is basic
+            if stat.short == 'K' or stat.short == 'Odp':
+                pre_val = int((stat_to_dev.base + stat_to_dev.bonus)/10)
+                post_val = int((stat_to_dev.base + stat_to_dev.bonus + 5)/10)
+                if post_val > pre_val and stat.short == 'K':
+                    strength = models.StatsModel.objects.get(short='S')
+                    strength = char_stats.get(stat=strength)
+                    strength.base += 1
+                    strength.save()
+                elif post_val > pre_val and stat.short == 'Odp':
+                    endurance = models.StatsModel.objects.get(short='Wt')
+                    endurance = char_stats.get(stat=endurance)
+                    endurance.base += 1
+                    endurance.save()
+            stat_to_dev.bonus += 5
+            stat_to_dev.save()
+            character.current_exp -= 100
+            character.save()
+            return None
+    else:
+        return '9'  # Not enough exp, or stat already developed to maximum
