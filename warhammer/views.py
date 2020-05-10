@@ -212,17 +212,10 @@ def character_screen(request, pk):
 
         # Edit_stats
         if request.POST.get('edit_stats') == 'edit_stats':
-            for stat in char_stats:
-                try:
-                    edited_value = int(request.POST.get(stat.stat.short))
-                    if 0 <= edited_value <= 100:
-                        stat.base = edited_value
-                        stat.save()
-                        char_stats = CharactersStats.objects.filter(character=character)
-                    else:
-                        message = 'Nie zapisano jednej (bądź więcej) cech, ponieważ podana została liczba spoza przedziału <0, 100>.'
-                except (ValueError, TypeError):
-                    message = 'Nie zapisano jednej (bądź więcej) cech, ponieważ coś jest nie tak z input\'ami.'
+            error = csl.edit_stats(request, character)
+            if error:
+                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+            return redirect('wh:character_screen', pk=character.pk)
 
         # Remove skills
         if request.POST.get('remove_skill'):

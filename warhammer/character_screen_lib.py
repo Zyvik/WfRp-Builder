@@ -129,3 +129,21 @@ def add_ability(cleaned_data, character):
     )
     new_ability.save()
     return None
+
+
+def edit_stats(request, character):
+    error_flag = False
+    char_stats = models.CharactersStats.objects.filter(character=character)
+    for stat in char_stats:
+        try:
+            edited_value = int(request.POST.get(stat.stat.short))
+        except (ValueError, TypeError):
+            return '5'  # Int
+
+        if 0 <= edited_value <= 100:
+            stat.base = edited_value
+            stat.save()
+        else:
+            error_flag = True
+
+    return '6' if error_flag else None  # stat outside of <0; 100> range
