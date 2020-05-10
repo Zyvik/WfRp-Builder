@@ -515,17 +515,12 @@
                         </p>
                         <div class="row">
                             <div class="col d-flex justify-content-center">
-                                <select class="form-control form-control-lg ml-5" name="profession">
-                                    {% for profession in all_professions %}
-                                    <option value="{{profession.pk}}">{{profession.name}}</option>
-                                    {% endfor %}
-                                </select>
+                               {{ change_profession_form }}
                             </div>
                             <div class="col d-flex justify-content-center">
                                 <button value="xD" name="change_profession" class="btn btn-dark btn-lg">Zmień</button>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>

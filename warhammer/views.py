@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from .serializers import ChatSerializer, MapSerializer
 
 from django.views import View
-from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm, ExperienceForm, EquipmentForm, CoinsForm, AddSkillForm, AddAbilityForm, NotesForm
+from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm, ExperienceForm, EquipmentForm, CoinsForm, AddSkillForm, AddAbilityForm, NotesForm, ChangeProfessionForm
 from .character_creation import get_starting_professions
 from . import character_creation
 from warhammer import profession_detail_lib as prof_detail
@@ -186,6 +186,7 @@ def character_screen(request, pk):
     add_skill_form = AddSkillForm()
     add_ability_form = AddAbilityForm()
     notes_form = NotesForm(initial={'notes': character.notes})
+    change_profession_form = ChangeProfessionForm()
     if request.method == 'POST':
 
         # Add / subtract PD
@@ -359,32 +360,13 @@ def character_screen(request, pk):
                 pass
 
         # Change profession
-        if request.POST.get('change_profession', None):
-            new_profession = request.POST.get('profession', '0')
-            try:
-                new_profession = ProfessionModel.objects.get(pk=int(new_profession))
-                character.profession = new_profession
-                # new stats
-                new_stats = new_profession.stats.split('\n')
-                for i,stat in enumerate(new_stats,0):
-                    if stat.find('-') == -1:
-                        maslo = char_stats[i]
-                        maslo.max_bonus = int(stat)
-                        maslo.save()
-                    else:
-                        maslo = char_stats[i]
-                        maslo.max_bonus = 0
-                        maslo.save()
+        change_profession_form = ChangeProfessionForm(request.POST)
+        if request.POST.get('profession') and change_profession_form.is_valid():
+            error = csl.change_profession(change_profession_form.cleaned_data, character)
+            if error:
+                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+            return redirect('wh:character_screen', pk=character.pk)
 
-                for skill in char_skills:
-                    skill.is_developed = False
-                    skill.save()
-
-                character.save()
-                return redirect('wh:character_screen', pk=character.pk)
-
-            except (ValueError, ObjectDoesNotExist, TypeError):
-                pass
     all_professions = ProfessionModel.objects.all()
     all_abilities = AbilitiesModel.objects.all()
     all_skills = SkillsModel.objects.all().order_by('name')
@@ -409,6 +391,7 @@ def character_screen(request, pk):
         'add_skill_form': add_skill_form,
         'add_ability_form': add_ability_form,
         'notes_form': notes_form,
+        'change_profession_form': change_profession_form,
         'rows': range(10),
         'columns': range(7)
 

@@ -147,3 +147,32 @@ def edit_stats(request, character):
             error_flag = True
 
     return '6' if error_flag else None  # stat outside of <0; 100> range
+
+
+def change_profession(cleaned_data, character):
+    new_profession_pk = cleaned_data.get('profession')
+    char_stats = models.CharactersStats.objects.filter(character=character)
+    char_skills = models.CharacterSkills.objects.filter(character=character)
+    try:
+        new_profession = models.ProfessionModel.objects.get(pk=new_profession_pk)
+    except ObjectDoesNotExist:
+        return '7'
+
+    character.profession = new_profession
+    # new stats
+    new_stats = new_profession.stats.split('\n')
+    for new_stat, old_stat in zip(new_stats, char_stats):
+        if '-' in new_stat:
+            old_stat.max_bonus = 0
+            old_stat.save()
+        else:
+            old_stat.max_bonus = int(new_stat)  # this can result in error...
+            old_stat.save()
+
+    for skill in char_skills:
+        skill.is_developed = False
+        skill.save()
+
+    character.save()
+    return None
+

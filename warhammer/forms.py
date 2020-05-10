@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Step1Model, SkillsModel, AbilitiesModel
+from .models import Step1Model, SkillsModel, AbilitiesModel, ProfessionModel
 from uuid import UUID
 
 
@@ -148,6 +148,13 @@ class NotesForm(forms.Form):
         'style': 'font-size: small'
     }
     notes.widget.attrs.update(notes_widget)
+
+
+class ChangeProfessionForm(forms.Form):
+    choices = [('', '')] + [(profession.pk, profession.name) for profession in ProfessionModel.objects.all()]
+    profession = forms.ChoiceField(choices=choices, label='')
+
+    profession.widget.attrs.update({'class': 'form-control form-control-lg ml-5'})
 
 
 class Step1Form(forms.ModelForm):
