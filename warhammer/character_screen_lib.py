@@ -2,6 +2,18 @@ from warhammer import models
 from django.core.exceptions import ObjectDoesNotExist
 
 
+def get_coins(character):
+    """
+    Prepare coins to display
+    :param character: models.CharacterModel object
+    :return: [gold, silver, bronze]
+    """
+    zk = int(character.coins / 240)
+    s = int((character.coins - zk * 240) / 12)
+    p = int(character.coins - zk * 240 - s * 12)
+    return [zk, s, p]
+
+
 def update_exp(exp_value, character):
     """
     Updates character's exp

@@ -129,46 +129,60 @@ def selected_profession(request, profession_slug):
     return render(request, 'warhammer/profesja_szczegol.html', context)
 
 
-def character_screen(request, pk):
-    character = get_object_or_404(CharacterModel, pk=pk)
-    char_stats = CharactersStats.objects.filter(character=character)
-    char_skills = CharacterSkills.objects.filter(character=character).order_by('skill')
-    char_abilities = CharacterAbilities.objects.filter(character=character).order_by('ability')
-    message = None
-    if not request.user.is_authenticated:
-        message = 'Aktualnie każdy kto ma link do tej postaci jest w stanie dowolnie ją edytować.' \
-                  'Jeśli chcesz mieć nad tym kontrolę to zaloguj się i użyj opcji: \'dodaj istniejącego bohatera\' wykorzysująć identyfikator: ' + str(character.pk)
+class CharacterScreen(View):
+    def get(self, request, **kwargs):
+        character = get_object_or_404(CharacterModel, pk=self.kwargs['pk'])
 
-    if character.user and character.user != request.user and not request.user.is_staff:
-        return redirect('wh:index')
+        if character.user and character.user != request.user and not request.user.is_staff:
+            return redirect('wh:index')
 
-    develop_stats = char_stats.filter(max_bonus__gt=0)
-    dev_basic = []
-    dev_secondary =[]
-    for stat in develop_stats:
-        if stat.stat.is_secondary:
-            dev_secondary.append(stat)
+        if not request.user.is_authenticated:
+            message = 'Aktualnie każdy kto ma link do tej postaci jest w stanie dowolnie ją edytować.' \
+                      'Jeśli chcesz mieć nad tym kontrolę to zaloguj się i użyj opcji: ' \
+                      '\'dodaj istniejącego bohatera\' wykorzysująć identyfikator: ' + str(character.pk)
         else:
-            dev_basic.append(stat)
+            message = None
 
-    dev_abi = csl.get_abilities_to_develop(character, 'ability')
-    dev_skills = csl.get_abilities_to_develop(character, 'skill')
+        char_stats = CharactersStats.objects.filter(character=character)
+        char_skills = CharacterSkills.objects.filter(character=character).order_by('skill')
+        char_abilities = CharacterAbilities.objects.filter(character=character).order_by('ability')
+        develop_stats = char_stats.filter(max_bonus__gt=0)
+        develop_abilities = csl.get_abilities_to_develop(character, 'ability')
+        develop_skills = csl.get_abilities_to_develop(character, 'skill')
+        coins = csl.get_coins(character)
 
-    # coins
-    zk = int(character.coins / 240)
-    s = int((character.coins - zk * 240)/12)
-    p = int(character.coins - zk * 240 - s * 12)
-    coins = [zk,s,p]
+        exp_form = ExperienceForm()
+        eq_form = EquipmentForm(initial={'eq': character.equipment})
+        coins_form = CoinsForm()
+        add_skill_form = AddSkillForm()
+        add_ability_form = AddAbilityForm()
+        notes_form = NotesForm(initial={'notes': character.notes})
+        change_profession_form = ChangeProfessionForm()
+        context = {
+            'character': character,
+            'stats_table': char_stats,
+            'char_skills': char_skills,
+            'char_abilities': char_abilities,
+            'develop_stats': develop_stats,
+            'dev_abilities': develop_abilities,
+            'dev_skills': develop_skills,
+            'coins': coins,
+            'message': message,
+            'exp_form': exp_form,
+            'eq_form': eq_form,
+            'coins_form': coins_form,
+            'add_skill_form': add_skill_form,
+            'add_ability_form': add_ability_form,
+            'notes_form': notes_form,
+            'change_profession_form': change_profession_form,
+            'rows': range(10),
+            'columns': range(7)
 
-    exp_form = ExperienceForm()
-    eq_form = EquipmentForm(initial={'eq': character.equipment})
-    coins_form = CoinsForm()
-    add_skill_form = AddSkillForm()
-    add_ability_form = AddAbilityForm()
-    notes_form = NotesForm(initial={'notes': character.notes})
-    change_profession_form = ChangeProfessionForm()
-    if request.method == 'POST':
+        }
+        return render(request, 'warhammer/bohater.html', context)
 
+    def post(self, request, **kwargs):
+        character = get_object_or_404(CharacterModel, pk=self.kwargs['pk'])
         # Add / subtract PD
         exp_form = ExperienceForm(request.POST)
         if exp_form.is_valid():
@@ -263,37 +277,6 @@ def character_screen(request, pk):
             if error:
                 return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
             return redirect('wh:character_screen', pk=character.pk)
-
-    all_professions = ProfessionModel.objects.all()
-    all_abilities = AbilitiesModel.objects.all()
-    all_skills = SkillsModel.objects.all().order_by('name')
-    context = {
-        'all_abilities': all_abilities,
-        'all_skills': all_skills,
-        'all_professions': all_professions,
-        'character': character,
-        'stats_table': char_stats,
-        'char_skills': char_skills,
-        'char_abilities': char_abilities,
-        'develop_stats': develop_stats,
-        'dev_basic': dev_basic,
-        'dev_secondary': dev_secondary,
-        'dev_abilities': dev_abi,
-        'dev_skills': dev_skills,
-        'coins': coins,
-        'message':message,
-        'exp_form': exp_form,
-        'eq_form': eq_form,
-        'coins_form': coins_form,
-        'add_skill_form': add_skill_form,
-        'add_ability_form': add_ability_form,
-        'notes_form': notes_form,
-        'change_profession_form': change_profession_form,
-        'rows': range(10),
-        'columns': range(7)
-
-    }
-    return render(request, 'warhammer/bohater.html', context)
 
 
 class RegisterView(View):
