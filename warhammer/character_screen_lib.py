@@ -1,5 +1,5 @@
-from warhammer import models
 from django.core.exceptions import ObjectDoesNotExist
+from warhammer import models, forms
 
 
 def get_coins(character):
@@ -14,50 +14,78 @@ def get_coins(character):
     return [zk, s, p]
 
 
-def update_exp(exp_value, character):
+def update_exp(request, character):
     """
     Updates character's exp
-    :param exp_value: integer
+    :param request:
     :param character: models.CharacterModel object
     :return: None
     """
-    character.current_exp += exp_value
-    character.total_exp += exp_value
-    character.save()
-
-
-def update_coins(cleaned_data, character):
-    """
-    Updates coins and returns error code
-    :param cleaned_data: CoinsForm cleaned data
-    :param character: models.CharacterModel object
-    :return: str - error code
-    """
-    zk = cleaned_data.get('gold', 0)
-    s = cleaned_data.get('silver', 0)
-    p = cleaned_data.get('bronze', 0)
-
-    # getting rid of NoneType
-    zk = zk if zk else 0
-    s = s if s else 0
-    p = p if p else 0
-
-    new_coins = zk*240 + s*12 + p
-    new_coins = character.coins + new_coins
-    if new_coins >= 0:
-        character.coins = new_coins
+    form = forms.ExperienceForm(request.POST)
+    if form.is_valid():
+        exp_value = form.cleaned_data['exp']
+        character.current_exp += exp_value
+        character.total_exp += exp_value
         character.save()
         return None
-    return '1'
+    return 'HTML'
 
 
-def remove_skill(skill_pk, character):
+def update_coins(request, character):
     """
-
-    :param skill_pk: string representation of int
+    Updates coins and returns error code
+    :param request:
     :param character: models.CharacterModel object
     :return: str - error code
     """
+    coins_form = forms.CoinsForm(request.POST)
+    if coins_form.is_valid():
+        cleaned_data = coins_form.cleaned_data
+        zk = cleaned_data.get('gold', 0)
+        s = cleaned_data.get('silver', 0)
+        p = cleaned_data.get('bronze', 0)
+
+        # getting rid of NoneType
+        zk = zk if zk else 0
+        s = s if s else 0
+        p = p if p else 0
+
+        new_coins = zk*240 + s*12 + p
+        new_coins = character.coins + new_coins
+        if new_coins >= 0:
+            character.coins = new_coins
+            character.save()
+            return None
+        return '1'  # negative coins
+    return 'HTML'
+
+
+def edit_eq(request, character):
+    eq_form = forms.EquipmentForm(request.POST)
+    if eq_form.is_valid():
+        character.equipment = eq_form.cleaned_data.get('eq')
+        character.save()
+        return None
+    return 'HTML'  #
+
+
+def edit_notes(request, character):
+    notes_form = forms.NotesForm(request.POST)
+    if notes_form.is_valid():
+        character.notes = notes_form.cleaned_data.get('notes')
+        character.save()
+        return None
+    return 'HTML'
+
+
+def remove_skill(request, character):
+    """
+
+    :param request:
+    :param character: models.CharacterModel object
+    :return: str - error code
+    """
+    skill_pk = request.POST.get('remove_skill')
     try:
         skill_pk = int(skill_pk)
     except ValueError:
@@ -74,36 +102,40 @@ def remove_skill(skill_pk, character):
     return '3'  # 'Próbujesz usunąć umiejętność która nie należy do tego Bohatera.'
 
 
-def add_skill(cleaned_data, character):
+def add_skill(request, character):
     """
 
-    :param cleaned_data: from AddSkillForm
+    :param request:
     :param character: CharacterModel object
     :return: str - error code
     """
-    skill_pk = cleaned_data.get('add_skill')
-    bonus = cleaned_data.get('skill_bonus')
-    try:
-        skill_to_add = models.SkillsModel.objects.get(pk=skill_pk)
-    except ObjectDoesNotExist:
-        return '4'  # Skill doesnt exist
+    add_skill_form = forms.AddSkillForm(request.POST)
+    if add_skill_form.is_valid() and request.POST.get('add_skill'):
+        skill_pk = add_skill_form.cleaned_data.get('add_skill')
+        bonus = add_skill_form.cleaned_data.get('skill_bonus')
+        try:
+            skill_to_add = models.SkillsModel.objects.get(pk=skill_pk)
+        except ObjectDoesNotExist:
+            return '4'  # Skill doesnt exist
 
-    new_skill = models.CharacterSkills(
-        skill=skill_to_add,
-        bonus=bonus,
-        character=character
-    )
-    new_skill.save()
-    return None
+        new_skill = models.CharacterSkills(
+            skill=skill_to_add,
+            bonus=bonus,
+            character=character
+        )
+        new_skill.save()
+        return None
+    return '5'  # choose valid skill
 
 
-def remove_ability(ability_pk, character):
+def remove_ability(request, character):
     """
 
-    :param ability_pk: string representation of int
+    :param request: string representation of int
     :param character: models.CharacterModel object
     :return: str - error code
     """
+    ability_pk = request.POST.get('remove_ability')
     try:
         ability_pk = int(ability_pk)
     except ValueError:
@@ -120,27 +152,31 @@ def remove_ability(ability_pk, character):
     return '3'  # 'Ability doesnt belong to character
 
 
-def add_ability(cleaned_data, character):
+def add_ability(request, character):
     """
 
-    :param cleaned_data: from AddAbilityForm
+    :param request: from AddAbilityForm
     :param character: CharacterModel object
     :return: str - error code
     """
-    ability_pk = cleaned_data.get('add_ability')
-    bonus = cleaned_data.get('ability_bonus')
-    try:
-        ability_to_add = models.AbilitiesModel.objects.get(pk=ability_pk)
-    except ObjectDoesNotExist:
-        return '4'  # Ability doesnt exist
+    add_ability_form = forms.AddAbilityForm(request.POST)
+    if add_ability_form.is_valid() and request.POST.get('add_ability'):
+        cleaned_data = add_ability_form.cleaned_data
+        ability_pk = cleaned_data.get('add_ability')
+        bonus = cleaned_data.get('ability_bonus')
+        try:
+            ability_to_add = models.AbilitiesModel.objects.get(pk=ability_pk)
+        except ObjectDoesNotExist:
+            return '4'  # Ability doesnt exist
 
-    new_ability = models.CharacterAbilities(
-        ability=ability_to_add,
-        bonus=bonus,
-        character=character
-    )
-    new_ability.save()
-    return None
+        new_ability = models.CharacterAbilities(
+            ability=ability_to_add,
+            bonus=bonus,
+            character=character
+        )
+        new_ability.save()
+        return None
+    return 'xd'  # Choose valid ability
 
 
 def edit_stats(request, character):
@@ -161,32 +197,36 @@ def edit_stats(request, character):
     return '6' if error_flag else None  # stat outside of <0; 100> range
 
 
-def change_profession(cleaned_data, character):
-    new_profession_pk = cleaned_data.get('profession')
-    char_stats = models.CharactersStats.objects.filter(character=character)
-    char_skills = models.CharacterSkills.objects.filter(character=character)
-    try:
-        new_profession = models.ProfessionModel.objects.get(pk=new_profession_pk)
-    except ObjectDoesNotExist:
-        return '7'
+def change_profession(request, character):
+    change_profession_form = forms.ChangeProfessionForm(request.POST)
+    if request.POST.get('profession') and change_profession_form.is_valid():
+        cleaned_data = change_profession_form.cleaned_data
+        new_profession_pk = cleaned_data.get('profession')
+        char_stats = models.CharactersStats.objects.filter(character=character)
+        char_skills = models.CharacterSkills.objects.filter(character=character)
+        try:
+            new_profession = models.ProfessionModel.objects.get(pk=new_profession_pk)
+        except ObjectDoesNotExist:
+            return '7'
 
-    character.profession = new_profession
-    # new stats
-    new_stats = new_profession.stats.split('\n')
-    for new_stat, old_stat in zip(new_stats, char_stats):
-        if '-' in new_stat:
-            old_stat.max_bonus = 0
-            old_stat.save()
-        else:
-            old_stat.max_bonus = int(new_stat)  # this can result in error...
-            old_stat.save()
+        character.profession = new_profession
+        # new stats
+        new_stats = new_profession.stats.split('\n')
+        for new_stat, old_stat in zip(new_stats, char_stats):
+            if '-' in new_stat:
+                old_stat.max_bonus = 0
+                old_stat.save()
+            else:
+                old_stat.max_bonus = int(new_stat)  # this can result in error...
+                old_stat.save()
 
-    for skill in char_skills:
-        skill.is_developed = False
-        skill.save()
+        for skill in char_skills:
+            skill.is_developed = False
+            skill.save()
 
-    character.save()
-    return None
+        character.save()
+        return None
+    return 'x'  # Choose valid option
 
 
 def develop_stats(request, character):

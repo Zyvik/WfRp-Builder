@@ -143,6 +143,7 @@ class CharacterScreen(View):
         else:
             message = None
 
+        # get data to display
         char_stats = CharactersStats.objects.filter(character=character)
         char_skills = CharacterSkills.objects.filter(character=character).order_by('skill')
         char_abilities = CharacterAbilities.objects.filter(character=character).order_by('ability')
@@ -150,7 +151,7 @@ class CharacterScreen(View):
         develop_abilities = csl.get_abilities_to_develop(character, 'ability')
         develop_skills = csl.get_abilities_to_develop(character, 'skill')
         coins = csl.get_coins(character)
-
+        # forms
         exp_form = ExperienceForm()
         eq_form = EquipmentForm(initial={'eq': character.equipment})
         coins_form = CoinsForm()
@@ -158,6 +159,7 @@ class CharacterScreen(View):
         add_ability_form = AddAbilityForm()
         notes_form = NotesForm(initial={'notes': character.notes})
         change_profession_form = ChangeProfessionForm()
+
         context = {
             'character': character,
             'stats_table': char_stats,
@@ -183,100 +185,28 @@ class CharacterScreen(View):
 
     def post(self, request, **kwargs):
         character = get_object_or_404(CharacterModel, pk=self.kwargs['pk'])
-        # Add / subtract PD
-        exp_form = ExperienceForm(request.POST)
-        if exp_form.is_valid():
-            exp_value = exp_form.cleaned_data.get('exp', 0)
-            csl.update_exp(exp_value, character)
-            return redirect('wh:character_screen', pk=character.pk)
+        action = request.POST.get('action', None)
 
-        # Edit_eq
-        eq_form = EquipmentForm(request.POST)
-        if eq_form.is_valid():
-            character.equipment = eq_form.cleaned_data.get('eq')
-            character.save()
-            return redirect('wh:character_screen', pk=character.pk)
+        action_dictionary = {
+            'add_exp': csl.update_exp,
+            'add_coins': csl.update_coins,
+            'edit_stats': csl.edit_stats,
+            'remove_skill': csl.remove_skill,
+            'add_skill': csl.add_skill,
+            'remove_ability': csl.remove_ability,
+            'add_ability': csl.add_ability,
+            'edit_eq': csl.edit_eq,
+            'edit_notes': csl.edit_notes,
+            'develop_stats': csl.develop_stats,
+            'develop_abilities': csl.develop_abilities,
+            'develop_skills': csl.develop_skills,
+            'change_profession': csl.change_profession
+        }
 
-        # Edit coins
-        coins_form = CoinsForm(request.POST)
-        if coins_form.is_valid() and request.POST.get('coins'):
-            error = csl.update_coins(coins_form.cleaned_data, character)
-            if error:
-                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
-            return redirect('wh:character_screen', pk=character.pk)
-
-        # Edit_stats
-        if request.POST.get('edit_stats') == 'edit_stats':
-            error = csl.edit_stats(request, character)
-            if error:
-                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
-            return redirect('wh:character_screen', pk=character.pk)
-
-        # Remove skills
-        if request.POST.get('remove_skill'):
-            error = csl.remove_skill(request.POST.get('remove_skill'), character)
-            if error:
-                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
-            return redirect('wh:character_screen', pk=character.pk)
-
-        # Add skills
-        add_skill_form = AddSkillForm(request.POST)
-        if add_skill_form.is_valid() and request.POST.get('add_skill'):
-            error = csl.add_skill(add_skill_form.cleaned_data, character)
-            if error:
-                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
-            return redirect('wh:character_screen', pk=character.pk)
-
-        # Remove abilities
-        if request.POST.get('remove_ability'):
-            error = csl.remove_ability(request.POST['remove_ability'], character)
-            if error:
-                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
-            return redirect('wh:character_screen', pk=character.pk)
-
-        # Add ability
-        add_ability_form = AddAbilityForm(request.POST)
-        if add_ability_form.is_valid() and request.POST.get('add_ability'):
-            error = csl.add_ability(add_ability_form.cleaned_data, character)
-            if error:
-                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
-            return redirect('wh:character_screen', pk=character.pk)
-
-        # Edit notes
-        notes_form = NotesForm(request.POST)
-        if notes_form.is_valid():
-            character.notes = notes_form.cleaned_data.get('notes')
-            character.save()
-            return redirect('wh:character_screen', pk=character.pk)
-
-        # Develop_Stats
-        if request.POST.get('dev_stat'):
-            error = csl.develop_stats(request, character)
-            if error:
-                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
-            return redirect('wh:character_screen', pk=character.pk)
-
-        # Develop_Abilities
-        if request.POST.get('dev_ability'):
-            error = csl.develop_abilities(request, character)
-            if error:
-                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
-            return redirect('wh:character_screen', pk=character.pk)
-
-        # Develop_Skills
-        if request.POST.get('dev_skill'):
-            error = csl.develop_skills(request, character)
-            if error:
-                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
-            return redirect('wh:character_screen', pk=character.pk)
-
-        # Change profession
-        change_profession_form = ChangeProfessionForm(request.POST)
-        if request.POST.get('profession') and change_profession_form.is_valid():
-            error = csl.change_profession(change_profession_form.cleaned_data, character)
-            if error:
-                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
-            return redirect('wh:character_screen', pk=character.pk)
+        error = action_dictionary.get(action)(request, character)
+        if error:
+            return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+        return redirect('wh:character_screen', pk=character.pk)
 
 
 class RegisterView(View):
