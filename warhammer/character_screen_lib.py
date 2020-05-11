@@ -365,3 +365,7 @@ def develop_skills(request, character):
             character.save()
             return None
     return '12'  # 'Cant develop this skill'
+
+
+def action_error(request, character):
+    return 'HTML'

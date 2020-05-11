@@ -203,7 +203,7 @@ class CharacterScreen(View):
             'change_profession': csl.change_profession
         }
 
-        error = action_dictionary.get(action)(request, character)
+        error = action_dictionary.get(action, csl.action_error)(request, character)
         if error:
             return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
         return redirect('wh:character_screen', pk=character.pk)
