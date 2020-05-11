@@ -213,3 +213,55 @@ def develop_skill(request, character):
             return None
     else:
         return '9'  # Not enough exp, or stat already developed to maximum
+
+
+def get_abilities_to_develop(character, kind):
+    """
+
+    :param character:
+    :param kind: 'ability' or 'skill'
+    :return: [Talent, Talent, ...]
+    """
+    class Talent:
+        """Talent is either skill or ability"""
+        name = None
+        bonus = None
+        object = None
+
+    talent_dict = {'ability': character.profession.abilities, 'skill': character.profession.skills}
+
+    prof_talents = talent_dict.get(kind)
+    prof_talents_str = prof_talents.replace(' / ', '\n')
+    prof_talents_list = prof_talents_str.split('\n')
+
+    talent_list = []
+    for prof_talent in prof_talents_list:
+        prof_talent = prof_talent.replace('\r', '')
+        talent = Talent()
+        if ' (' in prof_talent:
+            prof_talent = prof_talent.split(' (')
+            talent.name = prof_talent[0]
+            talent.bonus = '(' + prof_talent[1]
+        else:
+            talent.name = prof_talent
+
+        talent_list.append(talent)
+        if kind == 'ability':
+            talent.object = models.AbilitiesModel.objects.get(name=talent.name)
+            character_abilities = models.CharacterAbilities.objects.filter(character=character)
+            for ability in character_abilities:
+                if talent.name == ability.ability.name and talent.bonus == ability.bonus:
+                    talent_list.pop()
+                    break
+
+        else:
+            talent.object = models.SkillsModel.objects.get(name=talent.name)
+            character_skills = models.CharacterSkills.objects.filter(character=character)
+            for skill in character_skills:
+                if talent.name == skill.skill.name and talent.bonus == skill.bonus:
+                    if skill.is_developed or skill.level > 15:
+                        talent_list.pop()
+                        break
+
+    return talent_list
+

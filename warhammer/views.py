@@ -151,28 +151,8 @@ def character_screen(request, pk):
         else:
             dev_basic.append(stat)
 
-    prof_abi = process_string_dev(character.profession.abilities,'abilities')
-    dev_abi = []
-    for prof_ability in prof_abi:
-        flag = True
-        for char_ability in char_abilities:
-            if char_ability.ability.name == prof_ability.name and char_ability.bonus == prof_ability.bonus:
-                flag = False
-                break
-        if flag:
-            dev_abi.append(prof_ability)
-
-    prof_skills = process_string_dev(character.profession.skills,'skills')
-    dev_skills = []
-    for prof_skill in prof_skills:
-        flag = True
-        for char_skill in char_skills:
-            if char_skill.skill.name == prof_skill.name and char_skill.bonus == prof_skill.bonus:
-                if char_skill.is_developed or char_skill.level > 15:
-                    flag = False
-                    break
-        if flag:
-            dev_skills.append(prof_skill)
+    dev_abi = csl.get_abilities_to_develop(character, 'ability')
+    dev_skills = csl.get_abilities_to_develop(character, 'skill')
 
     # coins
     zk = int(character.coins / 240)
