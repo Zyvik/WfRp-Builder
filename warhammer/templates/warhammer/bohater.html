@@ -501,10 +501,10 @@
                              <li class="list-group-item mr-3 ml-3">
                                  <div class="row">
                                      <div class="col-9">
-                                         <a href="" data-toggle="modal" data-target="#{{ability.obj.slug}}">{{ability.name}}</a> {% if ability.bonus %} {{ability.bonus}} {% endif %}
+                                         <a href="" data-toggle="modal" data-target="#{{ability.object.slug}}">{{ability.name}}</a> {% if ability.bonus %} {{ability.bonus}} {% endif %}
                                      </div>
                                      <div class="col-3 text-center">
-                                          <button type="submit" name="dev_ability" value="{{ forloop.counter0 }}" class="btn btn-dark">Rozwiń</button>
+                                          <button type="submit" name="dev_ability" value="{{ability.name}} {{ ability.bonus }}" class="btn btn-dark">Rozwiń</button>
                                      </div>
                                  </div>
                              </li>
@@ -580,7 +580,7 @@
 {% endfor %}
 
 {% for skill in dev_skills %}
-<div class="modal fade" id="{{skill.obj.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="{{skill.object.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -590,7 +590,7 @@
         </button>
       </div>
       <div class="modal-body">
-          <p>{{skill.obj.description | linebreaks}}</p>
+          <p>{{skill.object.description | linebreaks}}</p>
       </div>
     </div>
   </div>
@@ -616,7 +616,7 @@
 {% endfor %}
 
 {% for ability in dev_abilities %}
-<div class="modal fade" id="{{ability.obj.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="{{ability.object.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -626,7 +626,7 @@
         </button>
       </div>
       <div class="modal-body">
-          <p>{{ability.obj.description | linebreaks}}</p>
+          <p>{{ability.object.description | linebreaks}}</p>
       </div>
     </div>
   </div>

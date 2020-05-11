@@ -244,25 +244,10 @@ def character_screen(request, pk):
 
         # Develop_Abilities
         if request.POST.get('dev_ability'):
-            try:
-                abi_index = int(request.POST.get('dev_ability'))
-                ability = dev_abi[abi_index]
-                new_abi = CharacterAbilities()
-                new_abi.character = character
-                new_abi.ability = AbilitiesModel.objects.get(name=ability.name)
-                if ability.bonus:
-                    new_abi.bonus = ability.bonus
-                if character.current_exp >= 100:
-                    new_abi.save()
-                    dev_abi.pop(abi_index)
-                    character.current_exp -= 100
-                    character.save()
-                    character = CharacterModel.objects.get(pk=pk)
-                    char_abilities = CharacterAbilities.objects.filter(character=character).order_by('ability')
-                else:
-                    message = 'Masz za mało PD żeby wykupić tę zdolność'
-            except:
-                message = 'Dziwne...'
+            error = csl.develop_abilities(request, character)
+            if error:
+                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+            return redirect('wh:character_screen', pk=character.pk)
 
         # Develop_Skills
         if request.POST.get('dev_skill'):

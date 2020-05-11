@@ -265,3 +265,23 @@ def get_abilities_to_develop(character, kind):
 
     return talent_list
 
+
+def develop_abilities(request, character):
+    if character.current_exp < 100:
+        return '10'  # Not enough exp
+
+    abilities_list = get_abilities_to_develop(character, 'ability')
+    ability_to_dev = request.POST.get('dev_ability')  # 'AbilityName bonus'
+
+    for ability in abilities_list:
+        if f'{ability.name} {ability.bonus}' == ability_to_dev:
+            new_ability = models.CharacterAbilities(
+                character=character,
+                ability=ability.object,
+                bonus=ability.bonus
+            )
+            new_ability.save()
+            character.current_exp -= 100
+            character.save()
+            return None
+    return '11'  # 'Sorry, you cant develop this ability'
