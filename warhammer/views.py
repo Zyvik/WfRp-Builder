@@ -237,7 +237,7 @@ def character_screen(request, pk):
 
         # Develop_Stats
         if request.POST.get('dev_stat'):
-            error = csl.develop_skill(request, character)
+            error = csl.develop_stats(request, character)
             if error:
                 return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
             return redirect('wh:character_screen', pk=character.pk)
@@ -251,42 +251,10 @@ def character_screen(request, pk):
 
         # Develop_Skills
         if request.POST.get('dev_skill'):
-            try:
-                skill_index = int(request.POST.get('dev_skill'))
-                skill = dev_skills[skill_index]
-                exists_developed = False
-                if character.current_exp >= 100:
-                    for char_skill in char_skills:
-                        if skill.name == char_skill.skill.name and skill.bonus == char_skill.bonus:
-                            if not char_skill.is_developed:
-                                dev_skills.pop(skill_index)
-                                char_skill.is_developed = True
-                                char_skill.level += 10
-                                char_skill.save()
-                                character.current_exp -= 100
-                                character.save()
-                                exists_developed = True
-                                break
-                            else:
-                                exists_developed = True
-                                break
-
-                    if not exists_developed:
-                        new_skill = CharacterSkills()
-                        new_skill.character = character
-                        new_skill.skill = SkillsModel.objects.get(name=skill.name)
-                        if skill.bonus:
-                            new_skill.bonus = skill.bonus
-                        new_skill.save()
-                        character.current_exp -= 100
-                        character.save()
-                        character = CharacterModel.objects.get(pk=pk)
-                        dev_skills.pop(skill_index)
-                    char_skills = CharacterSkills.objects.filter(character=character).order_by('skill')
-                else:
-                    message = 'Masz za mało PD aby wykupić tę umiejętnosć'
-            except (ObjectDoesNotExist, ValueError, IndexError, TypeError):
-                pass
+            error = csl.develop_skills(request, character)
+            if error:
+                return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+            return redirect('wh:character_screen', pk=character.pk)
 
         # Change profession
         change_profession_form = ChangeProfessionForm(request.POST)

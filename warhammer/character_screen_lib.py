@@ -177,7 +177,7 @@ def change_profession(cleaned_data, character):
     return None
 
 
-def develop_skill(request, character):
+def develop_stats(request, character):
     char_stats = models.CharactersStats.objects.filter(character=character)
     short = request.POST.get('dev_stat')
     try:
@@ -227,6 +227,7 @@ def get_abilities_to_develop(character, kind):
         name = None
         bonus = None
         object = None
+        char_skill_obj = None  # just for skills (if it exists and you develop it skill gets +10)
 
     talent_dict = {'ability': character.profession.abilities, 'skill': character.profession.skills}
 
@@ -259,6 +260,7 @@ def get_abilities_to_develop(character, kind):
             character_skills = models.CharacterSkills.objects.filter(character=character)
             for skill in character_skills:
                 if talent.name == skill.skill.name and talent.bonus == skill.bonus:
+                    talent.char_skill_obj = skill
                     if skill.is_developed or skill.level > 15:
                         talent_list.pop()
                         break
@@ -285,3 +287,29 @@ def develop_abilities(request, character):
             character.save()
             return None
     return '11'  # 'Sorry, you cant develop this ability'
+
+
+def develop_skills(request, character):
+    if character.current_exp < 100:
+        return '10'  # Not enough exp
+
+    skill_list = get_abilities_to_develop(character, 'skill')
+    skill_to_dev = request.POST.get('dev_skill')  # 'AbilityName bonus'
+    for skill in skill_list:
+        if f'{skill.name} {skill.bonus}' == skill_to_dev:
+            if skill.char_skill_obj:  # add +10 to level if skill exists
+                skill.char_skill_obj.is_developed = True
+                skill.char_skill_obj.level += 10
+                skill.char_skill_obj.save()
+            else:  # create new skill
+                print('dziwne')
+                new_skill = models.CharacterSkills(
+                    character=character,
+                    skill=skill.object,
+                    bonus=skill.bonus
+                )
+                new_skill.save()
+            character.current_exp -= 100
+            character.save()
+            return None
+    return '12'  # 'Cant develop this skill'

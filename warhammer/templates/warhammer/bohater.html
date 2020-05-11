@@ -481,7 +481,7 @@
                                          <a href="" data-toggle="modal" data-target="#{{skill.obj.slug}}">{{skill.name}}</a> {% if skill.bonus %}{{skill.bonus}}{% endif %}
                                      </div>
                                      <div class="col-5 text-center">
-                                         <button type="submit" name="dev_skill" value="{{ forloop.counter0 }}" class="btn btn-dark">Rozwiń</button>
+                                         <button type="submit" name="dev_skill" value="{{ skill.name }} {{ skill.bonus }}" class="btn btn-dark">Rozwiń</button>
                                      </div>
                                  </div>
                              </li>
