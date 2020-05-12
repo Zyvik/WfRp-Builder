@@ -1,3 +1,4 @@
+from itertools import zip_longest
 from django.shortcuts import render, redirect, HttpResponse,\
     get_object_or_404, reverse
 from django.contrib.auth import authenticate, login, logout
@@ -71,12 +72,14 @@ def roll_stats(request, race_slug):
     """
     2nd step in character creation - rolling for stats
     """
-    stats_form = f.RollStatsForm(request.GET)
     race = get_object_or_404(m.RaceModel, slug=race_slug)
     starting_stats = m.StartingStatsModel.objects.filter(race=race)
     starting_stats = starting_stats.order_by('-bonus')
     starting_professions = ccl.get_starting_professions(race)
 
+    stats_form = f.RollStatsForm()
+    if request.GET:
+        stats_form = f.RollStatsForm(request.GET)
     if stats_form.is_valid():
         customize_form = ccl.CharacterCustomizeForm(race, stats_form)
         if request.method == 'POST':
@@ -108,9 +111,8 @@ def roll_stats(request, race_slug):
         return render(request, 'warhammer/customize_character.html', context)
     # roll stats_context
     context = {
-        's_stats': starting_stats,
+        'stats_and_form': list(zip_longest(starting_stats, stats_form)),
         'starting_professions': starting_professions,
-        'stats_form': stats_form
     }
     return render(request, 'warhammer/roll_stats.html', context)
 
