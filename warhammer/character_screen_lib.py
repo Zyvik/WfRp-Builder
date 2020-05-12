@@ -66,7 +66,7 @@ def edit_eq(request, character):
         character.equipment = eq_form.cleaned_data.get('eq')
         character.save()
         return None
-    return 'HTML'  #
+    return 'HTML'
 
 
 def edit_notes(request, character):
@@ -89,17 +89,17 @@ def remove_skill(request, character):
     try:
         skill_pk = int(skill_pk)
     except ValueError:
-        return '420'  # error code
+        return 'HTML'
 
     try:
         skill_to_removal = models.CharacterSkills.objects.get(pk=skill_pk)
     except(ValueError, TypeError, ObjectDoesNotExist):
-        return '2'  # 'Nie istniejąca umiejetność
+        return '2'  # Skill doesn't exist
 
     if skill_to_removal.character == character:
         skill_to_removal.delete()
         return None
-    return '3'  # 'Próbujesz usunąć umiejętność która nie należy do tego Bohatera.'
+    return '3'  # Attempt to remove other character skill
 
 
 def add_skill(request, character):
@@ -139,7 +139,7 @@ def remove_ability(request, character):
     try:
         ability_pk = int(ability_pk)
     except ValueError:
-        return '420'  # error code
+        return 'HTML'
 
     try:
         ability = models.CharacterAbilities.objects.get(pk=ability_pk)
@@ -149,7 +149,7 @@ def remove_ability(request, character):
     if ability.character == character:
         ability.delete()
         return None
-    return '3'  # 'Ability doesnt belong to character
+    return '3'  # 'Ability doesnt belong to this character
 
 
 def add_ability(request, character):
@@ -176,7 +176,7 @@ def add_ability(request, character):
         )
         new_ability.save()
         return None
-    return 'xd'  # Choose valid ability
+    return 'HTML'  # Choose valid ability
 
 
 def edit_stats(request, character):
@@ -186,7 +186,7 @@ def edit_stats(request, character):
         try:
             edited_value = int(request.POST.get(stat.stat.short))
         except (ValueError, TypeError):
-            return '5'  # Int
+            return '5'  # value is not integer
 
         if 0 <= edited_value <= 100:
             stat.base = edited_value
@@ -226,7 +226,7 @@ def change_profession(request, character):
 
         character.save()
         return None
-    return 'x'  # Choose valid option
+    return 'HTML'
 
 
 def develop_stats(request, character):
@@ -338,7 +338,7 @@ def develop_abilities(request, character):
             character.current_exp -= 100
             character.save()
             return None
-    return '11'  # 'Sorry, you cant develop this ability'
+    return '11'  # cant develop this ability
 
 
 def develop_skills(request, character):
@@ -354,7 +354,6 @@ def develop_skills(request, character):
                 skill.char_skill_obj.level += 10
                 skill.char_skill_obj.save()
             else:  # create new skill
-                print('dziwne')
                 new_skill = models.CharacterSkills(
                     character=character,
                     skill=skill.object,
@@ -369,3 +368,29 @@ def develop_skills(request, character):
 
 def action_error(request, character):
     return 'HTML'
+
+
+def get_error_message(error_code):
+    error_dict = {
+        'HTML': 'Jeśli widzisz tą wiadomość i nie majstrowałeś/(aś) przy formularzach to daj mi znać.',
+        '1': 'Nie możesz mieć ujemnych funduszy w sakiewce.',  # negative coins
+        '2': 'Umiejętność/zdolność którą chcesz usunąć nie istnieje...',  # ability doesn't exist
+        '3': 'Próbujesz usunąć coś co nie jest twoje...',  # Ability doesnt belong to this character
+        '4': 'Umiejętność/zdolność którą chcesz dodać nie istnieje',  # ability doesn't exist
+        '5': 'Cechy są liczbami całkowitymi w przedziale od 0 do 100.',
+        '6': 'Jedna bądź więcej cech nie została zapisana.',
+        '7': 'Wybrana profesja nie istnieje.',
+        '8': 'Cecha którą chcesz rozwinąć nie istnieje.',
+        '9': 'Niewystarczająca ilość PD, bądź cecha rozwinięta do maximum.',
+        '10': 'Niewystarczająca ilość PD.',
+        '11': 'Nie możesz rozwinąć wybranej zdolności',
+        '12': 'Nie możesz rozwinąć wybranej umiejętności',
+    }
+    return error_dict.get(error_code, 'Zły kod błędu.')
+
+
+def get_claim_message(request, character):
+    message = 'Aktualnie każdy kto ma link do tej postaci jest w stanie dowolnie ją edytować.' \
+              'Jeśli chcesz mieć nad tym kontrolę to zaloguj się i użyj opcji: ' \
+              '\'dodaj istniejącego bohatera\' wykorzysująć identyfikator: ' + str(character.pk)
+    return message if not request.user.is_authenticated else None

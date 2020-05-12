@@ -113,14 +113,19 @@
 
 
 <div class="container">
-
-    {% if message %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert"> {{message}}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-
-                </div>
+    {% if error_message %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">{{error_message}}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    {% endif %}
+    {% if claim_message %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert"> {{claim_message}}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
     {% endif %}
     <!--przycisk mapy-->
 

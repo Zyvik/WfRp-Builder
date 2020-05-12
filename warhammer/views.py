@@ -132,51 +132,31 @@ def selected_profession(request, profession_slug):
 class CharacterScreen(View):
     def get(self, request, **kwargs):
         character = get_object_or_404(CharacterModel, pk=self.kwargs['pk'])
-
         if character.user and character.user != request.user and not request.user.is_staff:
             return redirect('wh:index')
 
-        if not request.user.is_authenticated:
-            message = 'Aktualnie każdy kto ma link do tej postaci jest w stanie dowolnie ją edytować.' \
-                      'Jeśli chcesz mieć nad tym kontrolę to zaloguj się i użyj opcji: ' \
-                      '\'dodaj istniejącego bohatera\' wykorzysująć identyfikator: ' + str(character.pk)
-        else:
-            message = None
-
-        # get data to display
         char_stats = CharactersStats.objects.filter(character=character)
-        char_skills = CharacterSkills.objects.filter(character=character).order_by('skill')
-        char_abilities = CharacterAbilities.objects.filter(character=character).order_by('ability')
-        develop_stats = char_stats.filter(max_bonus__gt=0)
-        develop_abilities = csl.get_abilities_to_develop(character, 'ability')
-        develop_skills = csl.get_abilities_to_develop(character, 'skill')
-        coins = csl.get_coins(character)
-        # forms
-        exp_form = ExperienceForm()
-        eq_form = EquipmentForm(initial={'eq': character.equipment})
-        coins_form = CoinsForm()
-        add_skill_form = AddSkillForm()
-        add_ability_form = AddAbilityForm()
-        notes_form = NotesForm(initial={'notes': character.notes})
-        change_profession_form = ChangeProfessionForm()
+        error_code = request.GET.get('error', None)
+        error_msg = csl.get_error_message(error_code) if error_code else None
 
         context = {
+            'claim_message': csl.get_claim_message(request, character),
+            'error_message': error_msg,
             'character': character,
             'stats_table': char_stats,
-            'char_skills': char_skills,
-            'char_abilities': char_abilities,
-            'develop_stats': develop_stats,
-            'dev_abilities': develop_abilities,
-            'dev_skills': develop_skills,
-            'coins': coins,
-            'message': message,
-            'exp_form': exp_form,
-            'eq_form': eq_form,
-            'coins_form': coins_form,
-            'add_skill_form': add_skill_form,
-            'add_ability_form': add_ability_form,
-            'notes_form': notes_form,
-            'change_profession_form': change_profession_form,
+            'char_skills': CharacterSkills.objects.filter(character=character).order_by('skill'),
+            'char_abilities': CharacterAbilities.objects.filter(character=character).order_by('ability'),
+            'develop_stats': char_stats.filter(max_bonus__gt=0),
+            'dev_abilities': csl.get_abilities_to_develop(character, 'ability'),
+            'dev_skills': csl.get_abilities_to_develop(character, 'skill'),
+            'coins': csl.get_coins(character),
+            'exp_form': ExperienceForm(),
+            'eq_form': EquipmentForm(initial={'eq': character.equipment}),
+            'coins_form': CoinsForm(),
+            'add_skill_form':  AddSkillForm(),
+            'add_ability_form': AddAbilityForm(),
+            'notes_form': NotesForm(initial={'notes': character.notes}),
+            'change_profession_form': ChangeProfessionForm(),
             'rows': range(10),
             'columns': range(7)
 
