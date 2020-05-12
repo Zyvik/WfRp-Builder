@@ -1,24 +1,24 @@
-from warhammer import models
+from warhammer import models as m
 
 
 def get_starting_professions(race):
     """
     Gets starting professions for provided race
     """
-    if race == models.RaceModel.objects.get(pk=1):
-        starting_professions = models.HumanStartingProfession.objects.all().order_by('profession')
-    elif race == models.RaceModel.objects.get(pk=2):
-        starting_professions = models.ElfStartingProfession.objects.all().order_by('profession')
-    elif race == models.RaceModel.objects.get(pk=3):
-        starting_professions = models.DwarfStartingProfession.objects.all().order_by('profession')
+    if race == m.RaceModel.objects.get(pk=1):
+        starting_professions = m.HumanStartingProfession.objects.all()
+    elif race == m.RaceModel.objects.get(pk=2):
+        starting_professions = m.ElfStartingProfession.objects.all()
+    elif race == m.RaceModel.objects.get(pk=3):
+        starting_professions = m.DwarfStartingProfession.objects.all()
     else:
-        starting_professions = models.HalflingStartingProfession.objects.all().order_by('profession')
-    return starting_professions
+        starting_professions = m.HalflingStartingProfession.objects.all()
+    return starting_professions.order_by('profession')
 
 
 class CharacterCustomizeForm:
-    all_skills = models.SkillsModel.objects.all()
-    all_abilities = models.AbilitiesModel.objects.all()
+    all_skills = m.SkillsModel.objects.all()
+    all_abilities = m.AbilitiesModel.objects.all()
 
     def __init__(self, race, stats_form):
         self.race = race
@@ -70,7 +70,7 @@ class CharacterCustomizeForm:
             stat = None
             bonus = None
 
-        all_stats = models.StatsModel.objects.all()
+        all_stats = m.StatsModel.objects.all()
         prof_stats = self.profession.stats.split('\n')
         develop_stat_inputs = []
         for i, stat in enumerate(all_stats):
@@ -94,11 +94,12 @@ class CharacterCustomizeForm:
 
         random_table = []
         if race_counter > 0:
-            random_table = models.RandomAbilityModel.objects.filter(race=self.race).order_by('roll_range')
+            random_table = m.RandomAbilityModel.objects.filter(race=self.race)
+            random_table = random_table.order_by('roll_range')
         return random_table, race_counter
 
     def prepare_stats_table(self):
-        all_stats = models.StatsModel.objects.all()
+        all_stats = m.StatsModel.objects.all()
         stats_table = []
         for i, stat in enumerate(all_stats, 0):
             maslo = StatDisplay()
@@ -115,7 +116,7 @@ class StatDisplay():
 def prepare_skill_form(skill_string, object_list, name):
     """
     Skills in ProfessionModel are separated by '\n'.
-    Skills can be separated by '/' - then you can choose between two or more skills .
+    Skills can be separated by '/' - then you can choose between skills
     """
     free_skills = []
     choices = []
@@ -128,8 +129,10 @@ def prepare_skill_form(skill_string, object_list, name):
             free_skills.append(skill)
             raw_skills.append(skill)
     radio_buttons = create_radio_for_choices(choices, name)
-    radio_buttons = create_modal_links(object_list, radio_buttons)  # radio buttons now have modals in them
-    free_skills = create_modal_links(object_list, free_skills)  # its now list of HTML <a> elements
+    # radio buttons now have modals in them
+    radio_buttons = create_modal_links(object_list, radio_buttons)
+    # its now list of HTML <a> elements
+    free_skills = create_modal_links(object_list, free_skills)
     return radio_buttons, free_skills, raw_skills
 
 
@@ -143,7 +146,9 @@ def create_radio_for_choices(skill_choices, name):
         options = skill.split(' / ')
         for choice in options:
             choice = choice[:-1] if choice[-1] == '\r' else choice
-            radio = f"<label><input required class=\"mr-2\" type=\"radio\" value=\"{choice.upper()}\" name=\"{index}_{name}\">{choice}</label>"
+            radio = f"<label><input required class=\"mr-2\" type=\"radio\" " \
+                    f"value=\"{choice.upper()}\" name=\"{index}_{name}\">" \
+                    f"{choice}</label>"
             inputs.append(radio)
         radio_buttons.append(' / '.join(inputs))
     return radio_buttons
@@ -182,9 +187,9 @@ def create_character_stats(stats_form, race):
     ]
     character_stats = []
     # calculate basic stats
-    basic_stats = models.StatsModel.objects.filter(is_secondary=False)
+    basic_stats = m.StatsModel.objects.filter(is_secondary=False)
     for i, stat in enumerate(basic_stats, 0):
-        base = models.StartingStatsModel.objects.get(race=race, stat=stat)
+        base = m.StartingStatsModel.objects.get(race=race, stat=stat)
         value = base.base + clean_stats[i]
         character_stats.append(value)
 
@@ -193,7 +198,7 @@ def create_character_stats(stats_form, race):
     character_stats.append(get_zyw_value(clean_stats[8], race))  # final zyw (vitality) value
     character_stats.append(int(character_stats[2] / 10))  # S
     character_stats.append(int(character_stats[3] / 10))  # Wt
-    sz = models.StartingStatsModel.objects.get(race=race, stat=13)
+    sz = m.StartingStatsModel.objects.get(race=race, stat=13)
     character_stats.append(sz.base)  # Sz
     character_stats.append(0)  # Mag
     character_stats.append(0)  # PO
@@ -203,7 +208,7 @@ def create_character_stats(stats_form, race):
 
 
 def get_zyw_value(roll, race):
-    vit = models.VitalityModel.objects.get(race=race)
+    vit = m.VitalityModel.objects.get(race=race)
     if roll in range(1, 4):
         return vit.v_1_3
     if roll in range(4, 7):
@@ -214,7 +219,7 @@ def get_zyw_value(roll, race):
 
 
 def get_pp_value(roll, race):
-    fate = models.FateModel.objects.get(race=race)
+    fate = m.FateModel.objects.get(race=race)
     if roll in range(1, 5):
         return fate.f_1_4
     if roll in range(5, 8):
@@ -229,7 +234,7 @@ def create_new_character(request, customize_form):
     equipment = request.POST.get('eq', 'nic')
     coins = clean_coins(request.POST.get('coins', '0'))
 
-    new_character = models.CharacterModel(
+    new_character = m.CharacterModel(
         name=name,
         profession=customize_form.profession,
         race=customize_form.race,
@@ -316,8 +321,8 @@ def save_skills(selected_skills, character, source):
                 bonus = bonus[:-1] if bonus[-1] == '\r' else bonus
 
             skill = skill[:-1] if skill[-1] == '\r' else skill
-            skill = models.SkillsModel.objects.get(name=skill)
-            char_skill, created = models.CharacterSkills.objects.get_or_create(character=character, skill=skill,
+            skill = m.SkillsModel.objects.get(name=skill)
+            char_skill, created = m.CharacterSkills.objects.get_or_create(character=character, skill=skill,
                                                                                bonus=bonus)
             char_skill.is_developed = False
             if not created:
@@ -344,8 +349,8 @@ def save_abilities(selected_abilities, character):
                 skill = skill[:-1]
 
             try:
-                skill = models.AbilitiesModel.objects.get(name=skill)
-                char_skill = models.CharacterAbilities.objects.get_or_create(character=character, ability=skill,
+                skill = m.AbilitiesModel.objects.get(name=skill)
+                char_skill = m.CharacterAbilities.objects.get_or_create(character=character, ability=skill,
                                                                              bonus=bonus)
                 char_skill.save()
             except:
@@ -353,10 +358,10 @@ def save_abilities(selected_abilities, character):
 
 
 def save_stats(character_stats, character, prof_stats, request):
-    developed_stat = models.StatsModel.objects.get(short=request.POST['develop_stat'])
-    all_stats = models.StatsModel.objects.all()
+    developed_stat = m.StatsModel.objects.get(short=request.POST['develop_stat'])
+    all_stats = m.StatsModel.objects.all()
     for i, stat in enumerate(all_stats, 0):
-        add_stat = models.CharactersStats(
+        add_stat = m.CharactersStats(
             character=character,
             stat=stat,
             base=character_stats[i]

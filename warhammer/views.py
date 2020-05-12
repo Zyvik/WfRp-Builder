@@ -1,41 +1,46 @@
-from django.shortcuts import render,redirect,HttpResponse, get_object_or_404, reverse
-from .models import *
-from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import render, redirect, HttpResponse,\
+    get_object_or_404, reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from .libs import process_string_dev
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
+from django.views import View
+from smtplib import SMTPException
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import ChatSerializer, MapSerializer
-
-from django.views import View
-from .forms import RollStatsForm, RegisterForm, LoginForm, ContactForm, ClaimCharacterForm, ExperienceForm, EquipmentForm, CoinsForm, AddSkillForm, AddAbilityForm, NotesForm, ChangeProfessionForm
-from .character_creation import get_starting_professions
-from . import character_creation
+from warhammer import forms as f
+from warhammer import models as m
+from warhammer import character_creation_lib as ccl
 from warhammer import profession_detail_lib as prof_detail
 from warhammer import character_screen_lib as csl
+from .serializers import ChatSerializer, MapSerializer
 
 
 class IndexView(View):
     """
-    Landing page - displays user's characters and gives option to claim existing character
+    Landing page:
+    displays user's characters and gives option to claim existing character
     """
     def get(self, request):
         if request.user.is_authenticated:
-            your_characters = CharacterModel.objects.filter(user=request.user)
-            form = ClaimCharacterForm()
-            return render(request, 'warhammer/index.html', {'your_characters': your_characters, 'form': form})
-        return render(request, 'warhammer/index.html', {'your_characters': None, 'form': None})
+            your_characters = m.CharacterModel.objects.filter(user=request.user)
+            form = f.ClaimCharacterForm()
+
+            context = {
+                'your_characters': your_characters,
+                'form': form
+            }
+            return render(request, 'warhammer/index.html', context)
+        return render(request, 'warhammer/index.html')
 
     def post(self, request):
         if request.user.is_authenticated:
             message = None
-            form = ClaimCharacterForm(request.POST)
+            form = f.ClaimCharacterForm(request.POST)
             if form.is_valid():
                 pk = form.cleaned_data.get('pk')
                 try:
-                    character = CharacterModel.objects.get(pk=pk)
+                    character = m.CharacterModel.objects.get(pk=pk)
                     if character.user is None:
                         character.user = request.user
                         character.save()
@@ -44,17 +49,21 @@ class IndexView(View):
                         message = 'Ta postać już do kogoś należy.'
                 except ObjectDoesNotExist:
                     message = 'Postać o takim identyfikatorze nie istnieje.'
-            your_characters = CharacterModel.objects.filter(user=request.user)
-            return render(request, 'warhammer/index.html', {'your_characters': your_characters,
-                                                            'form': form, 'message': message})
-        return render(request, 'warhammer/index.html', {'your_characters': None, 'form': None})
+            your_characters = m.CharacterModel.objects.filter(user=request.user)
+            context = {
+                'your_characters': your_characters,
+                'message': message,
+                'form': form
+            }
+            return render(request, 'warhammer/index.html', context)
+        return redirect('wh:index')
 
 
 def choose_race(request):
     """
     1st step in character creation - choosing race
     """
-    all_races = RaceModel.objects.all()
+    all_races = m.RaceModel.objects.all()
     return render(request, 'warhammer/race.html', {'all_races': all_races})
 
 
@@ -62,19 +71,19 @@ def roll_stats(request, race_slug):
     """
     2nd step in character creation - rolling for stats
     """
-    stats_form = RollStatsForm(request.GET)
-    race = get_object_or_404(RaceModel, slug=race_slug)
-    starting_stats = StartingStatsModel.objects.filter(race=race).order_by('-bonus')
-    starting_professions = get_starting_professions(race)
+    stats_form = f.RollStatsForm(request.GET)
+    race = get_object_or_404(m.RaceModel, slug=race_slug)
+    starting_stats = m.StartingStatsModel.objects.filter(race=race)
+    starting_stats = starting_stats.order_by('-bonus')
+    starting_professions = ccl.get_starting_professions(race)
 
     if stats_form.is_valid():
-        # preparing form for 3rd step - customizing character
-        customize_form = character_creation.CharacterCustomizeForm(race, stats_form)
-
+        customize_form = ccl.CharacterCustomizeForm(race, stats_form)
         if request.method == 'POST':
-            new_character = character_creation.create_new_character(request, customize_form)
+            # 3rd step in character creation - customize character
+            new_character = ccl.create_new_character(request, customize_form)
             return redirect('wh:character_screen', pk=new_character.pk)
-
+        # customize character context
         context = {
             'profession': customize_form.profession,
             'mandatory_prof_skills': customize_form.prof_s_free,
@@ -90,28 +99,32 @@ def roll_stats(request, race_slug):
             'random_table': customize_form.random_table,
             'race_counter': customize_form.race_counter,
             'race': race,
-            'all_stats': StatsModel.objects.all(),
+            'all_stats': m.StatsModel.objects.all(),
             'stats_table': customize_form.stats_table,
             'qs_skills': customize_form.all_skills,
             'qs_abilities': customize_form.all_abilities,
-            't': 12,
             'equipment': customize_form.profession.equipment
         }
+        return render(request, 'warhammer/customize_character.html', context)
+    # roll stats_context
+    context = {
+        's_stats': starting_stats,
+        'starting_professions': starting_professions,
+        'stats_form': stats_form
+    }
+    return render(request, 'warhammer/roll_stats.html', context)
 
-        return render(request, 'warhammer/dostosuj_rase_profesje.html', context)
 
-    return render(request, 'warhammer/roll_stats.html', {'s_stats': starting_stats, 'starting_professions': starting_professions, 'stats_form': stats_form})
-
-
-def professions(request):
-    all_professions = ProfessionModel.objects.all()
-    return render(request, 'warhammer/profesje.html', {'all_professions': all_professions})
+def profession_list(request):
+    all_professions = m.ProfessionModel.objects.all()
+    context = {'all_professions': all_professions}
+    return render(request, 'warhammer/profession_list.html', context)
 
 
-def selected_profession(request, profession_slug):
-    profession = get_object_or_404(ProfessionModel, slug=profession_slug)
-    all_skills = SkillsModel.objects.all()
-    all_abilities = AbilitiesModel.objects.all()
+def profession_detail(request, profession_slug):
+    profession = get_object_or_404(m.ProfessionModel, slug=profession_slug)
+    all_skills = m.SkillsModel.objects.all()
+    all_abilities = m.AbilitiesModel.objects.all()
 
     skills_string = prof_detail.create_modals(all_skills, profession.skills)
     abilities_string = prof_detail.create_modals(all_abilities, profession.abilities)
@@ -126,16 +139,17 @@ def selected_profession(request, profession_slug):
         'profession': profession,  # profession object
     }
 
-    return render(request, 'warhammer/profesja_szczegol.html', context)
+    return render(request, 'warhammer/profession_detail.html', context)
 
 
 class CharacterScreen(View):
     def get(self, request, **kwargs):
-        character = get_object_or_404(CharacterModel, pk=self.kwargs['pk'])
-        if character.user and character.user != request.user and not request.user.is_staff:
+        user = request.user
+        character = get_object_or_404(m.CharacterModel, pk=self.kwargs['pk'])
+        if character.user and character.user != user and not user.is_staff:
             return redirect('wh:index')
 
-        char_stats = CharactersStats.objects.filter(character=character)
+        char_stats = m.CharactersStats.objects.filter(character=character)
         error_code = request.GET.get('error', None)
         error_msg = csl.get_error_message(error_code) if error_code else None
 
@@ -144,27 +158,27 @@ class CharacterScreen(View):
             'error_message': error_msg,
             'character': character,
             'stats_table': char_stats,
-            'char_skills': CharacterSkills.objects.filter(character=character).order_by('skill'),
-            'char_abilities': CharacterAbilities.objects.filter(character=character).order_by('ability'),
+            'char_skills': m.CharacterSkills.objects.filter(character=character).order_by('skill'),
+            'char_abilities': m.CharacterAbilities.objects.filter(character=character).order_by('ability'),
             'develop_stats': char_stats.filter(max_bonus__gt=0),
             'dev_abilities': csl.get_abilities_to_develop(character, 'ability'),
             'dev_skills': csl.get_abilities_to_develop(character, 'skill'),
             'coins': csl.get_coins(character),
-            'exp_form': ExperienceForm(),
-            'eq_form': EquipmentForm(initial={'eq': character.equipment}),
-            'coins_form': CoinsForm(),
-            'add_skill_form':  AddSkillForm(),
-            'add_ability_form': AddAbilityForm(),
-            'notes_form': NotesForm(initial={'notes': character.notes}),
-            'change_profession_form': ChangeProfessionForm(),
+            'exp_form': f.ExperienceForm(),
+            'eq_form': f.EquipmentForm(initial={'eq': character.equipment}),
+            'coins_form': f.CoinsForm(),
+            'add_skill_form': f.AddSkillForm(),
+            'add_ability_form': f.AddAbilityForm(),
+            'notes_form': f.NotesForm(initial={'notes': character.notes}),
+            'change_profession_form': f.ChangeProfessionForm(),
             'rows': range(10),
             'columns': range(7)
 
         }
-        return render(request, 'warhammer/bohater.html', context)
+        return render(request, 'warhammer/character_screen.html', context)
 
     def post(self, request, **kwargs):
-        character = get_object_or_404(CharacterModel, pk=self.kwargs['pk'])
+        character = get_object_or_404(m.CharacterModel, pk=self.kwargs['pk'])
         action = request.POST.get('action', None)
 
         action_dictionary = {
@@ -193,15 +207,15 @@ class RegisterView(View):
     def get(self, request):
         if request.user.is_authenticated:
             return redirect('wh:index')
-        form = RegisterForm()
+        form = f.RegisterForm()
         return render(request, 'warhammer/register.html', {'form': form})
 
     def post(self, request):
-        form = RegisterForm(request.POST)
+        form = f.RegisterForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('login')
             password = form.cleaned_data.get('password')
-            user = User.objects.create_user(username=username, password=password)  # creates user
+            User.objects.create_user(username=username, password=password)
             user = authenticate(request, username=username, password=password)
             login(request, user)
             return redirect('wh:index')
@@ -212,18 +226,22 @@ class LoginView(View):
     def get(self, request):
         if request.user.is_authenticated:
             return redirect('wh:index')
-        form = LoginForm()
+        form = f.LoginForm()
         return render(request, 'warhammer/login.html', {'form': form})
 
     def post(self, request):
         message = None
-        form = LoginForm(request.POST)
+        form = f.LoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('login')
             password = form.cleaned_data.get('password')
             try:
                 user = User.objects.get(username__iexact=username)
-                user = authenticate(request, username=user.username, password=password)
+                user = authenticate(
+                    request=request,
+                    username=user.username,
+                    password=password
+                )
                 if user is not None:
                     login(request, user)
                     return redirect('wh:index')
@@ -231,7 +249,12 @@ class LoginView(View):
                     message = 'Podano złą kombinację loginu i hasła.'
             except ObjectDoesNotExist:
                 message = 'Podano złą kombinację loginu i hasła.'
-        return render(request, 'warhammer/login.html', {'message': message, 'form': form})
+
+        return render(
+            request=request,
+            template_name='warhammer/login.html',
+            context={'message': message, 'form': form}
+        )
 
 
 def logout_view(request):
@@ -241,23 +264,33 @@ def logout_view(request):
 
 class ContactView(View):
     def get(self, request):
-        form = ContactForm()
+        form = f.ContactForm()
         return render(request, 'warhammer/contact.html', {'form': form})
 
     def post(self, request):
         message = None
-        form = ContactForm(request.POST)
+        form = f.ContactForm(request.POST)
         if form.is_valid():
             subject = form.cleaned_data.get('subject', 'no subject')
             email = form.cleaned_data.get('email', 'no email')
-            content = form.cleaned_data.get('content', 'no content') + '\nemail: ' + email
+            content = f"{form.cleaned_data.get('content', 'no content')}\n" \
+                      f"email: {email}"
             try:
-                send_mail(subject, content, 'zyvik.kontakt@wp.pl', ['pawel86gw2@gmail.com'])
+                send_mail(
+                    subject=subject,
+                    message=content,
+                    from_email='zyvik.kontakt@wp.pl',
+                    recipient_list=['pawel86gw2@gmail.com']
+                )
                 message = 'Wiadomość wysłana!'
-            except:
+            except SMTPException:
                 message = 'Coś nie wyszło - wyślij maila na pawel86@gmail.com'
 
-        return render(request, 'warhammer/contact.html', {'form': form, 'message': message})
+        context = {
+            'message': message,
+            'form': form
+        }
+        return render(request, 'warhammer/contact.html', context)
 
 
 # Dice roller and MAP API
@@ -265,9 +298,11 @@ class ChatView(APIView):
     authentication_classes = []
 
     def get(self, request, game_id):
-        game = get_object_or_404(GameModel, id=game_id)
-        messages = MessagesModel.objects.filter(game=game).order_by('-id')[:15]
-        map = MapModel.objects.get(game=game)
+        msg_to_display = 15
+        game = get_object_or_404(m.GameModel, id=game_id)
+        messages = m.MessagesModel.objects.filter(game=game).order_by('-id')
+        messages = messages[:msg_to_display]
+        map = m.MapModel.objects.get(game=game)
         serializer = ChatSerializer(messages, many=True)
         map_serializer = MapSerializer(map, many=False)
         return Response({
@@ -278,14 +313,14 @@ class ChatView(APIView):
     def post(self, request, game_id):
         try:
             if request.data.get('message'):
-                MessagesModel.objects.create(
-                    game=GameModel.objects.get(id=game_id),
+                m.MessagesModel.objects.create(
+                    game=m.GameModel.objects.get(id=game_id),
                     author=request.data.get('author'),
                     message=request.data.get('message')
                 )
             else:
-                game = GameModel.objects.get(id=game_id)
-                map_obj = MapModel.objects.get(game=game)
+                game = m.GameModel.objects.get(id=game_id)
+                map_obj = m.MapModel.objects.get(game=game)
                 map_obj.map = request.data.get('map')
                 map_obj.counter += 1
                 map_obj.save()
@@ -295,43 +330,55 @@ class ChatView(APIView):
 
 
 def game_master_room(request, game_id):
-    game = get_object_or_404(GameModel, pk=game_id)
+    game = get_object_or_404(m.GameModel, pk=game_id)
     if request.user == game.admin:
-        npcs = NPCModel.objects.filter(game=game)
+        npc_list = m.NPCModel.objects.filter(game=game)
         if request.method == 'POST':
-            # Adding NPC's
+            # Adding NPC
             if request.POST.get('add_npc'):
                 try:
-                    NPC = NPCModel(
+                    npc = m.NPCModel(
                         game=game,
                         name=request.POST.get('npc_name', 'boring name'),
                         WW=int(request.POST.get('npc_WW', '0')),
                         US=int(request.POST.get('npc_US', '0')),
                         notes=request.POST.get('npc_notes')
                     )
-                    NPC.save()
+                    npc.save()
                 except ValueError:
                     pass
 
-            # deleting NPC's
+            # deleting NPC
             if request.POST.get('delete_npc'):
-                npc = NPCModel.objects.get(pk=int(request.POST.get('delete_npc')))
+                npc_pk = int(request.POST.get('delete_npc'))
+                npc = m.NPCModel.objects.get(pk=npc_pk)
                 # checks if npc belongs to this game
                 if npc.game == game:
                     npc.delete()
 
-        return render(request, 'warhammer/DMRoom.html', {'game': game, 'npcs': npcs, 'columns': range(7), 'rows': range(10)})
+        context = {
+            'game': game,
+            'npcs': npc_list,
+            'columns': range(7),
+            'rows': range(10)
+        }
+        return render(request, 'warhammer/DMRoom.html', context)
     else:
         login_error = 'Nie jestesteś mistrzem tej gry - zawróć.'
-        return render(request, 'warhammer/DMRoom.html', {'game': game, 'login_error':login_error})
+        context = {
+            'game': game,
+            'login_error': login_error
+        }
+        return render(request, 'warhammer/DMRoom.html', context)
 
 
 def skills_list(request):
-    skills = SkillsModel.objects.order_by("name")
-    return render(request, 'warhammer/skills_list.html', {'skills': skills})
+    skills = m.SkillsModel.objects.order_by("name")
+    context = {'skills': skills}
+    return render(request, 'warhammer/skills_list.html', context)
 
 
 def abilities_list(request):
-    abilities = AbilitiesModel.objects.all()
-    return render(request, 'warhammer/abilities_list.html', {'abilities': abilities})
-
+    abilities = m.AbilitiesModel.objects.all()
+    context = {'abilities': abilities}
+    return render(request, 'warhammer/abilities_list.html', context)
