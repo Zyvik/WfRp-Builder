@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Step1Model, SkillsModel, AbilitiesModel, ProfessionModel
+from .models import SkillsModel, AbilitiesModel, ProfessionModel
 from uuid import UUID
 
 
@@ -155,17 +155,3 @@ class ChangeProfessionForm(forms.Form):
     profession = forms.ChoiceField(choices=choices, label='')
 
     profession.widget.attrs.update({'class': 'form-control form-control-lg ml-5'})
-
-
-class Step1Form(forms.ModelForm):
-    class Meta:
-        model = Step1Model
-        fields = '__all__'
-
-    def clean_WW(self, *args,**kwargs):
-        WW = self.cleaned_data['WW']
-        if WW <2 or WW>20:
-            raise forms.ValidationError('Wartość otrzymana z zsumowania 2 rzutów k10 musi być w przedziale od 2 do 20.')
-        else:
-            return WW
-

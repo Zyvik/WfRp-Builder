@@ -125,21 +125,6 @@ class HalflingStartingProfession(models.Model):
     roll_range = models.CharField(max_length=10)
 
 
-class Step1Model(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    WW = models.IntegerField()
-    US = models.IntegerField()
-    ZR = models.IntegerField()
-    K = models.IntegerField()
-    Odp = models.IntegerField()
-    Int = models.IntegerField()
-    SW = models.IntegerField()
-    Vit = models.IntegerField()
-    PP = models.IntegerField()
-    PROF = models.IntegerField()
-    string = models. CharField(max_length=150)
-
-
 class CharacterModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
@@ -194,6 +179,7 @@ class RandomAbilityModel(models.Model):
     def __str__(self):
         return str(self.race) + str(self.roll_range)
 
+
 class GameModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=30)
@@ -218,4 +204,3 @@ class NPCModel(models.Model):
     WW = models.IntegerField()
     US = models.IntegerField()
     notes = models.TextField(max_length=1000)
-
