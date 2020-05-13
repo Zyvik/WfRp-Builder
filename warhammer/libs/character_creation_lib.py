@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from warhammer import models as m
 
 
@@ -322,21 +323,23 @@ def save_skills(selected_skills, character, source):
 
             skill = skill[:-1] if skill[-1] == '\r' else skill
             skill = m.SkillsModel.objects.get(name=skill)
-            char_skill, created = m.CharacterSkills.objects.get_or_create(character=character, skill=skill,
-                                                                               bonus=bonus)
-            char_skill.is_developed = False
+            char_skill, created = m.CharacterSkills.objects.get_or_create(
+                character=character,
+                skill=skill,
+                bonus=bonus
+            )
+            if source == 'race':
+                char_skill.is_developed = False
+                char_skill.save()
             if not created:
                 char_skill.level += 10
                 char_skill.is_developed = True if source == 'profession' else False
-            try:
                 char_skill.save()
-            except:
-                pass
 
 
 def save_abilities(selected_abilities, character):
     for i, skill in enumerate(selected_abilities, 0):
-        # wtf is '2' or '1' ? xD - have no idea, will leave it here in case its important
+        # wtf is '2' or '1' ? - have no idea, will leave it here just in case
         if skill != '' or skill[0] != '2' or skill[0] != '1':
             bonus = None  # Can abilities even have bonuses?
             skill = skill.lower()
@@ -350,10 +353,13 @@ def save_abilities(selected_abilities, character):
 
             try:
                 skill = m.AbilitiesModel.objects.get(name=skill)
-                char_skill = m.CharacterAbilities.objects.get_or_create(character=character, ability=skill,
-                                                                             bonus=bonus)
+                char_skill = m.CharacterAbilities.objects.get_or_create(
+                    character=character,
+                    ability=skill,
+                    bonus=bonus
+                )
                 char_skill.save()
-            except:
+            except (ObjectDoesNotExist, AttributeError):
                 pass
 
 

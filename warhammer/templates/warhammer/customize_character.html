@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     {% block title %}
-    <title>Title</title>
+    <title>WfRp Builder</title>
     {% endblock %}
 </head>
 {% block body %}
@@ -152,8 +152,8 @@
             <div class="col-md">
                 <div class="card">
                     <div class="card-header">Zdolności do wyboru</div>
-                    {% if optional_race_abilities %}
                     <p class="ml-3 mt-3">Rasa:</p>
+                    {% if optional_race_abilities %}
                     <ul class="list-group">
                         {% for skill in optional_race_abilities %}
                         <li class="list-group-item ml-3 mr-3">{{skill}}</li>
