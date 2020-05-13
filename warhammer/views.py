@@ -9,11 +9,10 @@ from django.views import View
 from smtplib import SMTPException
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from warhammer import forms as f
-from warhammer import models as m
-from warhammer import character_creation_lib as ccl
-from warhammer import profession_detail_lib as prof_detail
-from warhammer import character_screen_lib as csl
+from . import forms as f
+from . import models as m
+from .libs import character_screen_lib as csl, character_creation_lib as ccl, \
+    profession_detail_lib as prof_detail
 from .serializers import ChatSerializer, MapSerializer
 
 

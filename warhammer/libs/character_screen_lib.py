@@ -61,6 +61,12 @@ def update_coins(request, character):
 
 
 def edit_eq(request, character):
+    """
+    Edits equipment and returns error code
+    :param request:
+    :param character: models.CharacterModel object
+    :return: str - error code
+    """
     eq_form = forms.EquipmentForm(request.POST)
     if eq_form.is_valid():
         character.equipment = eq_form.cleaned_data.get('eq')
@@ -70,6 +76,12 @@ def edit_eq(request, character):
 
 
 def edit_notes(request, character):
+    """
+    Edits notes and returns error code
+    :param request:
+    :param character: models.CharacterModel object
+    :return: str - error code
+    """
     notes_form = forms.NotesForm(request.POST)
     if notes_form.is_valid():
         character.notes = notes_form.cleaned_data.get('notes')
@@ -80,7 +92,7 @@ def edit_notes(request, character):
 
 def remove_skill(request, character):
     """
-
+    Removes selected skill and returns error code
     :param request:
     :param character: models.CharacterModel object
     :return: str - error code
@@ -104,13 +116,13 @@ def remove_skill(request, character):
 
 def add_skill(request, character):
     """
-
+    Adds selected skill and returns error code
     :param request:
     :param character: CharacterModel object
     :return: str - error code
     """
     add_skill_form = forms.AddSkillForm(request.POST)
-    if add_skill_form.is_valid() and request.POST.get('add_skill'):
+    if add_skill_form.is_valid():
         skill_pk = add_skill_form.cleaned_data.get('add_skill')
         bonus = add_skill_form.cleaned_data.get('skill_bonus')
         try:
@@ -130,8 +142,8 @@ def add_skill(request, character):
 
 def remove_ability(request, character):
     """
-
-    :param request: string representation of int
+    Removes selected ability and returns error code
+    :param request:
     :param character: models.CharacterModel object
     :return: str - error code
     """
@@ -154,13 +166,13 @@ def remove_ability(request, character):
 
 def add_ability(request, character):
     """
-
+    Adds selected ability and returns error code
     :param request: from AddAbilityForm
     :param character: CharacterModel object
     :return: str - error code
     """
     add_ability_form = forms.AddAbilityForm(request.POST)
-    if add_ability_form.is_valid() and request.POST.get('add_ability'):
+    if add_ability_form.is_valid():
         cleaned_data = add_ability_form.cleaned_data
         ability_pk = cleaned_data.get('add_ability')
         bonus = cleaned_data.get('ability_bonus')
@@ -180,6 +192,12 @@ def add_ability(request, character):
 
 
 def edit_stats(request, character):
+    """
+    Edit character's stats and returns error code
+    :param request:
+    :param character: models.CharacterModel
+    :return: str - error code
+    """
     error_flag = False
     char_stats = models.CharactersStats.objects.filter(character=character)
     for stat in char_stats:
@@ -198,14 +216,20 @@ def edit_stats(request, character):
 
 
 def change_profession(request, character):
+    """
+    Changes character's profession and returns error code
+    :param request:
+    :param character: models.CharacterModel
+    :return: str - error code
+    """
     change_profession_form = forms.ChangeProfessionForm(request.POST)
     if request.POST.get('profession') and change_profession_form.is_valid():
         cleaned_data = change_profession_form.cleaned_data
-        new_profession_pk = cleaned_data.get('profession')
+        new_prof_pk = cleaned_data.get('profession')
         char_stats = models.CharactersStats.objects.filter(character=character)
         char_skills = models.CharacterSkills.objects.filter(character=character)
         try:
-            new_profession = models.ProfessionModel.objects.get(pk=new_profession_pk)
+            new_profession = models.ProfessionModel.objects.get(pk=new_prof_pk)
         except ObjectDoesNotExist:
             return '7'
 
@@ -217,7 +241,7 @@ def change_profession(request, character):
                 old_stat.max_bonus = 0
                 old_stat.save()
             else:
-                old_stat.max_bonus = int(new_stat)  # this can result in error...
+                old_stat.max_bonus = int(new_stat)  # this can result in error
                 old_stat.save()
 
         for skill in char_skills:
@@ -230,6 +254,12 @@ def change_profession(request, character):
 
 
 def develop_stats(request, character):
+    """
+    Develops selected stat and returns error code
+    :param request:
+    :param character: models.CharacterModel
+    :return: str - error code
+    """
     char_stats = models.CharactersStats.objects.filter(character=character)
     short = request.POST.get('dev_stat')
     try:
@@ -245,6 +275,7 @@ def develop_stats(request, character):
             character.current_exp -= 100
             character.save()
         else:  # aka. if stat is basic
+            # checks if S or Wt should be raised
             if stat.short == 'K' or stat.short == 'Odp':
                 pre_val = int((stat_to_dev.base + stat_to_dev.bonus)/10)
                 post_val = int((stat_to_dev.base + stat_to_dev.bonus + 5)/10)
@@ -269,8 +300,8 @@ def develop_stats(request, character):
 
 def get_abilities_to_develop(character, kind):
     """
-
-    :param character:
+    Returns abilities / skills that character can develop
+    :param character: CharacterModel
     :param kind: 'ability' or 'skill'
     :return: [Talent, Talent, ...]
     """
@@ -279,9 +310,12 @@ def get_abilities_to_develop(character, kind):
         name = None
         bonus = None
         object = None
-        char_skill_obj = None  # just for skills (if it exists and you develop it skill gets +10)
+        char_skill_obj = None  # if skill exists and you buy it - it gets +10)
 
-    talent_dict = {'ability': character.profession.abilities, 'skill': character.profession.skills}
+    talent_dict = {
+        'ability': character.profession.abilities,
+        'skill': character.profession.skills
+    }
 
     prof_talents = talent_dict.get(kind)
     prof_talents_str = prof_talents.replace(' / ', '\n')
@@ -321,6 +355,12 @@ def get_abilities_to_develop(character, kind):
 
 
 def develop_abilities(request, character):
+    """
+    Develops selected ability
+    :param request:
+    :param character: models.CharacterModel
+    :return: str - error code
+    """
     if character.current_exp < 100:
         return '10'  # Not enough exp
 
@@ -342,6 +382,12 @@ def develop_abilities(request, character):
 
 
 def develop_skills(request, character):
+    """
+    Develops selected skill
+    :param request:
+    :param character: models.CharacterModel
+    :return: str - error code
+    """
     if character.current_exp < 100:
         return '10'  # Not enough exp
 
@@ -372,11 +418,10 @@ def action_error(request, character):
 
 def get_error_message(error_code):
     error_dict = {
-        'HTML': 'Jeśli widzisz tą wiadomość i nie majstrowałeś/(aś) przy formularzach to daj mi znać.',
-        '1': 'Nie możesz mieć ujemnych funduszy w sakiewce.',  # negative coins
-        '2': 'Umiejętność/zdolność którą chcesz usunąć nie istnieje...',  # ability doesn't exist
-        '3': 'Próbujesz usunąć coś co nie jest twoje...',  # Ability doesnt belong to this character
-        '4': 'Umiejętność/zdolność którą chcesz dodać nie istnieje',  # ability doesn't exist
+        '1': 'Nie możesz mieć ujemnych funduszy w sakiewce.',
+        '2': 'Umiejętność/zdolność którą chcesz usunąć nie istnieje...',
+        '3': 'Próbujesz usunąć coś co nie jest twoje...',
+        '4': 'Umiejętność/zdolność którą chcesz dodać nie istnieje',
         '5': 'Cechy są liczbami całkowitymi w przedziale od 0 do 100.',
         '6': 'Jedna bądź więcej cech nie została zapisana.',
         '7': 'Wybrana profesja nie istnieje.',
@@ -385,6 +430,8 @@ def get_error_message(error_code):
         '10': 'Niewystarczająca ilość PD.',
         '11': 'Nie możesz rozwinąć wybranej zdolności',
         '12': 'Nie możesz rozwinąć wybranej umiejętności',
+        'HTML': 'Jeśli widzisz tą wiadomość i nie majstrowałeś/(aś) '
+                'przy formularzach to daj mi znać.',
     }
     return error_dict.get(error_code, 'Zły kod błędu.')
 

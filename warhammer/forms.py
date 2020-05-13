@@ -119,7 +119,7 @@ class EquipmentForm(forms.Form):
 
 
 class AddSkillForm(forms.Form):
-    choices = [('', '')] + [(skill.pk, skill.name) for skill in SkillsModel.objects.all()]
+    choices = [(skill.pk, skill.name) for skill in SkillsModel.objects.all()]
 
     add_skill = forms.ChoiceField(choices=choices, label='')
     skill_bonus = forms.CharField(label='', required='')
@@ -129,7 +129,7 @@ class AddSkillForm(forms.Form):
 
 
 class AddAbilityForm(forms.Form):
-    choices = [('', '')] + [(ability.pk, ability.name) for ability in AbilitiesModel.objects.all()]
+    choices = [(abi.pk, abi.name) for abi in AbilitiesModel.objects.all()]
 
     add_ability = forms.ChoiceField(choices=choices, label='')
     ability_bonus = forms.CharField(label='', required='')
@@ -151,7 +151,7 @@ class NotesForm(forms.Form):
 
 
 class ChangeProfessionForm(forms.Form):
-    choices = [('', '')] + [(profession.pk, profession.name) for profession in ProfessionModel.objects.all()]
+    choices = [(prof.pk, prof.name) for prof in ProfessionModel.objects.all()]
     profession = forms.ChoiceField(choices=choices, label='')
 
     profession.widget.attrs.update({'class': 'form-control form-control-lg ml-5'})
