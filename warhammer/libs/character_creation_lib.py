@@ -6,15 +6,15 @@ def get_starting_professions(race):
     """
     Gets starting professions for provided race
     """
-    if race == m.RaceModel.objects.get(pk=1):
-        starting_professions = m.HumanStartingProfession.objects.all()
-    elif race == m.RaceModel.objects.get(pk=2):
-        starting_professions = m.ElfStartingProfession.objects.all()
-    elif race == m.RaceModel.objects.get(pk=3):
-        starting_professions = m.DwarfStartingProfession.objects.all()
-    else:
-        starting_professions = m.HalflingStartingProfession.objects.all()
-    return starting_professions.order_by('profession')
+    race_dict = {
+        1: m.HumanStartingProfession.objects.all,
+        2: m.ElfStartingProfession.objects.all,
+        3: m.DwarfStartingProfession.objects.all,
+        4: m.HalflingStartingProfession.objects.all
+    }
+    professions = race_dict.get(race.pk, m.HumanStartingProfession.objects.all)
+    professions = professions().order_by('profession')
+    return professions
 
 
 class CharacterCustomizeForm:
@@ -100,6 +100,10 @@ class CharacterCustomizeForm:
         return random_table, race_counter
 
     def prepare_stats_table(self):
+        class StatDisplay:
+            stat = ''
+            value = ''
+
         all_stats = m.StatsModel.objects.all()
         stats_table = []
         for i, stat in enumerate(all_stats, 0):
@@ -108,10 +112,6 @@ class CharacterCustomizeForm:
             maslo.value = self.character_stats[i]
             stats_table.append(maslo)
         return stats_table
-"""For GET"""
-class StatDisplay():
-    stat = ''
-    value = ''
 
 
 def prepare_skill_form(skill_string, object_list, name):
@@ -161,7 +161,8 @@ def create_modal_links(all_skill_list, user_skill_list):
     """
     radio_string = '\n'.join(user_skill_list)
     for skill in all_skill_list:
-        modal_link = "<a href=\"#\" data-toggle=\"modal\" data-target=\"#" + skill.slug + "\">" + skill.name + "</a>"
+        modal_link = f"<a href=\"#\" data-toggle=\"modal\" " \
+                     f"data-target=\"#{skill.slug}\">{skill.name}</a>"
         radio_string = radio_string.replace(skill.name, modal_link)
 
     # check just in case
@@ -196,7 +197,7 @@ def create_character_stats(stats_form, race):
 
     # secondary stats
     character_stats.append(1)  # A - all characters start with 1 attack
-    character_stats.append(get_zyw_value(clean_stats[8], race))  # final zyw (vitality) value
+    character_stats.append(get_zyw_value(clean_stats[8], race))  # final zyw
     character_stats.append(int(character_stats[2] / 10))  # S
     character_stats.append(int(character_stats[3] / 10))  # Wt
     sz = m.StartingStatsModel.objects.get(race=race, stat=13)
@@ -227,6 +228,7 @@ def get_pp_value(roll, race):
         return fate.f_5_7
     return fate.f_8_10
 
+
 """For POST"""
 
 
@@ -253,8 +255,13 @@ def create_new_character(request, customize_form):
                                                    customize_form.prof_a_radio,
                                                    customize_form.race_a_radio)
 
-    random_abilities = clean_random_abilities(request, customize_form.race_counter, customize_form.random_table)
-    selected_abilities = customize_form.prof_a_raw + customize_form.race_a_raw + sel_prof_a + sel_race_a + random_abilities
+    random_abilities = clean_random_abilities(request,
+                                              customize_form.race_counter,
+                                              customize_form.random_table)
+
+    selected_abilities = customize_form.prof_a_raw \
+                         + customize_form.race_a_raw + sel_prof_a \
+                         + sel_race_a + random_abilities
 
     save_abilities(selected_abilities, new_character)
     save_skills(customize_form.race_s_raw + sel_race_s, new_character, 'race')
