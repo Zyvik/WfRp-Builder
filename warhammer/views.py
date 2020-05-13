@@ -35,24 +35,13 @@ class IndexView(View):
 
     def post(self, request):
         if request.user.is_authenticated:
-            message = None
-            form = f.ClaimCharacterForm(request.POST)
+            form = f.ClaimCharacterForm(request.POST, request=request)
             if form.is_valid():
-                pk = form.cleaned_data.get('pk')
-                try:
-                    character = m.CharacterModel.objects.get(pk=pk)
-                    if character.user is None:
-                        character.user = request.user
-                        character.save()
-                        return redirect('wh:index')
-                    else:
-                        message = 'Ta postać już do kogoś należy.'
-                except ObjectDoesNotExist:
-                    message = 'Postać o takim identyfikatorze nie istnieje.'
+                return redirect('wh:index')
+
             your_characters = m.CharacterModel.objects.filter(user=request.user)
             context = {
                 'your_characters': your_characters,
-                'message': message,
                 'form': form
             }
             return render(request, 'warhammer/index.html', context)

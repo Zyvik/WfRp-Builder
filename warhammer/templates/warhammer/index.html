@@ -59,8 +59,15 @@
                 <div class="card-header mb-4">Dodaj istniejacego Bohatera</div>
                 <form method="post">
                     {% csrf_token %}
+                    {% if form.pk.errors %}
                     <div class="row">
-                        <div class="col-8"><p class="ml-3">{{ form }}</p></div>
+                        <div class="col">
+                            <div class="alert alert-danger ml-3 mr-3"> {{ form.pk.errors.0|escape }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-8"><p class="ml-3">{{ form.pk }}</p></div>
                     <div class="col-4 text-center"><button type="submit" class="btn btn-lg btn-dark">Dodaj</button></div>
                     </div>
                 </form>

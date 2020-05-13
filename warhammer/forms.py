@@ -1,20 +1,37 @@
+from uuid import UUID
 from django import forms
 from django.contrib.auth.models import User
-from .models import SkillsModel, AbilitiesModel, ProfessionModel
-from uuid import UUID
+from django.core.exceptions import ObjectDoesNotExist
+from .models import SkillsModel, AbilitiesModel, ProfessionModel, CharacterModel
 
 
 class ClaimCharacterForm(forms.Form):
     pk = forms.CharField(label='', min_length=36, max_length=36)
     pk.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 'Identyfikator bohatera'})
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(ClaimCharacterForm, self).__init__(*args, **kwargs)
+
     def clean_pk(self):
         pk = self.cleaned_data['pk']
+        #  checks if pk is valid UUID
         try:
             test_uuid = UUID(pk, version=4)
         except ValueError:
             raise forms.ValidationError('To nie jest identyfikator postaci')
-        return pk
+
+        #  checks if character with given id exists
+        try:
+            character = CharacterModel.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            raise forms.ValidationError("Postać o tym id nie istnieje.")
+
+        if character.user is None:
+            character.user = self.request.user
+            character.save()
+            return pk
+        raise forms.ValidationError("Ta postać już do kogoś należy")
 
 
 class RollStatsForm(forms.Form):
