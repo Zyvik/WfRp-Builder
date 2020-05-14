@@ -7,6 +7,9 @@ from .models import SkillsModel, AbilitiesModel, ProfessionModel, CharacterModel
 
 
 class ClaimCharacterForm(forms.Form):
+    """
+    Assigns existing character to user in clean_pk()
+    """
     pk = forms.CharField(label='', min_length=36, max_length=36)
     pk.widget.attrs.update({
         'class': 'form-control form-control-lg',
@@ -19,18 +22,20 @@ class ClaimCharacterForm(forms.Form):
 
     def clean_pk(self):
         pk = self.cleaned_data['pk']
-        #  checks if pk is valid UUID
+
+        # checks if pk is valid UUID
         try:
             test_uuid = UUID(pk, version=4)
         except ValueError:
             raise forms.ValidationError('To nie jest identyfikator postaci')
 
-        #  checks if character with given id exists
+        # checks if character with given id exists
         try:
             character = CharacterModel.objects.get(pk=pk)
         except ObjectDoesNotExist:
             raise forms.ValidationError("Postać o tym id nie istnieje.")
 
+        # checks if character 'belongs' to someone
         if character.user is None:
             character.user = self.request.user
             character.save()
@@ -53,8 +58,9 @@ class RollStatsForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        widget_class = 'form-control form-control-lg'
         for i in self.fields:
-            self.fields[i].widget.attrs['class'] = 'form-control form-control-lg'
+            self.fields[i].widget.attrs['class'] = widget_class
             self.fields[i].widget.attrs['placeholder'] = '2k10'
         self.fields['zyw'].widget.attrs['placeholder'] = '1k10'
         self.fields['pp'].widget.attrs['placeholder'] = '1k10'
@@ -62,9 +68,22 @@ class RollStatsForm(forms.Form):
 
 
 class RegisterForm(forms.Form):
-    login = forms.CharField(min_length=3, max_length=30)
-    password = forms.CharField(min_length=5, max_length=30, widget=forms.PasswordInput, label="Hasło")
-    confirm_password = forms.CharField(min_length=5, max_length=30, widget=forms.PasswordInput, label="Potwierdź hasło")
+    login = forms.CharField(
+        min_length=3,
+        max_length=30
+    )
+    password = forms.CharField(
+        min_length=5,
+        max_length=30,
+        widget=forms.PasswordInput,
+        label="Hasło"
+    )
+    confirm_password = forms.CharField(
+        min_length=5,
+        max_length=30,
+        widget=forms.PasswordInput,
+        label="Potwierdź hasło"
+    )
 
     login.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
     password.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
@@ -73,11 +92,13 @@ class RegisterForm(forms.Form):
     def clean_login(self):
         username = self.cleaned_data['login']
 
-        if ' ' in login:
-            raise forms.ValidationError('Login nie może zawierać spacji.')
+        if ' ' in username:
+            error_msg = 'Login nie może zawierać spacji.'
+            raise forms.ValidationError(error_msg)
         if User.objects.filter(username__iexact=username).exists():
-            raise forms.ValidationError('Użytkownik o takim loginie już istnieje.')
-        return login
+            error_msg = 'Użytkownik o takim loginie już istnieje.'
+            raise forms.ValidationError(error_msg)
+        return username
 
     def clean(self):
         cleaned_data = super().clean()
@@ -89,10 +110,18 @@ class RegisterForm(forms.Form):
 
 class LoginForm(forms.Form):
     """
-    Logs-in user in clean function
+    Login user in clean() function
     """
-    login = forms.CharField(min_length=3, max_length=30, label='')
-    password = forms.CharField(min_length=5, max_length=30, widget=forms.PasswordInput, label='')
+    login = forms.CharField(
+        min_length=3,
+        max_length=30
+    )
+    password = forms.CharField(
+        min_length=5,
+        max_length=30,
+        widget=forms.PasswordInput,
+        label='Hasło'
+    )
 
     login.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
     password.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
@@ -126,6 +155,14 @@ class ContactForm(forms.Form):
     subject = forms.CharField(label='')
     message = forms.CharField(widget=forms.Textarea, label='')
 
+    email_widget = {
+        'class': 'form-control form-control-lg',
+        'placeholder': 'Email (opcjonalnie)'
+    }
+    subject_widget = {
+        'class': 'form-control form-control-lg',
+        'placeholder': 'Temat'
+    }
     message_widget = {
         'class': 'form-control',
         'placeholder': 'Treść wiadomości',
@@ -133,8 +170,9 @@ class ContactForm(forms.Form):
         'cols': '20',
         'style': 'font-size:small'
     }
-    email.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 'Email (opcjonalnie)'})
-    subject.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 'Temat'})
+
+    email.widget.attrs.update(email_widget)
+    subject.widget.attrs.update(subject_widget)
     message.widget.attrs.update(message_widget)
 
 
@@ -143,9 +181,15 @@ class CoinsForm(forms.Form):
     silver = forms.IntegerField(label='', required=False)
     bronze = forms.IntegerField(label='', required=False)
 
-    gold.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 'zk'})
-    silver.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 's'})
-    bronze.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 'p'})
+    gold.widget.attrs.update({'placeholder': 'zk'})
+    silver.widget.attrs.update({'placeholder': 's'})
+    bronze.widget.attrs.update({'placeholder': 'p'})
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        widget_class = 'form-control form-control-lg'
+        for i in self.fields:
+            self.fields[i].widget.attrs['class'] = widget_class
 
 
 class ExperienceForm(forms.Form):
@@ -174,7 +218,8 @@ class AddSkillForm(forms.Form):
     skill_bonus = forms.CharField(label='', required='')
 
     add_skill.widget.attrs.update({'class': 'form-control'})
-    skill_bonus.widget.attrs.update({'class': 'form-control', 'placeholder': 'bonus'})
+    skill_bonus.widget.attrs.update({'class': 'form-control',
+                                     'placeholder': 'bonus'})
 
 
 class AddAbilityForm(forms.Form):
@@ -186,7 +231,8 @@ class AddAbilityForm(forms.Form):
     ability_bonus = forms.CharField(label='', required='')
 
     add_ability.widget.attrs.update({'class': 'form-control'})
-    ability_bonus.widget.attrs.update({'class': 'form-control', 'placeholder': 'bonus'})
+    ability_bonus.widget.attrs.update({'class': 'form-control',
+                                       'placeholder': 'bonus'})
 
 
 class NotesForm(forms.Form):
