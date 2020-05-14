@@ -38,7 +38,8 @@ $(document).ready(function () {
 
 // On load
 const host = window.location.host;
-const game_id = "bbf0d882-3718-42d4-bc26-a7dd4b6df9c2";
+//const game_id = "bbf0d882-3718-42d4-bc26-a7dd4b6df9c2";
+const game_id = "c4f50c27-85b8-4ea5-b081-1fc5b69b5b5e";
 var chat_box = document.getElementById('chat_box');
 var message_counter = 0;
 var map_counter = 0;
