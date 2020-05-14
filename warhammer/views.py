@@ -217,13 +217,13 @@ class LoginView(View):
         if request.user.is_authenticated:
             return redirect('wh:index')
         form = f.LoginForm()
-        return render(request, 'warhammer/login.html', {'form': form})
+        return render(request, 'warhammer/register.html', {'form': form})
 
     def post(self, request):
         form = f.LoginForm(request.POST, request=request)
         if form.is_valid():
             return redirect('wh:index')
-        return render(request, 'warhammer/login.html', {'form': form})
+        return render(request, 'warhammer/register.html', {'form': form})
 
 
 def logout_view(request):
