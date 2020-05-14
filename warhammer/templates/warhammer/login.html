@@ -24,18 +24,23 @@
             <div class="card text-center">
                 <div class="card-header mb-2" style="font-size:x-large;">Logowanie</div>
                 <div class="card-body">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col mt-3">
-                                <h3>Login</h3>
-                            </div>
+                    {% csrf_token %}
+                    {% if form.login.errors %}
+                        <div class="alert alert-danger">{{ form.login.errors.0|escape }}</div>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col mt-3">
+                            <h3>Login</h3>
                         </div>
-                        {{ form.as_p }}
-                        <div class="row">
-                            <div class="col">
-                                <p class="mt-4">Nie masz konta? <a href="{% url 'wh:register' %}">Zarejestruj się!</a></p>
-                            </div>
+                    </div>
+                    {{ form.login }}
+                    <h3>Hasło</h3>
+                    {{ form.password }}
+                    <div class="row">
+                        <div class="col">
+                            <p class="mt-4">Nie masz konta? <a href="{% url 'wh:register' %}">Zarejestruj się!</a></p>
                         </div>
+                    </div>
                 </div>
                 <div class="card-footer">
                     <div class="row">

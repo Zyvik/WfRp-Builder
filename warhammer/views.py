@@ -220,31 +220,10 @@ class LoginView(View):
         return render(request, 'warhammer/login.html', {'form': form})
 
     def post(self, request):
-        message = None
-        form = f.LoginForm(request.POST)
+        form = f.LoginForm(request.POST, request=request)
         if form.is_valid():
-            username = form.cleaned_data.get('login')
-            password = form.cleaned_data.get('password')
-            try:
-                user = User.objects.get(username__iexact=username)
-                user = authenticate(
-                    request=request,
-                    username=user.username,
-                    password=password
-                )
-                if user is not None:
-                    login(request, user)
-                    return redirect('wh:index')
-                else:
-                    message = 'Podano złą kombinację loginu i hasła.'
-            except ObjectDoesNotExist:
-                message = 'Podano złą kombinację loginu i hasła.'
-
-        return render(
-            request=request,
-            template_name='warhammer/login.html',
-            context={'message': message, 'form': form}
-        )
+            return redirect('wh:index')
+        return render(request, 'warhammer/login.html', {'form': form})
 
 
 def logout_view(request):

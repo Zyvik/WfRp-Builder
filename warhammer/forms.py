@@ -1,5 +1,6 @@
 from uuid import UUID
 from django import forms
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from .models import SkillsModel, AbilitiesModel, ProfessionModel, CharacterModel
@@ -7,7 +8,10 @@ from .models import SkillsModel, AbilitiesModel, ProfessionModel, CharacterModel
 
 class ClaimCharacterForm(forms.Form):
     pk = forms.CharField(label='', min_length=36, max_length=36)
-    pk.widget.attrs.update({'class': 'form-control form-control-lg', 'placeholder': 'Identyfikator bohatera'})
+    pk.widget.attrs.update({
+        'class': 'form-control form-control-lg',
+        'placeholder': 'Identyfikator bohatera'
+    })
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -59,19 +63,19 @@ class RollStatsForm(forms.Form):
 
 class RegisterForm(forms.Form):
     login = forms.CharField(min_length=3, max_length=30)
-    password = forms.CharField(min_length=5, max_length=30, widget=forms.PasswordInput)
-    confirm_password = forms.CharField(min_length=5, max_length=30, widget=forms.PasswordInput)
+    password = forms.CharField(min_length=5, max_length=30, widget=forms.PasswordInput, label="Hasło")
+    confirm_password = forms.CharField(min_length=5, max_length=30, widget=forms.PasswordInput, label="Potwierdź hasło")
 
     login.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
     password.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
     confirm_password.widget.attrs.update({'class': 'form-control form-control-lg'})
 
     def clean_login(self):
-        login = self.cleaned_data['login']
+        username = self.cleaned_data['login']
 
         if ' ' in login:
             raise forms.ValidationError('Login nie może zawierać spacji.')
-        if User.objects.filter(username__iexact=login).exists():
+        if User.objects.filter(username__iexact=username).exists():
             raise forms.ValidationError('Użytkownik o takim loginie już istnieje.')
         return login
 
@@ -84,11 +88,37 @@ class RegisterForm(forms.Form):
 
 
 class LoginForm(forms.Form):
-    login = forms.CharField(min_length=3, max_length=30)
-    password = forms.CharField(min_length=5, max_length=30, widget=forms.PasswordInput, label='Hasło')
+    """
+    Logs-in user in clean function
+    """
+    login = forms.CharField(min_length=3, max_length=30, label='')
+    password = forms.CharField(min_length=5, max_length=30, widget=forms.PasswordInput, label='')
 
     login.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
     password.widget.attrs.update({'class': 'form-control form-control-lg mb-4'})
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(LoginForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        error_msg = "Błędna kombinacja loginu i hasła."
+        username = cleaned_data['login']
+        password = cleaned_data['password']
+        try:
+            user = User.objects.get(username__iexact=username)
+            user = authenticate(
+                request=self.request,
+                username=user.username,
+                password=password
+            )
+            if user is not None:
+                login(self.request, user)
+            else:
+                self.add_error('login', error_msg)
+        except ObjectDoesNotExist:
+            self.add_error('login', error_msg)
 
 
 class ContactForm(forms.Form):
