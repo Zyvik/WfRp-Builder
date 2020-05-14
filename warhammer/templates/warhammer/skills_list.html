@@ -28,7 +28,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for skill in skills %}
+                {% for skill in object_list %}
                 <tr>
                     <td><a href="" data-toggle="modal" data-target="#{{skill.slug}}">{{skill.name}}</a></td>
                     <td>{{skill.stat}}</td>
@@ -47,7 +47,7 @@
     </div>
 </div>
 
-{% for skill in skills %}
+{% for skill in object_list %}
 <div class="modal fade" id="{{skill.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">

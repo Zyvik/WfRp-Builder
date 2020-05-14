@@ -1,12 +1,12 @@
 from itertools import zip_longest
+from smtplib import SMTPException
 from django.shortcuts import render, redirect, HttpResponse,\
     get_object_or_404, reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
+from django.views.generic.list import ListView
 from django.views import View
-from smtplib import SMTPException
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from . import forms as f
@@ -103,33 +103,6 @@ def roll_stats(request, race_slug):
         'starting_professions': starting_professions,
     }
     return render(request, 'warhammer/roll_stats.html', context)
-
-
-def profession_list(request):
-    all_professions = m.ProfessionModel.objects.all()
-    context = {'all_professions': all_professions}
-    return render(request, 'warhammer/profession_list.html', context)
-
-
-def profession_detail(request, profession_slug):
-    profession = get_object_or_404(m.ProfessionModel, slug=profession_slug)
-    all_skills = m.SkillsModel.objects.all()
-    all_abilities = m.AbilitiesModel.objects.all()
-
-    skills_string = prof_detail.create_modals(all_skills, profession.skills)
-    abilities_string = prof_detail.create_modals(all_abilities, profession.abilities)
-    stats_list = prof_detail.prepare_stats_for_display(profession)
-
-    context = {
-        'abilities': abilities_string,
-        'prof_abilities': all_abilities,  # abilities objects
-        'skills': skills_string,
-        'prof_skills': all_skills,  # skills objects from SkillModel
-        'stats_list': stats_list,
-        'profession': profession,  # profession object
-    }
-
-    return render(request, 'warhammer/profession_detail.html', context)
 
 
 class CharacterScreen(View):
@@ -341,13 +314,37 @@ def game_master_room(request, game_id):
         return render(request, 'warhammer/DMRoom.html', context)
 
 
-def skills_list(request):
-    skills = m.SkillsModel.objects.order_by("name")
-    context = {'skills': skills}
-    return render(request, 'warhammer/skills_list.html', context)
+class SkillList(ListView):
+    model = m.SkillsModel
+    template_name = 'warhammer/skills_list.html'
 
 
-def abilities_list(request):
-    abilities = m.AbilitiesModel.objects.all()
-    context = {'abilities': abilities}
-    return render(request, 'warhammer/abilities_list.html', context)
+class AbilityList(ListView):
+    model = m.AbilitiesModel
+    template_name = 'warhammer/abilities_list.html'
+
+
+class ProfessionList(ListView):
+    model = m.ProfessionModel
+    template_name = 'warhammer/profession_list.html'
+
+
+def profession_detail(request, profession_slug):
+    profession = get_object_or_404(m.ProfessionModel, slug=profession_slug)
+    all_skills = m.SkillsModel.objects.all()
+    all_abilities = m.AbilitiesModel.objects.all()
+
+    skills_string = prof_detail.create_modals(all_skills, profession.skills)
+    abilities_string = prof_detail.create_modals(all_abilities, profession.abilities)
+    stats_list = prof_detail.prepare_stats_for_display(profession)
+
+    context = {
+        'abilities': abilities_string,
+        'prof_abilities': all_abilities,  # abilities objects
+        'skills': skills_string,
+        'prof_skills': all_skills,  # skills objects from SkillModel
+        'stats_list': stats_list,
+        'profession': profession,  # profession object
+    }
+
+    return render(request, 'warhammer/profession_detail.html', context)
