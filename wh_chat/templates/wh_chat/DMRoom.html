@@ -1,0 +1,147 @@
+{% extends 'warhammer/base.html' %}
+{% load static %}
+
+{% block title %}
+<title>WfRp - {{game.name}}</title>
+{% endblock %}
+
+{% block body %}
+{% if login_error %}
+<div class="container">
+    <h2>{{login_error}}</h2>
+</div>
+{% else %}
+<form method="post">
+    {% csrf_token %}
+    <div class="container">
+        <h1>{{game.name}}</h1>
+        <hr style="width: 100%; color: black; height: 1px; background-color:black;">
+        <div class="row">
+            <div class="col">
+                <input class="form-control" id="rolling_name" value="{{user}}">
+                <div class="card">
+                    <div class="card-header">
+                        Dodaj NPC
+                    </div>
+                    {{ form.as_p }}
+                    <div class="card-footer">
+                         <div class="text-right">
+                             <button class="btn btn-dark" type="submit" name="add_npc" value="1">dodaj</button>
+                         </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header"> Twoi NPC:</div>
+                    <div class="list-group">
+                    {% for npc in npc_list %}
+                        <li class="list-group-item">
+                            <div class="row">
+                                <div class="col">
+                                    <p class="mb-2">
+                                     <button class="btn btn-dark" type="submit" value="{{npc.pk}}" name="delete_npc">usuń</button>
+                                    {{npc.name}}
+                                    </p>
+                                    <button id="{{npc.pk}}_WW" TYPE="button" name="WW" class="btn btn-dark" value="{{npc.WW}}" onclick="roll_stats(this.id);">WW ({{npc.WW}})</button>
+                                    <button id="{{npc.pk}}_US" TYPE="button" name="US" class="btn btn-dark" value="{{npc.US}}" onclick="roll_stats(this.id);">US ({{npc.US}})</button>
+                                    <br>
+                                    <p class="mt-1">{{npc.notes}}</p>
+                                </div>
+                            </div>
+                        </li>
+                    <br>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- chat box -->
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Kostko-turlacz</h3>
+                        <div class="row">
+                            <div class="col-3">
+                                <input class="form-control" type="number" value="1" min="1" id="n">
+                            </div>
+                            <div class="col-1 text-body">
+                                K
+                            </div>
+                            <div class="col-3">
+                                <input class="form-control" type="number" value="100" min="1" id="d">
+                            </div>
+                            <div class="col-4">
+                                <button class="btn btn-secondary btn-block" type="button" onclick="roll_custom()">Turlaj</button>
+                            </div>
+                        </div>
+                    </div>
+                    <ul id="chat_box" class="list-group">
+                    </ul>
+                </div>
+            </div>
+
+            <!-- mapa -->
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">Mapa</div>
+                    <div class="card-body bg-secondary">
+                         <div class="map" style="position:relative; left:16px; width:300px;">
+                            <div class="empty"><div data-token="0" class="filled" draggable="true"><img src="{% static 'warhammer/token0.png' %}" class="img-fluid"></div></div>
+                            <div class="empty"><div data-token="1" class="filled" draggable="true"><img id="token1" class="img-fluid" src="{% static 'warhammer/token1.png' %}"></div></div>
+                            <div class="empty"><div data-token="2" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token2.png' %}"></div></div>
+                            <div class="empty"><div data-token="3" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token3.png' %}"></div></div>
+                            <div class="empty"><div data-token="4" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token4.png' %}"></div></div>
+                            <div class="empty"><div data-token="5" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token5.png' %}"></div></div>
+                             <div class="empty"><div data-token="6" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token6.png' %}"></div></div>
+                             <div class="empty"><div data-token="7" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token7.png' %}"></div></div>
+                             <div class="empty"><div data-token="8" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token8.png' %}"></div></div>
+                             <div class="empty"><div data-token="9" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token9.png' %}"></div></div>
+                             <div class="empty"><div data-token="10" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token10.png' %}"></div></div>
+                             <div class="empty"><div data-token="11" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token11.png' %}"></div></div>
+                             <div class="empty"><div data-token="12" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token12.png' %}"></div></div>
+                             <div class="empty" id="trash" style="background-image:url('{% static 'warhammer/trash-can.png' %}'); background-color:transparent;"></div>
+                            <br>
+                         </div>
+                    </div>
+                </div>
+
+                <table class="map mt-3">
+                    {% for y in rows %}
+                    <tr class="map table-map">
+                        {% for x in columns %}
+                        <th class="map"><div class="empty" id="{{y}}_{{x}}"></div></th>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </table>
+
+                <div class="card mt-3">
+                    <div class="card-header">Inicjatywa</div>
+                    <div class="row mt-2 ml-2">
+                        <div class="col-6">
+                            <input class="form-control" type="text" id="i_name" placeholder="Nazwa">
+                        </div>
+                        <div class="col-4">
+                            <input class="form-control" type="number" id="i_value" placeholder="inicjatywa">
+                        </div>
+                        <div class="col-2">
+                            <button class="btn btn-dark" type="button" onclick="add_initiative()">+</button>
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-center mt-3 mb-2">
+                        <div class="btn-group">
+                            <button class="btn btn-danger btn-lg" type="button" onclick="reset_initiative()">reset</button>
+                            <button class="btn btn-dark btn-lg" type="button" onclick="sort_initiative()">sort</button>
+                            <button class="btn btn-dark btn-lg" type="button" onclick="next_initiative()">  next  </button>
+                        </div>
+                    </div>
+                <div id="initiative" class="list-group"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<script src="{% static 'wh_chat/DmRoom.js' %}">
+</script>
+{% endif %}
+{% endblock %}

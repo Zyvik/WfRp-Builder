@@ -1,9 +1,10 @@
-from django.shortcuts import render, get_object_or_404
-from django.http import Http404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views import View
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import GameModel, MessagesModel, MapModel, NPCModel
+from .forms import NpcForm
 from .serializers import ChatSerializer, MapSerializer
 
 
@@ -11,15 +12,8 @@ class ChatView(APIView):
     msg_limit = 15
     authentication_classes = []
 
-    def get_game(self, pk):
-        try:
-            game = get_object_or_404(GameModel, pk=pk)
-        except GameModel.DoesNotExist:
-            raise Http404
-        return game
-
     def get(self, request, pk):
-        game = self.get_game(pk)
+        game = get_object_or_404(GameModel, pk=pk)
         messages = MessagesModel.objects.filter(game=game).order_by('-id')
         messages = messages[:self.msg_limit]
         tactical_map = MapModel.objects.get(game=game)
@@ -39,7 +33,7 @@ class ChatView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
-        game = self.get_game(pk)
+        game = get_object_or_404(GameModel, pk=pk)
         tactical_map = MapModel.objects.get(game=game)
         serializer = MapSerializer(tactical_map, request.data)
         if serializer.is_valid():
@@ -48,44 +42,28 @@ class ChatView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-def game_master_room(request, pk):
-    game = get_object_or_404(GameModel, pk=pk)
-    if request.user == game.admin:
+class GmRoomView(View):
+    def get(self, request, pk):
+        game = get_object_or_404(GameModel, pk=pk)
         npc_list = NPCModel.objects.filter(game=game)
-        if request.method == 'POST':
-            # Adding NPC
-            if request.POST.get('add_npc'):
-                try:
-                    npc = NPCModel(
-                        game=game,
-                        name=request.POST.get('npc_name', 'boring name'),
-                        WW=int(request.POST.get('npc_WW', '0')),
-                        US=int(request.POST.get('npc_US', '0')),
-                        notes=request.POST.get('npc_notes')
-                    )
-                    npc.save()
-                except ValueError:
-                    pass
-
-            # deleting NPC
-            if request.POST.get('delete_npc'):
-                npc_pk = int(request.POST.get('delete_npc'))
-                npc = NPCModel.objects.get(pk=npc_pk)
-                # checks if npc belongs to this game
-                if npc.game == game:
-                    npc.delete()
-
-        context = {
-            'game': game,
-            'npcs': npc_list,
-            'columns': range(7),
-            'rows': range(10)
-        }
-        return render(request, 'warhammer/DMRoom.html', context)
-    else:
+        if request.user == game.admin:
+            form = NpcForm
+            context = {
+                'game': game,
+                'form': form,
+                'npc_list': npc_list,
+                'columns': range(7),
+                'rows': range(10)
+            }
+            return render(request, 'wh_chat/DMRoom.html', context)
         login_error = 'Nie jestesteś mistrzem tej gry - zawróć.'
-        context = {
-            'game': game,
-            'login_error': login_error
-        }
-        return render(request, 'warhammer/DMRoom.html', context)
+        return render(request, 'wh_chat/DMRoom.html', {'error': login_error})
+
+    def post(self, request, pk):
+        game = get_object_or_404(GameModel, pk=pk)
+        form = NpcForm(request.POST)
+        if form.is_valid():
+            npc = form.save(commit=False)
+            npc.game = game
+            npc.save()
+        return redirect('wh-chat:gm_room', pk=pk)  # Idc about error messages
