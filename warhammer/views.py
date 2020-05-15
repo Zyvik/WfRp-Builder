@@ -1,19 +1,15 @@
 from itertools import zip_longest
 from smtplib import SMTPException
-from django.shortcuts import render, redirect, HttpResponse,\
-    get_object_or_404, reverse
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.views.generic.list import ListView
 from django.views import View
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from . import forms as f
 from . import models as m
 from .libs import character_screen_lib as csl, character_creation_lib as ccl, \
     profession_detail_lib as prof_detail
-from .serializers import ChatSerializer, MapSerializer
 
 
 class IndexView(View):
@@ -233,85 +229,6 @@ class ContactView(View):
             'form': form
         }
         return render(request, 'warhammer/contact.html', context)
-
-
-# Dice roller and MAP API
-class ChatView(APIView):
-    authentication_classes = []
-
-    def get(self, request, game_id):
-        msg_to_display = 15
-        game = get_object_or_404(m.GameModel, id=game_id)
-        messages = m.MessagesModel.objects.filter(game=game).order_by('-id')
-        messages = messages[:msg_to_display]
-        map = m.MapModel.objects.get(game=game)
-        serializer = ChatSerializer(messages, many=True)
-        map_serializer = MapSerializer(map, many=False)
-        return Response({
-            'chat': serializer.data,
-            'map': map_serializer.data
-        })
-
-    def post(self, request, game_id):
-        try:
-            if request.data.get('message'):
-                m.MessagesModel.objects.create(
-                    game=m.GameModel.objects.get(id=game_id),
-                    author=request.data.get('author'),
-                    message=request.data.get('message')
-                )
-            else:
-                game = m.GameModel.objects.get(id=game_id)
-                map_obj = m.MapModel.objects.get(game=game)
-                map_obj.map = request.data.get('map')
-                map_obj.counter += 1
-                map_obj.save()
-        except:
-            pass
-        return HttpResponse("git majonez")
-
-
-def game_master_room(request, game_id):
-    game = get_object_or_404(m.GameModel, pk=game_id)
-    if request.user == game.admin:
-        npc_list = m.NPCModel.objects.filter(game=game)
-        if request.method == 'POST':
-            # Adding NPC
-            if request.POST.get('add_npc'):
-                try:
-                    npc = m.NPCModel(
-                        game=game,
-                        name=request.POST.get('npc_name', 'boring name'),
-                        WW=int(request.POST.get('npc_WW', '0')),
-                        US=int(request.POST.get('npc_US', '0')),
-                        notes=request.POST.get('npc_notes')
-                    )
-                    npc.save()
-                except ValueError:
-                    pass
-
-            # deleting NPC
-            if request.POST.get('delete_npc'):
-                npc_pk = int(request.POST.get('delete_npc'))
-                npc = m.NPCModel.objects.get(pk=npc_pk)
-                # checks if npc belongs to this game
-                if npc.game == game:
-                    npc.delete()
-
-        context = {
-            'game': game,
-            'npcs': npc_list,
-            'columns': range(7),
-            'rows': range(10)
-        }
-        return render(request, 'warhammer/DMRoom.html', context)
-    else:
-        login_error = 'Nie jestesteś mistrzem tej gry - zawróć.'
-        context = {
-            'game': game,
-            'login_error': login_error
-        }
-        return render(request, 'warhammer/DMRoom.html', context)
 
 
 class SkillList(ListView):

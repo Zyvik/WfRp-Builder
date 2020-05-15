@@ -13,8 +13,6 @@ urlpatterns = [
     path('login', views.LoginView.as_view(), name='login'),
     path('logout', views.logout_view, name='logout'),
     path('kontakt', views.ContactView.as_view(), name='contact'),
-    path('api/game/<slug:game_id>', views.ChatView.as_view(), name='api-game'),
-    path('game/<slug:game_id>', views.game_master_room, name='gm_room'),
     path('umiejetnosci', views.SkillList.as_view(), name='skills_list'),
     path('zdolnosci', views.AbilityList.as_view(), name='abilities_list')
 ]

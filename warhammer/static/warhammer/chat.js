@@ -39,7 +39,7 @@ $(document).ready(function () {
 // On load
 const host = window.location.host;
 //const game_id = "bbf0d882-3718-42d4-bc26-a7dd4b6df9c2";
-const game_id = "c4f50c27-85b8-4ea5-b081-1fc5b69b5b5e";
+const game_id = "1";
 var chat_box = document.getElementById('chat_box');
 var message_counter = 0;
 var map_counter = 0;
@@ -68,7 +68,7 @@ function toggleAPI(clicked_bool, other_bool){
 //contrary to name - it also gets map
 function get_message(){
         var Httpreq = new XMLHttpRequest();
-        Httpreq.open("GET",'http://' + host + '/warhammer/api/game/' + game_id, true);
+        Httpreq.open("GET",'http://' + host + '/warhammer/chat/' + game_id, true);
         Httpreq.onload = function(){
             var json = JSON.parse(Httpreq.responseText);
             var json_map = json.map;
@@ -104,11 +104,11 @@ function get_message(){
 function send_message(message, type){
     var author = document.getElementById("Name").innerHTML.replace("Nazwa: ", "");
     var Httpreq = new XMLHttpRequest();
-    Httpreq.open("POST",'http://' + host + '/warhammer/api/game/' + game_id, true);
+    Httpreq.open("POST",'http://' + host + '/warhammer/chat/' + game_id, true);
 
     // send message or map??
     if (type=="roll"){
-        var post_data = {"author":author,"message":message};
+        var post_data = {"author":author,"message":message, "game":1};
     } else {
         var post_data = {"map":message};
     }
