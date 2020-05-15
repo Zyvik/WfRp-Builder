@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import GameModel, MessagesModel, MapModel, NPCModel
-from .forms import NpcForm
+from .forms import CreateNpcForm, RemoveNpcForm
 from .serializers import ChatSerializer, MapSerializer
 
 
@@ -47,7 +47,7 @@ class GmRoomView(View):
         game = get_object_or_404(GameModel, pk=pk)
         npc_list = NPCModel.objects.filter(game=game)
         if request.user == game.admin:
-            form = NpcForm
+            form = CreateNpcForm
             context = {
                 'game': game,
                 'form': form,
@@ -60,10 +60,21 @@ class GmRoomView(View):
         return render(request, 'wh_chat/DMRoom.html', {'error': login_error})
 
     def post(self, request, pk):
+        # Create NPC
         game = get_object_or_404(GameModel, pk=pk)
-        form = NpcForm(request.POST)
+        form = CreateNpcForm(request.POST)
         if form.is_valid():
             npc = form.save(commit=False)
             npc.game = game
             npc.save()
-        return redirect('wh-chat:gm_room', pk=pk)  # Idc about error messages
+            return redirect('wh-chat:gm_room', pk=pk)
+
+        # Remove NPC
+        npc_list = NPCModel.objects.filter(game=game)
+        form = RemoveNpcForm(request.POST)
+        if form.is_valid():
+            npc_pk = form.cleaned_data['npc_pk']
+            npc = get_object_or_404(npc_list, pk=npc_pk)
+            npc.delete()
+        return redirect('wh-chat:gm_room', pk=pk)
+
