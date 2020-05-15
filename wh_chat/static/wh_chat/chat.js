@@ -42,7 +42,6 @@ const game_id = 1;
 const game_url = 'http://' + host + '/warhammer/chat/' + game_id;
 const chat_box = document.getElementById('chat_box');
 let message_counter = 0;
-let map_counter = 0;
 let map_state = "foobar";
 let map_bool = false;
 let chat_bool = false;
@@ -51,7 +50,6 @@ let reload_messages;
 
 //checks if sidebars are open and sets interval accordingly
 function toggleAPI(clicked_bool, other_bool){
-    console.log(clicked_bool);
     clicked_bool = !clicked_bool;
     if (clicked_bool && other_bool){
         // do nothing because interval has been already set

@@ -51,3 +51,6 @@ function next_initiative(){
 function reset_initiative(){
     initiative_box.innerHTML = "";
 }
+
+// Requires chat.js
+toggleAPI(false, false);

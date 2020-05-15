@@ -16,7 +16,7 @@
     <hr style="width: 100%; color: black; height: 1px; background-color:black;">
     <div class="row">
         <div class="col">
-            <input class="form-control" id="rolling_name" value="{{user}}">
+            <input class="form-control" id="Name" value="{{user}}">
             <form method="post">
                 {% csrf_token %}
                 <div class="card">
@@ -89,20 +89,20 @@
                 <div class="card-header">Mapa</div>
                 <div class="card-body bg-secondary">
                      <div class="map" style="position:relative; left:16px; width:300px;">
-                        <div class="empty"><div data-token="0" class="filled" draggable="true"><img src="{% static 'warhammer/token0.png' %}" class="img-fluid"></div></div>
-                        <div class="empty"><div data-token="1" class="filled" draggable="true"><img id="token1" class="img-fluid" src="{% static 'warhammer/token1.png' %}"></div></div>
-                        <div class="empty"><div data-token="2" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token2.png' %}"></div></div>
-                        <div class="empty"><div data-token="3" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token3.png' %}"></div></div>
-                        <div class="empty"><div data-token="4" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token4.png' %}"></div></div>
-                        <div class="empty"><div data-token="5" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token5.png' %}"></div></div>
-                         <div class="empty"><div data-token="6" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token6.png' %}"></div></div>
-                         <div class="empty"><div data-token="7" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token7.png' %}"></div></div>
-                         <div class="empty"><div data-token="8" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token8.png' %}"></div></div>
-                         <div class="empty"><div data-token="9" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token9.png' %}"></div></div>
-                         <div class="empty"><div data-token="10" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token10.png' %}"></div></div>
-                         <div class="empty"><div data-token="11" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token11.png' %}"></div></div>
-                         <div class="empty"><div data-token="12" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/token12.png' %}"></div></div>
-                         <div class="empty" id="trash" style="background-image:url('{% static 'warhammer/trash-can.png' %}'); background-color:transparent;"></div>
+                        <div class="empty"><div data-token="0" class="filled" draggable="true"><img src="{% static 'warhammer/../../static/wh_chat/token0.png' %}" class="img-fluid"></div></div>
+                        <div class="empty"><div data-token="1" class="filled" draggable="true"><img id="token1" class="img-fluid" src="{% static 'warhammer/../../static/wh_chat/token1.png' %}"></div></div>
+                        <div class="empty"><div data-token="2" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/../../static/wh_chat/token2.png' %}"></div></div>
+                        <div class="empty"><div data-token="3" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/../../static/wh_chat/token3.png' %}"></div></div>
+                        <div class="empty"><div data-token="4" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/../../static/wh_chat/token4.png' %}"></div></div>
+                        <div class="empty"><div data-token="5" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/../../static/wh_chat/token5.png' %}"></div></div>
+                         <div class="empty"><div data-token="6" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/../../static/wh_chat/token6.png' %}"></div></div>
+                         <div class="empty"><div data-token="7" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/../../static/wh_chat/token7.png' %}"></div></div>
+                         <div class="empty"><div data-token="8" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/../../static/wh_chat/token8.png' %}"></div></div>
+                         <div class="empty"><div data-token="9" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/../../static/wh_chat/token9.png' %}"></div></div>
+                         <div class="empty"><div data-token="10" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/../../static/wh_chat/token10.png' %}"></div></div>
+                         <div class="empty"><div data-token="11" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/../../static/wh_chat/token11.png' %}"></div></div>
+                         <div class="empty"><div data-token="12" class="filled" draggable="true"><img class="img-fluid" src="{% static 'warhammer/../../static/wh_chat/token12.png' %}"></div></div>
+                         <div class="empty" id="trash" style="background-image:url('{% static 'warhammer/../../static/wh_chat/trash-can.png' %}'); background-color:transparent;"></div>
                         <br>
                      </div>
                 </div>
@@ -144,7 +144,7 @@
     </div>
 </div>
 
-<script src="{% static 'wh_chat/DmRoom.js' %}">
-</script>
+<script src="{% static 'wh_chat/chat.js'  %}"></script>
+<script src="{% static 'wh_chat/DmRoom.js' %}"></script>
 {% endif %}
 {% endblock %}
