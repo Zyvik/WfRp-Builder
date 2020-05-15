@@ -38,14 +38,15 @@ $(document).ready(function () {
 
 // On load
 const host = window.location.host;
-//const game_id = "bbf0d882-3718-42d4-bc26-a7dd4b6df9c2";
-const game_id = "1";
-var chat_box = document.getElementById('chat_box');
-var message_counter = 0;
-var map_counter = 0;
-var map_bool = false;
-var chat_bool = false;
-var reload_messages;
+const game_id = 1;
+const game_url = 'http://' + host + '/warhammer/chat/' + game_id;
+const chat_box = document.getElementById('chat_box');
+let message_counter = 0;
+let map_counter = 0;
+let map_state = "foobar";
+let map_bool = false;
+let chat_bool = false;
+let reload_messages;
 
 
 //checks if sidebars are open and sets interval accordingly
@@ -67,16 +68,16 @@ function toggleAPI(clicked_bool, other_bool){
 
 //contrary to name - it also gets map
 function get_message(){
-        var Httpreq = new XMLHttpRequest();
-        Httpreq.open("GET",'http://' + host + '/warhammer/chat/' + game_id, true);
+        let Httpreq = new XMLHttpRequest();
+        Httpreq.open("GET", game_url, true);
         Httpreq.onload = function(){
-            var json = JSON.parse(Httpreq.responseText);
-            var json_map = json.map;
+            let json = JSON.parse(Httpreq.responseText);
+            let json_map = json.map;
             json = json.chat;
-            var i;
+            let i;
 
             // if there are new messages - refresh chat
-            if(json[json.length-1].pk != message_counter){
+            if(json[0].pk != message_counter){
                 chat_box.innerHTML = ' ';
                 for (i = 0; i < json.length; i++){
                     if (json[i].message.includes("Sukces!")){
@@ -87,30 +88,30 @@ function get_message(){
                         chat_box.innerHTML += "<li class='list-group-item text-body'>" + json[i].author + "<br>" + json[i].message + '</li>';
                     }
                 }
-            message_counter = json[json.length-1].pk;
+            message_counter = json[0].pk;
             }
 
             // if there is change in map - refresh
-            if (json_map.counter != map_counter){
+            if (json_map.map != map_state){
                 refresh_map(json_map.map);
-                map_counter = json_map.counter;
+                map_state = json_map.map;
             }
 
-        }
+        };
   Httpreq.send();
 }
 
 //sends provided message and refreshes chat
 function send_message(message, type){
-    var author = document.getElementById("Name").innerHTML.replace("Nazwa: ", "");
-    var Httpreq = new XMLHttpRequest();
-    Httpreq.open("POST",'http://' + host + '/warhammer/chat/' + game_id, true);
-
-    // send message or map??
-    if (type=="roll"){
-        var post_data = {"author":author,"message":message, "game":1};
+    let post_data = {};
+    let author = document.getElementById("Name").innerHTML.replace("Nazwa: ", "");
+    let Httpreq = new XMLHttpRequest();
+    if (type=='roll') {
+        Httpreq.open("POST", game_url, true);
+        post_data = {"author":author,"message":message, "game":game_id};
     } else {
-        var post_data = {"map":message};
+        Httpreq.open("PUT", game_url, true);
+        post_data = {"map":message, "counter":0, "game":game_id};
     }
 
     Httpreq.setRequestHeader("Content-Type", "application/json");
