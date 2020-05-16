@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.contrib.auth.models import User
 
 
@@ -38,3 +40,11 @@ class NPCModel(models.Model):
         return f"NPC {self.name} in {self.game}"
 
 
+# Create MapModel for created game
+@receiver(post_save, sender=GameModel)
+def create_map(sender, instance, **kwargs):
+    token_range = range(14)  # 0-12 are tokens, 13 is empty space
+    tokens = list(map(str, token_range))  # turn range into list of str
+    fields = ['13'] * (7*10)  # empty_space * (columns*rows)
+    map_string = ','.join(tokens + fields)
+    MapModel.objects.create(game=instance, map=map_string)
