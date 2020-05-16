@@ -11,4 +11,4 @@ class ChatSerializer(serializers.ModelSerializer):
 class MapSerializer(serializers.ModelSerializer):
     class Meta:
         model = MapModel
-        fields = ('game', 'counter', 'map')
+        fields = ('game', 'map')

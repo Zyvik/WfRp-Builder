@@ -109,7 +109,7 @@ function send_message(message, type){
         post_data = {"author":author,"message":message, "game":game_id};
     } else {
         Httpreq.open("PUT", game_url, true);
-        post_data = {"map":message, "counter":0, "game":game_id};
+        post_data = {"map":message, "game":game_id};
     }
 
     Httpreq.setRequestHeader("Content-Type", "application/json");

@@ -52,7 +52,7 @@ class GmRoomView(View):
                 'game': game,
                 'form': form,
                 'npc_list': npc_list,
-                'columns': range(7),
+                'columns': range(7),  # for tactical map
                 'rows': range(10)
             }
             return render(request, 'wh_chat/DMRoom.html', context)
