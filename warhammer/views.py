@@ -9,7 +9,7 @@ from django.views import View
 from . import forms as f
 from . import models as m
 from .libs import character_screen_lib as csl, character_creation_lib as ccl, \
-    profession_detail_lib as prof_detail
+                  profession_detail_lib as prof_detail
 
 
 class IndexView(View):
@@ -54,7 +54,7 @@ def choose_race(request):
 
 def roll_stats(request, race_slug):
     """
-    2nd step in character creation - rolling for stats
+    2nd and 3rd steps in character creation - roll for stats and customize char
     """
     race = get_object_or_404(m.RaceModel, slug=race_slug)
     starting_stats = m.StartingStatsModel.objects.filter(race=race)
@@ -64,36 +64,23 @@ def roll_stats(request, race_slug):
     stats_form = f.RollStatsForm()
     if request.GET:
         stats_form = f.RollStatsForm(request.GET)
+
     if stats_form.is_valid():
         customize_form = ccl.CharacterCustomizeForm(race, stats_form)
         if request.method == 'POST':
             # 3rd step in character creation - customize character
             new_character = ccl.create_new_character(request, customize_form)
             return redirect('wh:character_screen', pk=new_character.pk)
-        # customize character context
+
+        # customize character (3rd step) context
         context = {
-            'profession': customize_form.profession,
-            'mandatory_prof_skills': customize_form.prof_s_free,
-            'optional_prof_skills': customize_form.prof_s_radio,
-            'mandatory_race_skills': customize_form.race_s_free,
-            'optional_race_skills': customize_form.race_s_radio,
-            'mandatory_prof_abilities': customize_form.prof_a_free,
-            'optional_prof_abilities': customize_form.prof_a_radio,
-            'mandatory_race_abilities': customize_form.race_a_free,
-            'optional_race_abilities': customize_form.race_a_radio,
             'character_stats': customize_form.character_stats,
-            'develop_stats': customize_form.develop_stats_form,
-            'random_table': customize_form.random_table,
-            'race_counter': customize_form.race_counter,
             'race': race,
-            'all_stats': m.StatsModel.objects.all(),
-            'stats_table': customize_form.stats_table,
-            'qs_skills': customize_form.all_skills,
-            'qs_abilities': customize_form.all_abilities,
-            'equipment': customize_form.profession.equipment
+            'form': customize_form
         }
         return render(request, 'warhammer/customize_character.html', context)
-    # roll stats_context
+
+    # Roll stats (2nd step) context
     context = {
         'stats_and_form': list(zip_longest(starting_stats, stats_form)),
         'starting_professions': starting_professions,
@@ -102,6 +89,9 @@ def roll_stats(request, race_slug):
 
 
 class CharacterScreen(View):
+    """
+    View, develop, edit selected character
+    """
     def get(self, request, **kwargs):
         user = request.user
         character = get_object_or_404(m.CharacterModel, pk=self.kwargs['pk'])

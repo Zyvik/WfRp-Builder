@@ -28,8 +28,8 @@
                 <div class="card">
                     <div class="card-header pb-2">Podstawowe informacje</div>
                     <p class="pl-3 pr-3 pt-4"><input required placeholder="Nazwa" type="text" name="name" class="form-control form-control-lg"></p>
-                    <p class="pl-3">Rasa: {{race.name}}</p>
-                    <p class="pl-3">Profesja: {{profession.name}}</p>
+                    <p class="pl-3">Rasa: {{ race.name }}</p>
+                    <p class="pl-3">Profesja: {{ form.profession.name }}</p>
                     <p class="pl-3">PD: 0 </p>
                 </div>
             </div>
@@ -40,13 +40,13 @@
                     <div class="table-responsive">
                     <table class="table table-sm mt-2">
                         <thead class="thead-dark justify-content-center">
-                        <tr>{% for stat in stats_table %} {% if not stat.stat.is_secondary %}
-                            <th class="pl-5" scope="col"><a class="text-white" data-target="#{{stat.stat.short}}" data-toggle="modal" href="#">{{stat.stat.short}}</a></th>{% endif %} {% endfor %}
+                        <tr>{% for stat in form.stats_table %} {% if not stat.stat.is_secondary %}
+                            <th class="pl-5" scope="col"><a class="text-white" data-target="#{{ stat.stat.short }}" data-toggle="modal" href="#">{{ stat.stat.short }}</a></th>{% endif %} {% endfor %}
                         </tr>
                         </thead>
                         <tbody>
-                        <tr>{% for stat in stats_table %} {% if not stat.stat.is_secondary %}
-                            <td class="pl-5">{{stat.value}}</td>{% endif %} {% endfor %}
+                        <tr>{% for stat in form.stats_table %} {% if not stat.stat.is_secondary %}
+                            <td class="pl-5">{{ stat.value }}</td>{% endif %} {% endfor %}
                         </tr>
                         </tbody>
                     </table>
@@ -54,13 +54,13 @@
                     <div class="table-responsive">
                     <table class="table table-sm mt-3">
                         <thead class="thead-dark ml-3">
-                        <tr>{% for stat in stats_table %} {% if stat.stat.is_secondary %}
-                            <th class="pl-5" scope="col"><a class="text-white" href="#" data-toggle="modal" data-target="#{{stat.stat.short}}">{{stat.stat.short}}</a></th>{% endif %} {% endfor %}
+                        <tr>{% for stat in form.stats_table %} {% if stat.stat.is_secondary %}
+                            <th class="pl-5" scope="col"><a class="text-white" href="#" data-toggle="modal" data-target="#{{ stat.stat.short }}">{{ stat.stat.short }}</a></th>{% endif %} {% endfor %}
                         </tr>
                         </thead>
                         <tbody>
-                        <tr>{% for stat in stats_table %} {% if stat.stat.is_secondary %}
-                            <td class="pl-5">{{stat.value}}</td>{% endif %} {% endfor %}
+                        <tr>{% for stat in form.stats_table %} {% if stat.stat.is_secondary %}
+                            <td class="pl-5">{{ stat.value }}</td>{% endif %} {% endfor %}
                         </tr>
                         </tbody>
                     </table>
@@ -76,7 +76,7 @@
                     <div class="card-header">Wyuczone umiejętności</div>
                     <p class="ml-3 mt-3">Rasa:</p>
                     <ul class="list-group">
-                    {% for skill in mandatory_race_skills %}
+                    {% for skill in form.race_s_free %}
                     <li class="list-group-item ml-3 mr-3">{{skill}}</li>
                     {% empty %}
                         <li class="list-group-item ml-3 mr-3">Brak darmowych umiejętności</li>
@@ -84,8 +84,8 @@
                     </ul>
                     <p class="ml-3 mt-3">Profesja:</p>
                     <ul class="list-group">
-                    {% for skill in mandatory_prof_skills %}
-                    <li class="list-group-item ml-3 mr-3">{{skill}}</li>
+                    {% for skill in form.prof_s_free %}
+                    <li class="list-group-item ml-3 mr-3">{{ skill }}</li>
                     {% empty %}
                         <li class="list-group-item ml-3 mr-3">Brak darmowych umiejętności</li>
                         {% endfor %}
@@ -97,10 +97,10 @@
                 <div class="card">
                     <div class="card-header">Umiejętności do wyboru</div>
                     <p class="ml-3 mt-3">Rasa:</p>
-                    {% if optional_race_skills %}
+                    {% if form.race_s_radio %}
                     <ul class="list-group">
-                        {% for skill in optional_race_skills %}
-                        <li class="list-group-item ml-3 mr-3">{{skill}}</li>
+                        {% for skill in form.race_s_radio %}
+                        <li class="list-group-item ml-3 mr-3">{{ skill }}</li>
                         {% endfor %}
                     </ul>
                         {% else %}
@@ -109,10 +109,10 @@
                         </ul>
                     {% endif %}
                     <p class="ml-3 mt-3">Profesja:</p>
-                    {% if optional_prof_skills %}
+                    {% if form.prof_s_radio %}
                     <ul class="list-group">
-                    {% for skill in optional_prof_skills %}
-                    <li class="list-group-item ml-3 mr-3">{{skill}}</li>
+                    {% for skill in form.prof_s_radio %}
+                    <li class="list-group-item ml-3 mr-3">{{ skill }}</li>
                         {% endfor %}
                     </ul>
                     {% else %}
@@ -132,16 +132,16 @@
                     <div class="card-header">Posiadane Zdolności</div>
                     <p class="ml-3 mt-3">Rasa:</p>
                     <ul class="list-group">
-                    {% for skill in mandatory_race_abilities %}
-                    <li class="list-group-item ml-3 mr-3">{{skill}}</li>
+                    {% for skill in form.race_a_free %}
+                    <li class="list-group-item ml-3 mr-3">{{ skill }}</li>
                     {% empty %}
                         <li class="list-group-item ml-3 mr-3">Brak darmowych zdolności</li>
                         {% endfor %}
                     </ul>
                     <p class="ml-3 mt-3">Profesja:</p>
                     <ul class="list-group">
-                    {% for skill in mandatory_prof_abilities %}
-                    <li class="list-group-item ml-3 mr-3">{{skill}}</li>
+                    {% for skill in form.prof_a_free %}
+                    <li class="list-group-item ml-3 mr-3">{{ skill }}</li>
                         {% empty %}
                         <li class="list-group-item ml-3 mr-3">Brak darmowych zdolności</li>
                         {% endfor %}
@@ -153,10 +153,10 @@
                 <div class="card">
                     <div class="card-header">Zdolności do wyboru</div>
                     <p class="ml-3 mt-3">Rasa:</p>
-                    {% if optional_race_abilities %}
+                    {% if form.race_a_radio %}
                     <ul class="list-group">
-                        {% for skill in optional_race_abilities %}
-                        <li class="list-group-item ml-3 mr-3">{{skill}}</li>
+                        {% for skill in form.race_a_radio %}
+                        <li class="list-group-item ml-3 mr-3">{{ skill }}</li>
                         {% endfor %}
                     </ul>
                     {% else %}
@@ -165,10 +165,10 @@
                     </ul>
                     {% endif %}
                     <p class="ml-3 mt-3">Profesja:</p>
-                    {% if optional_prof_abilities %}
+                    {% if form.prof_a_radio %}
                     <ul class="list-group">
-                    {% for skill in optional_prof_abilities %}
-                    <li class="list-group-item ml-3 mr-3">{{skill}}</li>
+                    {% for skill in form.prof_a_radio %}
+                    <li class="list-group-item ml-3 mr-3">{{ skill }}</li>
                         {% endfor %}
                     </ul>
                     {% else %}
@@ -188,9 +188,9 @@
                     <div class="card-header">Darmowe rozwinięcie</div>
                     <p class="mt-3 ml-3">Twój Bohater na start otrzymuje jedno darmowe rozwinięcie cechy: </p>
                     <ul class="list-group">
-                    {% for stat in develop_stats %}
+                    {% for stat in form.develop_stats_form %}
                     <li class="list-group-item ml-3 mr-3">
-                        <label><input required type="radio" name="develop_stat" value="{{stat.stat.short}}"><a href="" data-toggle="modal" data-target="#{{stat.stat.short}}"> {{stat.stat.name}}</a> {{stat.bonus}} </label>
+                        <label><input required type="radio" name="develop_stat" value="{{ stat.stat.short }}"><a href="" data-toggle="modal" data-target="#{{ stat.stat.short }}"> {{ stat.stat.name }}</a> {{ stat.bonus }} </label>
                     </li>
                     {% endfor %}
                     </ul>
@@ -200,11 +200,11 @@
             <div class="col-md mb-4">
                 <div class="card">
                     <div class="card-header">Ekwipunek</div>
-                    <textarea name="eq" class="form-control rounded-0" id="eq" rows="10" style="font-size:small;">{{equipment}}</textarea>
+                    <textarea name="eq" class="form-control rounded-0" id="eq" rows="10" style="font-size:small;">{{ form.profession.equipment }}</textarea>
                     <p class="ml-3 mt-3">Pieniądze (zk): </p>
                     <div class="row">
                         <div class="col">
-                            <input required class="form-control form-control-lg ml-3" type="number" step="1" name="coins" id="coins" onclick="roll_coins()" placeholder="2k10">
+                            <input required class="form-control form-control-lg ml-3" type="number" step="1" name="coins" id="coins" placeholder="2k10">
                         </div>
                     <div class="col text-center">
                          <p><button type="button" class="btn btn-lg btn-outline-dark align-middle" onclick="roll_coins()">Rzuć kośćmi!</button></p>
@@ -213,7 +213,7 @@
                 </div>
             </div>
 
-            {% if race_counter > 0 %}
+            {% if form.race_counter > 0 %}
                 <!-- Random abilities -->
             <div class="col-lg mb-4">
                 <div class="card">
@@ -223,14 +223,14 @@
                     <div class="col">
                         <input required placeholder="1k100" class="form-control form-control-lg mb-3 ml-3"  name="0_random_ability" type="number" step="1" id="0_random_ability">
                         <div class="invalid-feedback mb-3 ml-3">Wartość musi być pomiędzy 1, a 100.</div>
-                        {% if race_counter == 2 %}
+                        {% if form.race_counter == 2 %}
                         <input required placeholder="1k100" class="form-control form-control-lg ml-3 mb-3"  name="1_random_ability" type="number" step="1" id="1_random_ability">
                         <div class="invalid-feedback mb-3 ml-3">Wartość musi być pomiędzy 1, a 100</div>
                         {% endif %}
                     </div>
                     <div class="col text-center">
                         <p><button type="button" class="btn btn-lg btn-outline-dark align-middle" value="0" id="0" onclick="roll_ability(this.value)">Rzuć kośćmi!</button></p>
-                        {% if race_counter == 2 %}
+                        {% if form.race_counter == 2 %}
                         <p> <button type="button" class="btn btn-lg btn-outline-dark" value="1" id="1" onclick="roll_ability(this.value)">Rzuć kośćmi!</button></p>
                         {% endif %}
                     </div>
@@ -249,18 +249,18 @@
 </div>
 
 <!-- Skill Modals -->
-{% for skill in qs_skills %}
-<div class="modal fade" id="{{skill.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
+{% for skill in form.all_skills %}
+<div class="modal fade" id="{{ skill.slug }}" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{skill.name}}</h5>
+        <h5 class="modal-title">{{ skill.name }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{skill.description | linebreaks}}</p>
+          <p>{{ skill.description | linebreaks }}</p>
       </div>
     </div>
   </div>
@@ -268,18 +268,18 @@
 {% endfor %}
 
 <!-- Ability Modals -->
-{% for skill in qs_abilities %}
-<div class="modal fade" id="{{skill.slug}}" tabindex="-1" role="dialog" aria-hidden="true">
+{% for skill in form.all_abilities %}
+<div class="modal fade" id="{{ skill.slug }}" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{skill.name}}</h5>
+        <h5 class="modal-title">{{ skill.name }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{skill.description | linebreaks}}</p>
+          <p>{{ skill.description | linebreaks }}</p>
       </div>
     </div>
   </div>
@@ -287,18 +287,18 @@
 {% endfor %}
 
 <!-- Stats Modals -->
-{% for stat in stats_table %}
-<div class="modal fade" id="{{stat.stat.short}}" tabindex="-1" role="dialog" aria-hidden="true">
+{% for stat in form.stats_table %}
+<div class="modal fade" id="{{ stat.stat.short }}" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{stat.stat.name}}</h5>
+        <h5 class="modal-title">{{ stat.stat.name }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{stat.stat.description}}</p>
+          <p>{{ stat.stat.description }}</p>
       </div>
     </div>
   </div>
@@ -315,10 +315,10 @@
         </button>
       </div>
       <div class="modal-body">
-          {% for ability in random_table %}
+          {% for ability in form.random_table %}
           <div class="row">
-              <div class="col"><a tabindex="0" data-toggle="popover" data-trigger="focus" title="{{ability.ability.name}}" data-content="{{ability.ability.description}}">{{ability.ability.name}}</a></div>
-              <div class="col text-center">{{ability.roll_range}}</div>
+              <div class="col"><a tabindex="0" data-toggle="popover" data-trigger="focus" title="{{ ability.ability.name }}" data-content="{{ ability.ability.description }}">{{ ability.ability.name }}</a></div>
+              <div class="col text-center">{{ ability.roll_range }}</div>
           </div>
           {% endfor %}
       </div>
