@@ -23,10 +23,20 @@ class MessagesModel(models.Model):
 
 class MapModel(models.Model):
     game = models.OneToOneField(GameModel, on_delete=models.CASCADE)
+    tokens = models.PositiveIntegerField(default=13)
+    columns = models.PositiveIntegerField(default=7)
+    rows = models.PositiveIntegerField(default=10)
     map = models.TextField(max_length=1000)
 
     def __str__(self):
         return f"Map: {self.game}"
+
+    def create_blank_map(self):
+        token_range = range(self.tokens+1)
+        token_list = list(map(str, token_range))  # turn range into list of str
+        fields = [str(self.tokens)] * (self.columns * self.rows)  # empty_space
+        map_string = ','.join(token_list + fields)
+        return map_string
 
 
 class NPCModel(models.Model):
@@ -43,8 +53,6 @@ class NPCModel(models.Model):
 # Create MapModel for created game
 @receiver(post_save, sender=GameModel)
 def create_map(sender, instance, **kwargs):
-    token_range = range(14)  # 0-12 are tokens, 13 is empty space
-    tokens = list(map(str, token_range))  # turn range into list of str
-    fields = ['13'] * (7*10)  # empty_space * (columns*rows)
-    map_string = ','.join(tokens + fields)
-    MapModel.objects.create(game=instance, map=map_string)
+    map_object = MapModel(game=instance)
+    map_object.map = map_object.create_blank_map()
+    map_object.save()

@@ -3,6 +3,6 @@ from . import views
 
 app_name = 'wh-chat'
 urlpatterns = [
-    path('<int:pk>', views.ChatView.as_view(), name='api-game'),
+    path('<int:pk>', views.ChatView.as_view(), name='api_game'),
     path('room/<int:pk>', views.GmRoomView.as_view(), name='gm_room')
 ]
