@@ -77,4 +77,3 @@ class GmRoomView(View):
             npc = get_object_or_404(npc_list, pk=npc_pk)
             npc.delete()
         return redirect('wh-chat:gm_room', pk=pk)
-
