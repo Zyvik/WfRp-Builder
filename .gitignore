@@ -4,3 +4,4 @@ media/
 *.pyc
 *.json
 db.sqlite3
+wh_project/secrets.py
