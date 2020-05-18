@@ -1,8 +1,6 @@
 from django.db import models
 import uuid
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
 
 class StatsModel(models.Model):
@@ -14,8 +12,7 @@ class StatsModel(models.Model):
     def __str__(self):
         name = self.short
         if self.is_secondary:
-            name += ' (s)'
-
+            name += ' (secondary)'
         return name
 
 
