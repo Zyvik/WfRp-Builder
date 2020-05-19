@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from rest_framework.test import APIRequestFactory, APIClient
+from rest_framework.test import APIClient
 from wh_chat.models import MessagesModel, MapModel
 
 
