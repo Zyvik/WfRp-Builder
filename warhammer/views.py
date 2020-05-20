@@ -9,7 +9,7 @@ from django.views import View
 from . import forms as f
 from . import models as m
 from .libs import character_screen_lib as csl, character_creation_lib as ccl, \
-                  profession_detail_lib as prof_detail
+    profession_detail_lib as pdl
 
 
 class IndexView(View):
@@ -17,11 +17,11 @@ class IndexView(View):
     Landing page:
     displays user's characters and gives option to claim existing character
     """
+
     def get(self, request):
         if request.user.is_authenticated:
             your_characters = m.CharacterModel.objects.filter(user=request.user)
             form = f.ClaimCharacterForm()
-
             context = {
                 'your_characters': your_characters,
                 'form': form
@@ -92,13 +92,19 @@ class CharacterScreen(View):
     """
     View, develop, edit selected character
     """
+
     def get(self, request, **kwargs):
         user = request.user
         character = get_object_or_404(m.CharacterModel, pk=self.kwargs['pk'])
         if character.user and character.user != user and not user.is_staff:
             return redirect('wh:index')
-
+        # get character stats, abilities, skills
         char_stats = m.CharactersStats.objects.filter(character=character)
+        char_skills = m.CharacterSkills.objects.filter(character=character)
+        char_skills = char_skills.order_by('skill')
+        char_abilities = m.CharacterAbilities.objects.filter(character=character)
+        char_abilities = char_abilities.order_by('ability')
+        # error handling
         error_code = request.GET.get('error', None)
         error_msg = csl.get_error_message(error_code) if error_code else None
 
@@ -107,8 +113,8 @@ class CharacterScreen(View):
             'error_message': error_msg,
             'character': character,
             'stats_table': char_stats,
-            'char_skills': m.CharacterSkills.objects.filter(character=character).order_by('skill'),
-            'char_abilities': m.CharacterAbilities.objects.filter(character=character).order_by('ability'),
+            'char_skills': char_skills,
+            'char_abilities': char_abilities,
             'develop_stats': char_stats.filter(max_bonus__gt=0),
             'dev_abilities': csl.get_abilities_to_develop(character, 'ability'),
             'dev_skills': csl.get_abilities_to_develop(character, 'skill'),
@@ -120,17 +126,17 @@ class CharacterScreen(View):
             'add_ability_form': f.AddAbilityForm(),
             'notes_form': f.NotesForm(initial={'notes': character.notes}),
             'change_profession_form': f.ChangeProfessionForm(),
+            # cols and rows shouldn't be harcoded
             'rows': range(10),
             'columns': range(7)
-
         }
         return render(request, 'warhammer/character_screen.html', context)
 
     def post(self, request, **kwargs):
         character = get_object_or_404(m.CharacterModel, pk=self.kwargs['pk'])
         action = request.POST.get('action', None)
-
-        action_dictionary = {
+        # all actions are functions that take 2 arguments (request, character)
+        action_dict = {
             'add_exp': csl.update_exp,
             'add_coins': csl.update_coins,
             'edit_stats': csl.edit_stats,
@@ -146,9 +152,11 @@ class CharacterScreen(View):
             'change_profession': csl.change_profession
         }
 
-        error = action_dictionary.get(action, csl.action_error)(request, character)
+        error = action_dict.get(action, csl.action_error)(request, character)
         if error:
-            return redirect(reverse('wh:character_screen', args=[character.pk]) + '?error=' + error)
+            base_url = reverse('wh:character_screen', args=[character.pk])
+            error_url = f"?error={error}"
+            return redirect(base_url + error_url)
         return redirect('wh:character_screen', pk=character.pk)
 
 
@@ -172,6 +180,10 @@ class RegisterView(View):
 
 
 class LoginView(View):
+    """
+    Logs user in - logic is inside LoginForm
+    """
+
     def get(self, request):
         if request.user.is_authenticated:
             return redirect('wh:index')
@@ -241,9 +253,9 @@ def profession_detail(request, profession_slug):
     all_skills = m.SkillsModel.objects.all()
     all_abilities = m.AbilitiesModel.objects.all()
 
-    skills_string = prof_detail.create_modals(all_skills, profession.skills)
-    abilities_string = prof_detail.create_modals(all_abilities, profession.abilities)
-    stats_list = prof_detail.prepare_stats_for_display(profession)
+    skills_string = pdl.create_modals(all_skills, profession.skills)
+    abilities_string = pdl.create_modals(all_abilities, profession.abilities)
+    stats_list = pdl.prepare_stats_for_display(profession)
 
     context = {
         'abilities': abilities_string,
