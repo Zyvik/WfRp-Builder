@@ -27,6 +27,7 @@ class IndexView(View):
                 'form': form
             }
             return render(request, 'warhammer/index.html', context)
+        # if user not authenticated - give no context
         return render(request, 'warhammer/index.html')
 
     def post(self, request):
@@ -226,10 +227,7 @@ class ContactView(View):
             except SMTPException:
                 message = 'Coś nie wyszło - wyślij maila na pawel86@gmail.com'
 
-        context = {
-            'message': message,
-            'form': form
-        }
+        context = {'message': message, 'form': form}
         return render(request, 'warhammer/contact.html', context)
 
 
