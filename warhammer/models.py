@@ -11,8 +11,7 @@ class StatsModel(models.Model):
 
     def __str__(self):
         name = self.short
-        if self.is_secondary:
-            name += ' (secondary)'
+        name += ' (secondary)' if self.is_secondary else ''
         return name
 
 
@@ -57,7 +56,7 @@ class StartingStatsModel(models.Model):
     bonus = models.IntegerField(default=2)  # how many d10 you will roll for bonus
 
     def __str__(self):
-        return str(self.race) + ' ' + str(self.stat)
+        return f"{self.race} {self.stat}"
 
 
 class ProfessionModel(models.Model):
@@ -94,32 +93,36 @@ class AbilitiesModel(models.Model):
         return self.name
 
 
-class SkillsProfessionMiddle(models.Model):
-    profession = models.ForeignKey(ProfessionModel, on_delete=models.CASCADE)
-    skill = models.ForeignKey(SkillsModel, on_delete=models.CASCADE)
-
-
 class HumanStartingProfession(models.Model):
     profession = models.ForeignKey(ProfessionModel, on_delete=models.CASCADE)
     roll_range = models.CharField(max_length=10)
 
     def __str__(self):
-        return self.roll_range
+        return f"Human {self.profession} {self.roll_range}"
 
 
 class DwarfStartingProfession(models.Model):
     profession = models.ForeignKey(ProfessionModel, on_delete=models.CASCADE)
     roll_range = models.CharField(max_length=10)
 
+    def __str__(self):
+        return f"Dwarf {self.profession} {self.roll_range}"
+
 
 class ElfStartingProfession(models.Model):
     profession = models.ForeignKey(ProfessionModel, on_delete=models.CASCADE)
     roll_range = models.CharField(max_length=10)
 
+    def __str__(self):
+        return f"Elf {self.profession} {self.roll_range}"
+
 
 class HalflingStartingProfession(models.Model):
     profession = models.ForeignKey(ProfessionModel, on_delete=models.CASCADE)
     roll_range = models.CharField(max_length=10)
+
+    def __str__(self):
+        return f"Halfling {self.profession} {self.roll_range}"
 
 
 class CharacterModel(models.Model):
@@ -134,16 +137,19 @@ class CharacterModel(models.Model):
     coins = models.IntegerField(default=0)
     notes = models.TextField(max_length=5000, default='NOTATKI')
 
+    def __str__(self):
+        return f"{self.name}, {self.race}, {self.profession}, ({self.user})"
+
 
 class CharacterSkills(models.Model):
-    character = models.ForeignKey(CharacterModel,on_delete=models.CASCADE)
+    character = models.ForeignKey(CharacterModel, on_delete=models.CASCADE)
     skill = models.ForeignKey(SkillsModel, on_delete=models.CASCADE)
     bonus = models.CharField(max_length=50, blank=True, null=True)
     level = models.IntegerField(default=0)
     is_developed = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.skill.name + ' ' + self.character.name
+        return f"{self.pk} {self.skill.name} {self.character.name}"
 
 
 class CharactersStats(models.Model):
@@ -154,7 +160,7 @@ class CharactersStats(models.Model):
     max_bonus = models.IntegerField()
 
     def __str__(self):
-        return self.stat.name + ' ' + self.character.name
+        return f"{self.pk} {self.stat.name} {self.character.name}"
 
 
 class CharacterAbilities(models.Model):
@@ -165,7 +171,7 @@ class CharacterAbilities(models.Model):
     stat_bonus = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
-        return str(self.ability) + ' ' + self.character.name
+        return f"{self.pk} {self.ability} {self.character.name}"
 
 
 class RandomAbilityModel(models.Model):
@@ -174,4 +180,4 @@ class RandomAbilityModel(models.Model):
     roll_range = models.CharField(max_length=10)
 
     def __str__(self):
-        return str(self.race) + str(self.roll_range)
+        return f"{self.race} {self.roll_range}"
