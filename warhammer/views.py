@@ -216,19 +216,23 @@ class ContactView(View):
             email = form.cleaned_data.get('email', 'no email')
             content = f"{form.cleaned_data.get('content', 'no content')}\n" \
                       f"email: {email}"
-            try:
-                send_mail(
-                    subject=subject,
-                    message=content,
-                    from_email='zyvik.kontakt@wp.pl',
-                    recipient_list=['pawel86gw2@gmail.com']
-                )
-                message = 'Wiadomość wysłana!'
-            except SMTPException:
-                message = 'Coś nie wyszło - wyślij maila na pawel86@gmail.com'
-
+            message = self._send_mail(subject, content)
         context = {'message': message, 'form': form}
         return render(request, 'warhammer/contact.html', context)
+
+    def _send_mail(self, subject, content):
+        # tries to send mail and returns succes/ failure message
+        try:
+            send_mail(
+                subject=subject,
+                message=content,
+                from_email='zyvik.kontakt@wp.pl',
+                recipient_list=['pawel86gw2@gmail.com']
+            )
+            message = 'Wiadomość wysłana!'
+        except SMTPException:
+            message = 'Coś nie wyszło - wyślij maila na pawel86gw2@gmail.com'
+        return message
 
 
 class SkillList(ListView):
