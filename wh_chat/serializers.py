@@ -26,7 +26,7 @@ class MapSerializer(serializers.ModelSerializer):
 
     def _get_map(self, pk):
         try:
-            map_object = MapModel.objects.get(pk)
+            map_object = MapModel.objects.get(pk=pk)
         except MapModel.DoesNotExist:
             raise serializers.ValidationError("Map doesn't exist.")
         return map_object
