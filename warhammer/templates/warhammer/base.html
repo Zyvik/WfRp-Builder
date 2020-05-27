@@ -59,13 +59,14 @@
             <li class="nav-item mr-3">
                 <a class="nav-link" style="font-size:medium;" href="{% url 'wh:contact' %}"><img src="{% static 'warhammer/QUILL.png' %}" height="24" width="24">Kontakt</a>
             </li>
+            <!-- User's options dropdown -->
             <li class="nav-item dropdown">
                       <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown" style="font-size:medium">
                           <span class="glyphicon glyphicon-user"></span>
                           {{user.username}}
                       </a>
                       <div class="dropdown-menu">
-                            <a class="dropdown-item" href="#" style="font-size:medium">Profil</a>
+                            <a class="dropdown-item" href="{% url 'wh:profile' %}" style="font-size:medium">Profil</a>
                             <a class="dropdown-item" href="{% url 'wh:settings' %}" style="font-size:medium">Ustawienia</a>
                             <a class="dropdown-item" href="{% url 'wh:logout' %}" style="font-size:medium">
                                 <span class="glyphicon glyphicon-off"></span> Wyloguj się

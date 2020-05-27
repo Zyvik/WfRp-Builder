@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import PasswordChangeForm
 from django.core.mail import send_mail
 from django.views.generic.list import ListView
+from django.views.generic import TemplateView
 from django.views import View
 from . import forms as f
 from . import models as m
@@ -290,3 +291,10 @@ class SettingsView(LoginRequiredMixin, View):
             return redirect('wh:settings')
         messages.warning(request, 'Nastąpił błąd przy próbie zmiany hasła.')
         return redirect('wh:settings')
+
+
+class PlaceholderView(TemplateView):
+    """
+    View for unfinished content.
+    """
+    template_name = 'warhammer/placeholder.html'

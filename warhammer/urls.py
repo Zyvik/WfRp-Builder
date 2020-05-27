@@ -15,5 +15,6 @@ urlpatterns = [
     path('kontakt', views.ContactView.as_view(), name='contact'),
     path('umiejetnosci', views.SkillList.as_view(), name='skills_list'),
     path('zdolnosci', views.AbilityList.as_view(), name='abilities_list'),
-    path('ustawienia', views.SettingsView.as_view(), name='settings')
+    path('ustawienia', views.SettingsView.as_view(), name='settings'),
+    path('profil', views.PlaceholderView.as_view(), name='profile')
 ]
