@@ -127,3 +127,41 @@ class TestRegisterView(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertEquals('warhammer/register.html', template_name)
         self.assertNotEquals(last_user.username, 'FOOBAR')
+
+
+class TestLogin(TestCase):
+    def setUp(self):
+        self.url = reverse('wh:login')
+        self.login_data = {
+            'login': 'foobar',
+            'password': 'asHjdgz123z'
+        }
+        self.user = User.objects.create_user(
+            username=self.login_data['login'],
+            password=self.login_data['password']
+        )
+
+    def test_POST_anonymous_valid(self):
+        # Creates valid iexact username
+        login_data = self.login_data.copy()
+        login_data['login'] = login_data['login'].upper()
+
+        response = Client().post(self.url, data=login_data)
+        self.assertEquals(response.status_code, 302)  # redirect means success
+
+    def test_POST_anonymous_invalid(self):
+        # gibberish login_data
+        login_data = {
+            'login': 'asd123',
+            'password': 'asd1123azsd23xd'
+        }
+
+        response = Client().post(self.url, data=login_data)
+        self.assertEquals(response.status_code, 200)  # 200 means fail to login
+
+    def test_user_already_logged_in(self):
+        client = Client()
+        client.post(self.url, data=self.login_data)  # logs user in
+
+        response = client.get(self.url)
+        self.assertEquals(response.status_code, 302)  # redirected to index
