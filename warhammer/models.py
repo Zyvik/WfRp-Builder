@@ -9,6 +9,10 @@ class StatsModel(models.Model):
     description = models.TextField(max_length=500)
     is_secondary = models.BooleanField(default=False)
 
+    name_en = models.CharField(max_length=30, blank=True, null=True)
+    short_en = models.CharField(max_length=10, blank=True, null=True)
+    description_en = models.CharField(max_length=500, blank=True, null=True)
+
     def __str__(self):
         name = self.short
         name += ' (secondary)' if self.is_secondary else ''
@@ -21,6 +25,9 @@ class RaceModel(models.Model):
     slug = models.CharField(max_length=30)
     skills = models.TextField(max_length=2000)
     abilities = models.TextField(max_length=2000)
+
+    name_en = models.CharField(max_length=30, blank=True, null=True)
+    description_en = models.CharField(max_length=2000, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -69,6 +76,8 @@ class ProfessionModel(models.Model):
     is_starting = models.BooleanField(default=True)
     slug = models.CharField(max_length=50, default='slimak')
 
+    name_en = models.CharField(max_length=30, blank=True, null=True)
+
     def __str__(self):
         return self.name
 
@@ -80,6 +89,9 @@ class SkillsModel(models.Model):
     is_basic = models.BooleanField(default=True)
     slug = models.CharField(max_length=50, default='slimak')
 
+    name_en = models.CharField(max_length=30, blank=True, null=True)
+    description_en = models.CharField(max_length=2000, blank=True, null=True)
+
     def __str__(self):
         return self.name
 
@@ -88,6 +100,9 @@ class AbilitiesModel(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(max_length=2000)
     slug = models.CharField(max_length=50, default='slimak')
+
+    name_en = models.CharField(max_length=30, blank=True, null=True)
+    description_en = models.CharField(max_length=2000, blank=True, null=True)
 
     def __str__(self):
         return self.name
