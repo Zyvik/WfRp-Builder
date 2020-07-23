@@ -9,7 +9,7 @@
     <div class="card mb-5">
         <div class="card-header">
             <div class="row">
-                <div class="col">
+                <div class="col" data-en="Skills">
                     Umiejętności
                 </div>
                 <div class="col">
@@ -22,21 +22,21 @@
             <table class="table table-hover" id="example">
                 <thead>
                 <tr>
-                    <th>Nazwa</th>
-                    <th>Cecha</th>
-                    <th>Rodzaj</th>
+                    <th data-en="Name">Nazwa</th>
+                    <th data-en="Statistic">Cecha</th>
+                    <th data-en="Type">Rodzaj</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for skill in object_list %}
                 <tr>
-                    <td><a href="" data-toggle="modal" data-target="#{{skill.slug}}">{{skill.name}}</a></td>
-                    <td>{{skill.stat}}</td>
+                    <td><a href="" data-toggle="modal" data-target="#{{skill.slug}}" data-en="{{skill.name_en}}">{{skill.name}}</a></td>
+                    <td data-en="{{skill.stat.short_en}}">{{skill.stat}}</td>
                     <td>
                         {% if skill.is_basic %}
-                        podstawowa
+                        <span data-en="basic">podstawowa</span>
                         {% else %}
-                        zaawansowana
+                        <span data-en="advanced">zaawansowana</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -52,13 +52,13 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{skill.name}}</h5>
+        <h5 class="modal-title" data-en="{{skill.name_en}}">{{skill.name}}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{skill.description | linebreaks}}</p>
+          <p data-en="{{skill.description_en | linebreaks}}">{{skill.description | linebreaks}}</p>
       </div>
     </div>
   </div>

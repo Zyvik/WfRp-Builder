@@ -7,23 +7,23 @@
     <!-- Okruszki -->
     <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'wh:race' %}">Wybierz rasę</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Wylosuj chechy oraz profesję</li>
+            <li class="breadcrumb-item"><a href="{% url 'wh:race' %}" data-en="Choose a race">Wybierz rasę</a></li>
+            <li class="breadcrumb-item active" aria-current="page" data-en="Roll for statistics and profession">Wylosuj chechy oraz profesję</li>
           </ol>
     </nav>
 
     <form method="get">
         <!-- Losowanie cech -->
          <div class="card mb-3">
-             <div class="card-header mb-4">Krok 2 - wylosuj chechy</div>
+             <div class="card-header mb-4" data-en="Step 2 - roll for stats">Krok 2 - wylosuj chechy</div>
                  <ul class="list-group list-group-flush mr-4 ml-4">
                 {% for stat, field in stats_and_form %}
                      <li class="list-group-item">
                         <div class="row no-gutters">
                             <div class="col-3">
-                                <a href="" data-toggle="modal" data-target="#{{ stat.stat.short }}"> {{ stat.stat.name }}</a>:
+                                <a href="" data-toggle="modal" data-target="#{{ stat.stat.short }}" data-en="{{stat.stat.name_en}}"> {{ stat.stat.name }}</a>:
                             </div>
-                            <div class="col-2">({{stat.stat.short}})</div>
+                            <div class="col-2" data-en="{{ stat.stat.short_en }}">({{stat.stat.short}})</div>
                             <div class="col-1">{{stat.base}}</div>
                             {% if stat.bonus > 0 %}
                                 <div class="col-1">+</div>
@@ -31,7 +31,7 @@
                                 {{ field }}
                                 </div>
                                 <div class="col-2 text-center">
-                                    <button value="{{stat.bonus}}" type="button" class="btn btn-lg btn-outline-dark ml-3" id="_{{stat.stat.short}}" onclick="roll(this.id)">Rzuć kośćmi!</button>
+                                    <button value="{{stat.bonus}}" type="button" class="btn btn-lg btn-outline-dark ml-3" id="_{{stat.stat.short}}" onclick="roll(this.id)" data-en="Roll the dice!">Rzuć kośćmi!</button>
                                 </div>
                                 {% else %}
                                 <div class="col-1"></div>
@@ -47,24 +47,26 @@
 
         <!-- Losowanie profesji -->
         <div class="card">
-             <div class="card-header mb-4">Krok 3 - wylosuj profesję początkową</div>
+             <div class="card-header mb-4" data-en="Step 3 - roll for a starting profession">Krok 3 - wylosuj profesję początkową</div>
              <div class="row ml-3">
                  <div class="col-lg-4">
-                     <p class="ml-3">Aby ustalić profesję początkową bohatera wylosuj liczbę od 1 do 100 i porównaj ją z tabelą obok.</p>
-                     <p class="ml-3">Jeśli potrzebujesz więcej informacji na temat danej profesji kliknij na jej nazwę - na nowej karcie otworzy się strona z szczegółami.</p>
+                     <p class="ml-3" data-en="Roll a d100 and compare the number with 'Starting professions table'">
+                         Aby ustalić profesję początkową bohatera wylosuj liczbę od 1 do 100 i porównaj ją z tabelą obok.
+                     </p>
+                     <p class="ml-3" data-en="">Jeśli potrzebujesz więcej informacji na temat danej profesji kliknij na jej nazwę - na nowej karcie otworzy się strona z szczegółami.</p>
                  </div>
-                 <div class="col-lg-3 text-center"><button data-toggle="modal" data-target="#starting_table" type="button" class="btn btn-lg btn-dark">TABELA PROFESJI POCZĄTKOWYCH</button></div>
+                 <div class="col-lg-3 text-center"><button data-toggle="modal" data-target="#starting_table" type="button" class="btn btn-lg btn-dark"><span data-en="STARTING PROFESSIONS TABLE">TABELA PROFESJI POCZĄTKOWYCH</span></button></div>
                  <div class="col-lg-3 col-8">
                      <div class="mb-4 mt-4">
                          {{ stats_and_form.10.1 }}
                      </div>
 
                  </div>
-                 <div class="col-lg-2 col-4 text-center"><button type="button" class="btn btn-lg btn-outline-dark mt-4 mb-4" id="PROF" onclick="roll_profession()">Rzuć kośćmi!</button></div>
+                 <div class="col-lg-2 col-4 text-center"><button type="button" class="btn btn-lg btn-outline-dark mt-4 mb-4" id="PROF" onclick="roll_profession()" data-en="Roll the dice!">Rzuć kośćmi!</button></div>
              </div>
         </div>
         <div class="row justify-content-center">
-            <div class="col mb-5"><button type="submit" class="btn btn-block btn-lg btn-dark" style="font-size:medium">Nasępny krok</button></div>
+            <div class="col mb-5"><button type="submit" class="btn btn-block btn-lg btn-dark" style="font-size:medium" data-en="Next step">Nasępny krok</button></div>
         </div>
     </form>
 
@@ -74,7 +76,7 @@
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Profesje początkowe</h5>
+            <h5 class="modal-title" data-en="Starting professions">Profesje początkowe</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -84,7 +86,7 @@
               {% for s_profession in starting_professions %}
                   <li class="list-group-item">
                       <div class="row">
-                          <div class="col"><a href="{% url 'wh:selected_profession' s_profession.profession.slug %}" target="_blank">{{s_profession.profession.name}}</a></div>
+                          <div class="col"><a href="{% url 'wh:selected_profession' s_profession.profession.slug %}" target="_blank" data-en="{{ s_profession.profession.name_en }}">{{s_profession.profession.name}}</a></div>
                           <div class="col text-center">{{s_profession.roll_range}}</div>
                       </div>
                   </li>
@@ -102,13 +104,13 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{stat.stat.name}}</h5>
+        <h5 class="modal-title" data-en="{{ stat.stat.name_en }}">{{stat.stat.name}}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{stat.stat.description | linebreaks}}</p>
+          <p data-en="{{ stat.stat.description_en }}">{{stat.stat.description | linebreaks}}</p>
       </div>
     </div>
   </div>
