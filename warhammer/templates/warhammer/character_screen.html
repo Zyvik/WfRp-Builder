@@ -32,12 +32,12 @@
         <!-- map button -->
         <button type="button" id="sidebarCollapse-left" class="btn btn-dark btn-lg">
             <img src="{% static 'warhammer/mapa.png' %}" class="img-fluid" style="height:20px;">
-            <span> Mapa taktyczna</span>
+            <span data-en=" Map"> Mapa taktyczna</span>
         </button>
 
         <!-- dice roller button -->
         <button type="button" id="sidebarCollapse" class="btn btn-dark btn-lg float-right">
-            <span>Kostko-turlacz</span>
+            <span data-en="Dice roller">Kostko-turlacz</span>
             <img src="{% static 'warhammer/kostki.png' %}" class="img-fluid" style="height:20px;">
         </button>
         <span data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation" style="display:none;"></span>
@@ -46,23 +46,23 @@
             <div class="row pb-4 justify-content-center">
                 <div class="col-lg-4">
                     <div class="card">
-                        <div class="card-header pb-2">Podstawowe informacje</div>
-                        <p class="pl-3 pr-3 pt-4" id="Name">Nazwa: {{character.name}}</p>
-                        <p class="pl-3">Rasa: {{character.race.name}}</p>
-                        <p class="pl-3">Profesja: {{character.profession.name}}</p>
+                        <div class="card-header pb-2" data-en="Basic information">Podstawowe informacje</div>
+                        <p class="pl-3 pr-3 pt-4" id="Name" data-en="Name: {{character.name}}">Nazwa: {{ character.name }}</p>
+                        <p class="pl-3" data-en="Race: {{ character.race.name_en }}">Rasa: {{ character.race.name }}</p>
+                        <p class="pl-3" data-en="Profession: {{ character.profession.name_en }}">Profesja: {{ character.profession.name }}</p>
                        <!-- EXP form -->
                         <form method="post">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="add_exp">
                             <div class="row pb-3">
                                 <div class="col ml-3">
-                                    PD: {{character.current_exp}}
+                                    <span data-en="Exp: {{ character.current_exp }}">PD: {{ character.current_exp }}</span>
                                 </div>
                                 <div class="col">
                                     {{ exp_form }}
                                 </div>
                                 <div class="col text-center">
-                                    <button name="PD" class="btn btn-dark" type="submit" value="PD">+ / - PD</button>
+                                    <button name="PD" class="btn btn-dark" type="submit" value="PD" data-en="+ / - Exp">+ / - PD</button>
                                 </div>
                             </div>
                         </form>
@@ -71,19 +71,30 @@
                 <!-- stats-->
                 <div class="col-lg-8">
                     <div class="card">
-                        <div class="card-header pb-2">Aktualne cechy bohatera <span class="text-right"><button id="stats_toggle_button" type="button" class="btn btn-secondary float-right" onclick="toggle_stats()">Edytuj</button></span></div>
+                        <div class="card-header pb-2">
+                            <span data-en="Current characteristics">Aktualne cechy bohatera </span>
+                            <span class="text-right">
+                                <button id="stats_toggle_button" type="button" class="btn btn-secondary float-right" onclick="toggle_stats()" data-en="Edit">Edytuj</button>
+                            </span>
+                        </div>
 
                         <!-- basic stats table -->
                         <div class="table-responsive" id="table_basic" style="display:block;">
                             <table class="table table-sm">
                                 <thead class="thead-dark justify-content-center">
-                                <tr>{% for stat in stats_table %} {% if not stat.stat.is_secondary %}
-                                    <th class="pl-5" scope="col"><a class="text-white" data-target="#{{stat.stat.short}}" data-toggle="modal" href="#">{{stat.stat.short}}</a></th>{% endif %} {% endfor %}
+                                <tr>
+                                    {% for stat in stats_table %} {% if not stat.stat.is_secondary %}
+                                    <th class="pl-5" scope="col">
+                                        <a class="text-white" data-target="#{{stat.stat.short}}" data-toggle="modal" href="#" data-en="{{ stat.stat.short_en }}">{{stat.stat.short}}</a>
+                                    </th>
+                                    {% endif %} {% endfor %}
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr>{% for stat in stats_table %} {% if not stat.stat.is_secondary %}
-                                    <td id="R_{{stat.stat.short}}" class="pl-5" data-container="body" data-toggle="popover" data-placement="right" data-trigger="hover" data-content="{{stat.base}} + {{stat.bonus}}">{{stat.base|add:stat.bonus}}</td>{% endif %} {% endfor %}
+                                <tr>
+                                    {% for stat in stats_table %} {% if not stat.stat.is_secondary %}
+                                    <td id="R_{{stat.stat.short}}" class="pl-5" data-container="body" data-toggle="popover" data-placement="right" data-trigger="hover" data-content="{{stat.base}} + {{stat.bonus}}">{{stat.base|add:stat.bonus}}</td>
+                                    {% endif %} {% endfor %}
                                 </tr>
                                 </tbody>
                             </table>
@@ -93,8 +104,10 @@
                         <div class="table-responsive" id="table_secondary" style="display:block;">
                             <table class="table table-sm mt-3">
                                 <thead class="thead-dark ml-3">
-                                <tr>{% for stat in stats_table %} {% if stat.stat.is_secondary %}
-                                    <th class="pl-5" scope="col"><a class="text-white" href="#" data-toggle="modal" data-target="#{{stat.stat.short}}">{{stat.stat.short}}</a></th>{% endif %} {% endfor %}
+                                <tr>
+                                    {% for stat in stats_table %} {% if stat.stat.is_secondary %}
+                                    <th class="pl-5" scope="col"><a class="text-white" href="#" data-toggle="modal" data-target="#{{stat.stat.short}}" data-en="{{ stat.stat.short_en }}">{{stat.stat.short}}</a></th>
+                                    {% endif %} {% endfor %}
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -110,13 +123,13 @@
                             <input type="hidden" name="action" value="edit_stats">
                         <!-- edit basic skills -->
                         <div class="alert alert-info" role="alert" id="form_alert" style="display:none;">
-                            Edytujesz wartości podstawowe cech - nie bierz pod uwagę rozwinięć.
+                            <p data-en="Those are basic values of characteristics. (Advancements are not accounted for.) ">Edytujesz wartości podstawowe cech - nie bierz pod uwagę rozwinięć.</p>
                         </div>
                         <div class="table-responsive" style="display:none;" id="form_basic">
                             <table class="table table-sm">
                                 <thead class="thead-dark justify-content-center">
                                 <tr>{% for stat in stats_table %} {% if not stat.stat.is_secondary %}
-                                    <th class="pl-5" scope="col"><a class="text-white" data-target="#{{stat.stat.short}}" data-toggle="modal" href="#">{{stat.stat.short}}</a></th>{% endif %} {% endfor %}
+                                    <th class="pl-5" scope="col"><a class="text-white" data-target="#{{stat.stat.short}}" data-toggle="modal" href="#" data-en="{{ stat.stat.short_en }}">{{stat.stat.short}}</a></th>{% endif %} {% endfor %}
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -132,7 +145,7 @@
                             <table class="table table-sm mt-3">
                                 <thead class="thead-dark ml-3">
                                 <tr>{% for stat in stats_table %} {% if stat.stat.is_secondary %}
-                                    <th class="pl-5" scope="col"><a class="text-white" href="#" data-toggle="modal" data-target="#{{stat.stat.short}}"></a>{{stat.stat.short}}</th>{% endif %} {% endfor %}
+                                    <th class="pl-5" scope="col"><a class="text-white" href="#" data-toggle="modal" data-target="#{{stat.stat.short}}" data-en="{{ stat.stat.short_en }}">{{stat.stat.short}}</a></th>{% endif %} {% endfor %}
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -142,7 +155,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="card-footer" id="form_footer" style="display:none"><button name="edit_stats" class="btn btn-dark" value="edit_stats" type="submit">Zapisz</button> </div>
+                        <div class="card-footer" id="form_footer" style="display:none"><button name="edit_stats" class="btn btn-dark" value="edit_stats" type="submit" data-en="Save">Zapisz</button> </div>
                         </form>
                     </div>
                 </div>
@@ -152,17 +165,20 @@
             <div class="row pb-4 justify-content-center">
                 <div class="col-lg">
                     <div class="card pb-4">
-                        <div class="card-header wh-header">Umiejętności <button type="button" id="skills_toggle_button" class="btn btn-secondary float-right" onclick="toggle_skills()">Edytuj</button> </div>
+                        <div class="card-header wh-header">
+                            <span data-en="Skills">Umiejętności </span>
+                            <button type="button" id="skills_toggle_button" class="btn btn-secondary float-right" onclick="toggle_skills()" data-en="Edit">Edytuj</button>
+                        </div>
                         <!-- Skills List -->
                         <ul class="list-group list-group-flush" id="display_skills" style="display:block">
                         {% for skill in char_skills %}
                         <li class="list-group-item ml-3 mr-3">
                             <div class="row">
                                 <div class="col-6">
-                                    <a href="" data-target="#{{skill.skill.slug}}" data-toggle="modal" >{{skill.skill.name}}</a> {% if skill.bonus %}{{skill.bonus}}{% endif %}
+                                    <a href="" data-target="#{{skill.skill.slug}}" data-toggle="modal" data-en="{{ skill.skill.name_en }}">{{skill.skill.name}}</a> {% if skill.bonus %}{{skill.bonus}}{% endif %}
                                 </div>
                                 <div class="col-3">
-                                    ({{skill.skill.stat.short}})
+                                    <span data-en="({{ skill.skill.stat.short_en }})">({{skill.skill.stat.short}})</span>
                                 </div>
                                 <div class="col-3">
                                     + {{skill.level}}
@@ -180,10 +196,10 @@
                                 <li class="list-group-item ml-3 mr-3">
                                     <div class="row">
                                         <div class="col-6">
-                                            <a href="" data-target="#{{skill.skill.slug}}" data-toggle="modal" >{{skill.skill.name}}</a> {% if skill.bonus %}{{skill.bonus}}{% endif %}
+                                            <a href="" data-target="#{{skill.skill.slug}}" data-toggle="modal" data-en="{{ skill.skill.name_en }}">{{skill.skill.name}}</a> {% if skill.bonus %}{{skill.bonus}}{% endif %}
                                         </div>
                                         <div class="col-3">
-                                            ({{skill.skill.stat.short}})
+                                            <span data-en="({{ skill.skill.stat.short_en }})">({{ skill.skill.stat.short }})</span>
                                         </div>
                                         <div class="col-3">
                                             <button type="submit" class="btn btn-light btn-lg" name="remove_skill" value="{{skill.pk}}"><span class="glyphicon glyphicon-remove" style="color:red"></span></button>
@@ -218,11 +234,14 @@
                 <!-- Abilities -->
                 <div class="col-lg">
                     <div class="card pb-4">
-                        <div class="card-header">Zdolności<button type="button" id="abilities_toggle_button" class="btn btn-secondary float-right" onclick="toggle_abilities()">Edytuj</button></div>
+                        <div class="card-header">
+                            <span data-en="Talents">Zdolności</span>
+                            <button type="button" id="abilities_toggle_button" class="btn btn-secondary float-right" onclick="toggle_abilities()" data-en="Edit">Edytuj</button>
+                        </div>
                         <!-- Ability list -->
                         <ul class="list-group list-group-flush" id="display_abilities">
                         {% for ability in char_abilities %}
-                            <li class="list-group-item ml-3 mr-3" style="display:block"><a href="" data-toggle="modal" data-target="#{{ability.ability.slug}}">{{ability.ability.name}}</a> {% if ability.bonus %}{{ability.bonus}}{% endif %}</li>
+                            <li class="list-group-item ml-3 mr-3" style="display:block"><a href="" data-toggle="modal" data-target="#{{ability.ability.slug}}" data-en="{{ ability.ability.name_en }}">{{ability.ability.name}}</a> {% if ability.bonus %}{{ability.bonus}}{% endif %}</li>
                             {% endfor %}
                         </ul>
 
@@ -235,7 +254,7 @@
                                     <li class="list-group-item ml-3 mr-3">
                                         <div class="row">
                                             <div class="col-9">
-                                                <a href="" data-toggle="modal" data-target="#{{ability.ability.slug}}">{{ability.ability.name}}</a> {% if ability.bonus %}{{ability.bonus}}{% endif %}
+                                                <a href="" data-toggle="modal" data-target="#{{ability.ability.slug}}" data-en="{{ ability.ability.name_en }}">{{ability.ability.name}}</a> {% if ability.bonus %}{{ability.bonus}}{% endif %}
                                             </div>
                                             <div class="col-3">
                                                 <button class="btn btn-light btn-lg" name="remove_ability" value="{{ability.pk}}"><span class="glyphicon glyphicon-remove" style="color:red"></span></button>
@@ -274,11 +293,11 @@
                     {% csrf_token %}
                         <input type="hidden" name="action" value="add_coins">
                     <div class="card pb-4 mt-3">
-                        <div class="card-header" style="font-size:medium;font-family: 'Germania One', cursive;">Sakiewka</div>
+                        <div class="card-header" style="font-size:medium;font-family: 'Germania One', cursive;" data-en="Purse">Sakiewka</div>
                         <p class=" mr-3 ml-3 mb-3 mt-3">
-                            <img src="{% static 'warhammer/zk.png' %}" style="color:gold" width="27" height="27"> zk: {{coins.0}},
+                            <img src="{% static 'warhammer/zk.png' %}" style="color:gold" width="27" height="27"> <span data-en="g:">zk:</span> {{coins.0}},
                             <img src="{% static 'warhammer/s.png' %}" style="color:gold" width="27" height="27"> s: {{coins.1}},
-                            <img src="{% static 'warhammer/p.png' %}" style="color:gold" width="27" height="27"> p: {{coins.2}}
+                            <img src="{% static 'warhammer/p.png' %}" style="color:gold" width="27" height="27"> <span data-en="c">p</span>: {{coins.2}}
                         </p>
                         <div class="row ml-2">
                             <div class="col">
@@ -301,11 +320,11 @@
                     {% csrf_token %}
                         <input type="hidden" name="action" value="edit_eq">
                     <div class="card">
-                        <div class="card-header">Ekwipunek <button id="eq_toggle_button" class="btn btn-secondary float-right" type="button" onclick="toggle_eq()">Edytuj</button> </div>
+                        <div class="card-header"><span data-en="Equipment">Ekwipunek</span> <button id="eq_toggle_button" class="btn btn-secondary float-right" type="button" onclick="toggle_eq()" data-en="Edit">Edytuj</button> </div>
                         <span id="display_eq" style="display:block;" class="mr-3 ml-3 mt-3">{{character.equipment|linebreaks}}</span>
                         {{ eq_form }}
                         <div id="eq_footer" class="card-footer" style="display:none;">
-                            <button name="edit_eq" class="btn btn-dark" type="submit" value="edit_eq">Zapisz</button>
+                            <button name="edit_eq" class="btn btn-dark" type="submit" value="edit_eq" data-en="Save">Zapisz</button>
                         </div>
                     </div>
                     </form>
@@ -314,10 +333,10 @@
                         {% csrf_token %}
                         <input type="hidden" name="action" value="edit_notes">
                         <div class="card">
-                        <div class="card-header">Notatki</div>
+                        <div class="card-header" data-en="Notes">Notatki</div>
                         {{ notes_form }}
                         <div id="notes_footer" class="card-footer">
-                            <button name="edit_notes" class="btn btn-dark" type="submit" value="edit_notes">Zapisz</button>
+                            <button name="edit_notes" class="btn btn-dark" type="submit" value="edit_notes" data-en="Save">Zapisz</button>
                         </div>
                     </div>
                     </form>
@@ -329,7 +348,7 @@
             <div class="row">
                 <div class="col">
                 <div class="card mb-5">
-                    <div class="card-header">Rozwój Bohatera</div>
+                    <div class="card-header" data-en="Character Advancement">Rozwój Bohatera</div>
                     <div class="row">
                         <!-- Develop stats -->
                         <div class="col-lg-6">
@@ -337,22 +356,22 @@
                         {% csrf_token %}
                         <input type="hidden" name="action" value="develop_stats">
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3">Cechy podstawowe: +5 (100 PD)</li>
+                                <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3" data-en="Basic characteristics: +5 (100 Exp)">Cechy podstawowe: +5 (100 PD)</li>
                             {% for stat in develop_stats %}
                                 {% if not stat.stat.is_secondary %}
                                  <li class="list-group-item mr-3 ml-3">
                                      <div class="row">
                                          <div class="col">
-                                             <a href="" data-toggle="modal" data-target="#{{stat.stat.short}}">{{stat.stat.name}}</a>
+                                             <a href="" data-toggle="modal" data-target="#{{stat.stat.short}}" data-en="{{ stat.stat.name_en }}">{{ stat.stat.name }}</a>
                                          </div>
                                          <div class="col">
                                              max: {{stat.max_bonus}}
                                          </div>
                                          <div class="col">
-                                             obecnie: {{stat.bonus}}
+                                             <span data-en="current:">obecnie:</span> {{stat.bonus}}
                                          </div>
                                          <div class="col text-center">
-                                             {% if stat.bonus < stat.max_bonus %} <button type="submit" name="dev_stat" value="{{stat.stat.short}}" class="btn btn-dark">Rozwiń</button> {% else %} <button class="btn btn-dark" disabled>Rozwinięte</button> {% endif %}
+                                             {% if stat.bonus < stat.max_bonus %} <button type="submit" name="dev_stat" value="{{stat.stat.short}}" class="btn btn-dark" data-en="Advance">Rozwiń</button> {% else %} <button class="btn btn-dark" disabled data-en="Advanced">Rozwinięte</button> {% endif %}
                                          </div>
                                      </div>
                                  </li>
@@ -361,22 +380,22 @@
                             </ul>
                             <!-- secondary stats -->
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item list-group-item-secondary ml-3 mr-3 mt-4">Cechy drugorzędne: +1 (100 PD)</li>
+                                <li class="list-group-item list-group-item-secondary ml-3 mr-3 mt-4" data-en="Secondary characteristics: +1 (100 Exp)">Cechy drugorzędne: +1 (100 PD)</li>
                             {% for stat in develop_stats %}
                                 {% if stat.stat.is_secondary %}
                                 <li class="list-group-item mr-3 ml-3">
                                      <div class="row">
                                          <div class="col">
-                                             <a href="" data-toggle="modal" data-target="#{{stat.stat.short}}">{{stat.stat.name}}</a>
+                                             <a href="" data-toggle="modal" data-target="#{{stat.stat.short}}" data-en="{{ stat.stat.name_en }}">{{stat.stat.name}}</a>
                                          </div>
                                          <div class="col">
                                              max: {{stat.max_bonus}}
                                          </div>
                                          <div class="col">
-                                             obecnie: {{stat.bonus}}
+                                             <span data-en="current:">obecnie:</span> {{stat.bonus}}
                                          </div>
                                          <div class="col text-center">
-                                             {% if stat.bonus < stat.max_bonus %} <button type="submit" name="dev_stat" value="{{stat.stat.short}}" class="btn btn-dark">Rozwiń</button> {% else %} <button class="btn btn-dark" disabled>Rozwinięte</button> {% endif %}
+                                             {% if stat.bonus < stat.max_bonus %} <button type="submit" name="dev_stat" value="{{stat.stat.short}}" class="btn btn-dark" data-en="Advance">Rozwiń</button> {% else %} <button class="btn btn-dark" data-en="Advanced" disabled >Rozwinięte</button> {% endif %}
                                          </div>
                                      </div>
                                  </li>
@@ -391,15 +410,15 @@
                         {% csrf_token %}
                         <input type="hidden" name="action" value="develop_skills">
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3">Umiejętności - rozwiń (100 PD)</li>
+                                <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3" data-en="Skills - advance (100 Exp)">Umiejętności - rozwiń (100 PD)</li>
                             {% for skill in dev_skills %}
                                  <li class="list-group-item mr-3 ml-3">
                                      <div class="row">
                                          <div class="col-7">
-                                             <a href="" data-toggle="modal" data-target="#{{skill.obj.slug}}">{{skill.name}}</a> {% if skill.bonus %}{{skill.bonus}}{% endif %}
+                                             <a href="" data-toggle="modal" data-target="#{{skill.obj.slug}}" data-en="{{ skill.name_en }}">{{skill.name}}</a> {% if skill.bonus %}{{skill.bonus}}{% endif %}
                                          </div>
                                          <div class="col-5 text-center">
-                                             <button type="submit" name="dev_skill" value="{{ skill.name }} {{ skill.bonus }}" class="btn btn-dark">Rozwiń</button>
+                                             <button type="submit" name="dev_skill" value="{{ skill.name }} {{ skill.bonus }}" class="btn btn-dark" data-en="Advance">Rozwiń</button>
                                          </div>
                                      </div>
                                  </li>
@@ -415,15 +434,15 @@
                         {% csrf_token %}
                         <input type="hidden" name="action" value="develop_abilities">
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3">Zdolności - wykup (100 PD)</li>
+                                <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3" data-en="Talents - acquire (100 PD)">Zdolności - wykup (100 PD)</li>
                             {% for ability in dev_abilities %}
                                  <li class="list-group-item mr-3 ml-3">
                                      <div class="row">
                                          <div class="col-9">
-                                             <a href="" data-toggle="modal" data-target="#{{ability.object.slug}}">{{ability.name}}</a> {% if ability.bonus %} {{ability.bonus}} {% endif %}
+                                             <a href="" data-toggle="modal" data-target="#{{ability.object.slug}}" data-en="{{ ability.name_en }}">{{ability.name}}</a> {% if ability.bonus %} {{ability.bonus}} {% endif %}
                                          </div>
                                          <div class="col-3 text-center">
-                                              <button type="submit" name="dev_ability" value="{{ability.name}} {{ ability.bonus }}" class="btn btn-dark">Rozwiń</button>
+                                              <button type="submit" name="dev_ability" value="{{ability.name}} {{ ability.bonus }}" class="btn btn-dark" data-en="Acquire">Rozwiń</button>
                                          </div>
                                      </div>
                                  </li>
@@ -437,10 +456,10 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="change_profession">
                             <ul class="list-group list-group-flush mb-3">
-                                <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3">Zmień profesję</li>
+                                <li class="list-group-item list-group-item-secondary mr-3 ml-3 mt-3" data-en="Change profession">Zmień profesję</li>
                             </ul>
-                            <strong class="ml-5">Uwaga!</strong>
-                            <p class="ml-5">
+                            <strong class="ml-5" data-en="Notice!">Uwaga!</strong>
+                            <p class="ml-5" data-en="This just changes the profession (without making any checks).">
                                 Przy zmianie profesji NIE są sprawdzane warunki "przeskoku" ani profesje wyjściowe.
                             </p>
                             <div class="row">
@@ -448,7 +467,7 @@
                                    {{ change_profession_form }}
                                 </div>
                                 <div class="col d-flex justify-content-center">
-                                    <button value="xD" name="change_profession" class="btn btn-dark btn-lg">Zmień</button>
+                                    <button value="xD" name="change_profession" class="btn btn-dark btn-lg" data-en="Change">Zmień</button>
                                 </div>
                             </div>
                             </form>
@@ -467,13 +486,13 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{stat.stat.name}}</h5>
+        <h5 class="modal-title" data-en="{{ stat.stat.name_en }}">{{stat.stat.name}}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{stat.stat.description | linebreaks}}</p>
+          <p data-en="{{ stat.stat.description_en }}">{{stat.stat.description | linebreaks}}</p>
       </div>
     </div>
   </div>
@@ -485,13 +504,13 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{skill.skill.name}}</h5>
+        <h5 class="modal-title" data-en="{{ skill.skill.name_en }}">{{skill.skill.name}}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{skill.skill.description | linebreaks}}</p>
+          <p data-en="{{ skill.skill.description_en }}">{{skill.skill.description | linebreaks}}</p>
       </div>
     </div>
   </div>
@@ -503,13 +522,13 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{skill.name}}</h5>
+        <h5 class="modal-title" data-en="{{ skill.name_en }}">{{skill.name}}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{skill.object.description | linebreaks}}</p>
+          <p data-en="{{ skill.object.description }}">{{skill.object.description | linebreaks}}</p>
       </div>
     </div>
   </div>
@@ -521,13 +540,13 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{ability.ability.name}}</h5>
+        <h5 class="modal-title" data-en="{{ ability.ability.name_en }}">{{ability.ability.name}}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{ability.ability.description | linebreaks}}</p>
+          <p data-en="{{ ability.ability.description_en }}">{{ability.ability.description | linebreaks}}</p>
       </div>
     </div>
   </div>
@@ -539,13 +558,13 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{ability.name}}</h5>
+        <h5 class="modal-title" data-en="{{ability.name_en}}">{{ability.name}}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{ability.object.description | linebreaks}}</p>
+          <p data-en="{{ability.object.description_en | linebreaks}}">{{ability.object.description | linebreaks}}</p>
       </div>
     </div>
   </div>
