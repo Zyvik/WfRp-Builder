@@ -13,9 +13,9 @@
 <div class="container">
     <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
-              <li class="breadcrumb-item"><a href="{% url 'wh:race' %}">Wybierz rasę</a></li>
-              <li class="breadcrumb-item"><a href="{% url 'wh:stats' race.slug %}">Wylosuj chechy oraz profesję</a></li>
-              <li class="breadcrumb-item active" aria-current="page">Dostosuj bohatera</li>
+              <li class="breadcrumb-item"><a href="{% url 'wh:race' %}" data-en="Choose a race">Wybierz rasę</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'wh:stats' race.slug %}" data-en="Roll for characteristics and profession">Wylosuj chechy oraz profesję</a></li>
+              <li class="breadcrumb-item active" aria-current="page" data-en="Customize character">Dostosuj bohatera</li>
           </ol>
     </nav>
 
@@ -26,22 +26,22 @@
         <!-- Basic info -->
             <div class="col-lg-4">
                 <div class="card">
-                    <div class="card-header pb-2">Podstawowe informacje</div>
+                    <div class="card-header pb-2" data-en="Basic information">Podstawowe informacje</div>
                     <p class="pl-3 pr-3 pt-4"><input required placeholder="Nazwa" type="text" name="name" class="form-control form-control-lg"></p>
-                    <p class="pl-3">Rasa: {{ race.name }}</p>
-                    <p class="pl-3">Profesja: {{ form.profession.name }}</p>
-                    <p class="pl-3">PD: 0 </p>
+                    <p class="pl-3"><span data-en="Race:">Rasa:</span> {{ race.name }}</p>
+                    <p class="pl-3" data-en="Profession: {{ form.profession.name_en }}">Profesja: {{ form.profession.name }}</p>
+                    <p class="pl-3" data-en="Exp: 0">PD: 0 </p>
                 </div>
             </div>
             <!-- Current stats -->
             <div class="col-lg-8">
                 <div class="card">
-                    <div class="card-header pb-2">Aktualne cechy bohatera</div>
+                    <div class="card-header pb-2" data-en="Current characteristics">Aktualne cechy bohatera</div>
                     <div class="table-responsive">
                     <table class="table table-sm mt-2">
                         <thead class="thead-dark justify-content-center">
                         <tr>{% for stat in form.stats_table %} {% if not stat.stat.is_secondary %}
-                            <th class="pl-5" scope="col"><a class="text-white" data-target="#{{ stat.stat.short }}" data-toggle="modal" href="#">{{ stat.stat.short }}</a></th>{% endif %} {% endfor %}
+                            <th class="pl-5" scope="col"><a class="text-white" data-target="#{{ stat.stat.short }}" data-toggle="modal" href="#" data-en="{{ stat.stat.short_en }}">{{ stat.stat.short }}</a></th>{% endif %} {% endfor %}
                         </tr>
                         </thead>
                         <tbody>
@@ -55,7 +55,7 @@
                     <table class="table table-sm mt-3">
                         <thead class="thead-dark ml-3">
                         <tr>{% for stat in form.stats_table %} {% if stat.stat.is_secondary %}
-                            <th class="pl-5" scope="col"><a class="text-white" href="#" data-toggle="modal" data-target="#{{ stat.stat.short }}">{{ stat.stat.short }}</a></th>{% endif %} {% endfor %}
+                            <th class="pl-5" scope="col"><a class="text-white" href="#" data-toggle="modal" data-target="#{{ stat.stat.short }}" data-en="{{ stat.stat.short_en }}">{{ stat.stat.short }}</a></th>{% endif %} {% endfor %}
                         </tr>
                         </thead>
                         <tbody>
@@ -73,21 +73,21 @@
         <div class="row pb-4 justify-content-center">
             <div class="col-md">
                 <div class="card pb-4">
-                    <div class="card-header">Wyuczone umiejętności</div>
-                    <p class="ml-3 mt-3">Rasa:</p>
+                    <div class="card-header" data-en="Acquired skills">Wyuczone umiejętności</div>
+                    <p class="ml-3 mt-3" data-en="Race:">Rasa:</p>
                     <ul class="list-group">
                     {% for skill in form.race_s_free %}
                     <li class="list-group-item ml-3 mr-3">{{skill}}</li>
                     {% empty %}
-                        <li class="list-group-item ml-3 mr-3">Brak darmowych umiejętności</li>
+                        <li class="list-group-item ml-3 mr-3" data-en="No mandatory skills">Brak darmowych umiejętności</li>
                         {% endfor %}
                     </ul>
-                    <p class="ml-3 mt-3">Profesja:</p>
+                    <p class="ml-3 mt-3" data-en="Profession:">Profesja:</p>
                     <ul class="list-group">
                     {% for skill in form.prof_s_free %}
                     <li class="list-group-item ml-3 mr-3">{{ skill }}</li>
                     {% empty %}
-                        <li class="list-group-item ml-3 mr-3">Brak darmowych umiejętności</li>
+                        <li class="list-group-item ml-3 mr-3" data-en="No mandatory skills">Brak darmowych umiejętności</li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -95,8 +95,8 @@
             <!-- Choose skills -->
             <div class="col-md">
                 <div class="card">
-                    <div class="card-header">Umiejętności do wyboru</div>
-                    <p class="ml-3 mt-3">Rasa:</p>
+                    <div class="card-header" data-en="Choose skills">Umiejętności do wyboru</div>
+                    <p class="ml-3 mt-3" data-en="Race:">Rasa:</p>
                     {% if form.race_s_radio %}
                     <ul class="list-group">
                         {% for skill in form.race_s_radio %}
@@ -105,10 +105,10 @@
                     </ul>
                         {% else %}
                         <ul class="list-group">
-                            <li class="list-group-item ml-3 mr-3">Brak umiejętności do wyboru</li>
+                            <li class="list-group-item ml-3 mr-3" data-en="No skills to choose from">Brak umiejętności do wyboru</li>
                         </ul>
                     {% endif %}
-                    <p class="ml-3 mt-3">Profesja:</p>
+                    <p class="ml-3 mt-3" data-en="Profession:">Profesja:</p>
                     {% if form.prof_s_radio %}
                     <ul class="list-group">
                     {% for skill in form.prof_s_radio %}
@@ -117,10 +117,12 @@
                     </ul>
                     {% else %}
                         <ul class="list-group">
-                             <li class="list-group-item ml-3 mr-3">Brak umiejętności do wyboru</li>
+                             <li class="list-group-item ml-3 mr-3" data-en="No skills to choose from">Brak umiejętności do wyboru</li>
                         </ul>
                     {% endif %}
-                    <div class="card-footer text-muted mt-4">Jeśli posiadasz już daną umiejętność (np. z rasy) to wybierając ją tutaj dostaniesz +10 do testów tej umiejętności.</div>
+                    <div class="card-footer text-muted mt-4" data-en="Choosing a skill here will grant you +10 to tests if you've already acquired said skill from race.">
+                        Jeśli posiadasz już daną umiejętność (np. z rasy) to wybierając ją tutaj dostaniesz +10 do testów tej umiejętności.
+                    </div>
                 </div>
             </div>
         </div>
@@ -129,21 +131,21 @@
         <div class="row pb-4 justify-content-center">
             <div class="col-md">
                 <div class="card pb-4">
-                    <div class="card-header">Posiadane Zdolności</div>
-                    <p class="ml-3 mt-3">Rasa:</p>
+                    <div class="card-header" data-en="Acquired Talents">Posiadane Zdolności</div>
+                    <p class="ml-3 mt-3" data-en="Race:">Rasa:</p>
                     <ul class="list-group">
                     {% for skill in form.race_a_free %}
                     <li class="list-group-item ml-3 mr-3">{{ skill }}</li>
                     {% empty %}
-                        <li class="list-group-item ml-3 mr-3">Brak darmowych zdolności</li>
+                        <li class="list-group-item ml-3 mr-3" data-en="No free talents">Brak darmowych zdolności</li>
                         {% endfor %}
                     </ul>
-                    <p class="ml-3 mt-3">Profesja:</p>
+                    <p class="ml-3 mt-3" data-en="Profession:">Profesja:</p>
                     <ul class="list-group">
                     {% for skill in form.prof_a_free %}
                     <li class="list-group-item ml-3 mr-3">{{ skill }}</li>
                         {% empty %}
-                        <li class="list-group-item ml-3 mr-3">Brak darmowych zdolności</li>
+                        <li class="list-group-item ml-3 mr-3" data-en="No free talents">Brak darmowych zdolności</li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -151,7 +153,7 @@
             <!-- Choose abilities -->
             <div class="col-md">
                 <div class="card">
-                    <div class="card-header">Zdolności do wyboru</div>
+                    <div class="card-header" data-en="Choose Talents">Zdolności do wyboru</div>
                     <p class="ml-3 mt-3">Rasa:</p>
                     {% if form.race_a_radio %}
                     <ul class="list-group">
@@ -161,10 +163,10 @@
                     </ul>
                     {% else %}
                     <ul class="list-group">
-                         <li class="list-group-item ml-3 mr-3">Brak zdolności do wyboru</li>
+                         <li class="list-group-item ml-3 mr-3" data-en="No talents to choose from">Brak zdolności do wyboru</li>
                     </ul>
                     {% endif %}
-                    <p class="ml-3 mt-3">Profesja:</p>
+                    <p class="ml-3 mt-3" data-en="Profession:">Profesja:</p>
                     {% if form.prof_a_radio %}
                     <ul class="list-group">
                     {% for skill in form.prof_a_radio %}
@@ -173,10 +175,12 @@
                     </ul>
                     {% else %}
                     <ul class="list-group">
-                         <li class="list-group-item ml-3 mr-3">Brak zdolności do wyboru</li>
+                         <li class="list-group-item ml-3 mr-3" data-en="No talents to choose from">Brak zdolności do wyboru</li>
                     </ul>
                     {% endif %}
-                    <div class="card-footer text-muted mt-4">Zdolności się nie sumują - jeśli Twój Bohater posiada zdolność Mocna głowa, to wybranie jej tutaj nie sprawi że będzie w stanie więcej wypić.</div>
+                    <div class="card-footer text-muted mt-4" data-en="Talents do not sum - picking the same talent twice gives your character nothing.">
+                        Zdolności się nie sumują - jeśli Twój Bohater posiada zdolność Mocna głowa, to wybranie jej tutaj nie sprawi że będzie w stanie więcej wypić.
+                    </div>
                 </div>
             </div>
         </div>
@@ -185,12 +189,12 @@
         <div class="row pb-4">
             <div class="col-md mb-4">
                 <div class="card pb-4">
-                    <div class="card-header">Darmowe rozwinięcie</div>
-                    <p class="mt-3 ml-3">Twój Bohater na start otrzymuje jedno darmowe rozwinięcie cechy: </p>
+                    <div class="card-header" data-en="Free advancement">Darmowe rozwinięcie</div>
+                    <p class="mt-3 ml-3" data-en="Your character gets one free advancement:">Twój Bohater na start otrzymuje jedno darmowe rozwinięcie cechy: </p>
                     <ul class="list-group">
                     {% for stat in form.develop_stats_form %}
                     <li class="list-group-item ml-3 mr-3">
-                        <label><input required type="radio" name="develop_stat" value="{{ stat.stat.short }}"><a href="" data-toggle="modal" data-target="#{{ stat.stat.short }}"> {{ stat.stat.name }}</a> {{ stat.bonus }} </label>
+                        <label><input required type="radio" name="develop_stat" value="{{ stat.stat.short }}"><a href="" data-toggle="modal" data-target="#{{ stat.stat.short }}" data-en="{{ stat.stat.short_en }}"> {{ stat.stat.name }}</a> {{ stat.bonus }} </label>
                     </li>
                     {% endfor %}
                     </ul>
@@ -199,15 +203,15 @@
             <!-- eq -->
             <div class="col-md mb-4">
                 <div class="card">
-                    <div class="card-header">Ekwipunek</div>
+                    <div class="card-header" data-en="Equipment">Ekwipunek</div>
                     <textarea name="eq" class="form-control rounded-0" id="eq" rows="10" style="font-size:small;">{{ form.profession.equipment }}</textarea>
-                    <p class="ml-3 mt-3">Pieniądze (zk): </p>
+                    <p class="ml-3 mt-3" data-en="Coins (gold): ">Pieniądze (zk): </p>
                     <div class="row">
                         <div class="col">
                             <input required class="form-control form-control-lg ml-3" type="number" step="1" name="coins" id="coins" placeholder="2k10">
                         </div>
                     <div class="col text-center">
-                         <p><button type="button" class="btn btn-lg btn-outline-dark align-middle" onclick="roll_coins()">Rzuć kośćmi!</button></p>
+                         <p><button type="button" class="btn btn-lg btn-outline-dark align-middle" onclick="roll_coins()" data-en="Roll the dice">Rzuć kośćmi!</button></p>
                     </div>
                 </div>
                 </div>
@@ -217,21 +221,21 @@
                 <!-- Random abilities -->
             <div class="col-lg mb-4">
                 <div class="card">
-                    <div class="card-header">Losowanie zdolności</div>
-                    <button type="button" data-toggle="modal" data-target="#tabela_zdolnosci" class="btn btn-dark btn-lg btn-block mb-3">Tabela losowych zdolności</button>
+                    <div class="card-header" data-en="Random Talents">Losowanie zdolności</div>
+                    <button type="button" data-toggle="modal" data-target="#tabela_zdolnosci" class="btn btn-dark btn-lg btn-block mb-3" data-en="Random Talents Table">Tabela losowych zdolności</button>
                     <div class="row">
                     <div class="col">
                         <input required placeholder="1k100" class="form-control form-control-lg mb-3 ml-3"  name="0_random_ability" type="number" step="1" id="0_random_ability">
-                        <div class="invalid-feedback mb-3 ml-3">Wartość musi być pomiędzy 1, a 100.</div>
+                        <div class="invalid-feedback mb-3 ml-3" data-en="Value has to be between 1 and 100">Wartość musi być pomiędzy 1, a 100.</div>
                         {% if form.race_counter == 2 %}
                         <input required placeholder="1k100" class="form-control form-control-lg ml-3 mb-3"  name="1_random_ability" type="number" step="1" id="1_random_ability">
-                        <div class="invalid-feedback mb-3 ml-3">Wartość musi być pomiędzy 1, a 100</div>
+                        <div class="invalid-feedback mb-3 ml-3" data-en="Value has to be between 1 and 100">Wartość musi być pomiędzy 1, a 100</div>
                         {% endif %}
                     </div>
                     <div class="col text-center">
-                        <p><button type="button" class="btn btn-lg btn-outline-dark align-middle" value="0" id="0" onclick="roll_ability(this.value)">Rzuć kośćmi!</button></p>
+                        <p><button type="button" class="btn btn-lg btn-outline-dark align-middle" value="0" id="0" onclick="roll_ability(this.value)" data-en="Roll the dice">Rzuć kośćmi!</button></p>
                         {% if form.race_counter == 2 %}
-                        <p> <button type="button" class="btn btn-lg btn-outline-dark" value="1" id="1" onclick="roll_ability(this.value)">Rzuć kośćmi!</button></p>
+                        <p> <button type="button" class="btn btn-lg btn-outline-dark" value="1" id="1" onclick="roll_ability(this.value)" data-en="Roll the dice">Rzuć kośćmi!</button></p>
                         {% endif %}
                     </div>
                     </div>
@@ -241,7 +245,7 @@
         </div>
         <div class="row">
             <div class="col mb-4">
-                <button type="submit" class="btn btn-dark btn-lg btn-block pb-2" style="font-size:medium">Zapisz Bohatera</button>
+                <button type="submit" class="btn btn-dark btn-lg btn-block pb-2" style="font-size:medium" data-en="Save your character">Zapisz Bohatera</button>
             </div>
         </div>
         {% endautoescape %}
@@ -254,13 +258,13 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{ skill.name }}</h5>
+        <h5 class="modal-title" data-en="{{ skill.name_en }}">{{ skill.name }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{ skill.description | linebreaks }}</p>
+          <p data-en=" {{ skill.description_en }} ">{{ skill.description | linebreaks }}</p>
       </div>
     </div>
   </div>
@@ -273,13 +277,13 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{ skill.name }}</h5>
+        <h5 class="modal-title" data-en="{{ skill.name_en }}">{{ skill.name }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{ skill.description | linebreaks }}</p>
+          <p data-en="{{ skill.description_en }}">{{ skill.description | linebreaks }}</p>
       </div>
     </div>
   </div>
@@ -292,24 +296,25 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{ stat.stat.name }}</h5>
+        <h5 class="modal-title" data-en="{{ stat.stat.name_en }}">{{ stat.stat.name }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{ stat.stat.description }}</p>
+          <p data-en="{{ stat.stat.description_en }}">{{ stat.stat.description }}</p>
       </div>
     </div>
   </div>
 </div>
 {% endfor %}
 
+<!-- Random Talents Table -->
 <div class="modal fade" id="tabela_zdolnosci" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLongTitle">Losowe zdolności</h5>
+        <h5 class="modal-title" id="exampleModalLongTitle" data-en="Random Talents">Losowe zdolności</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -317,7 +322,7 @@
       <div class="modal-body">
           {% for ability in form.random_table %}
           <div class="row">
-              <div class="col"><a tabindex="0" data-toggle="popover" data-trigger="focus" title="{{ ability.ability.name }}" data-content="{{ ability.ability.description }}">{{ ability.ability.name }}</a></div>
+              <div class="col"><a tabindex="0" data-toggle="popover" data-trigger="focus" title="{{ ability.ability.name }}" data-content="{{ ability.ability.description }}" data-en="{{ ability.ability.name }}">{{ ability.ability.name }}</a></div>
               <div class="col text-center">{{ ability.roll_range }}</div>
           </div>
           {% endfor %}
