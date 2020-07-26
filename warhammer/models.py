@@ -77,6 +77,7 @@ class ProfessionModel(models.Model):
     slug = models.CharField(max_length=50, default='slimak')
 
     name_en = models.CharField(max_length=30, blank=True, null=True)
+    equipment_en = models.TextField(max_length=2000, blank=True, null=True)
 
     def __str__(self):
         return self.name

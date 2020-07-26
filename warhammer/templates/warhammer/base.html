@@ -18,7 +18,7 @@
 <body>
 
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-5">
+<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-5">
     <div class="container">
         <!-- brand -->
         <a class="navbar-brand" href="{% url 'wh:index' %}" style="font-size:large; font-family: 'Germania One', cursive;">
@@ -54,6 +54,10 @@
             <li class="nav-item-active">
                 <a class="nav-link" href="{% url 'wh:login' %}" style="font-size:medium" data-en="Login">Logowanie</a>
             </li>
+            <li class="nav-item mr-3" id="language_switch">
+                <a id="PL_flag" class="nav-link" style="display:block;" ><img src="{% static 'warhammer/PL.png' %}" height="24"></a>
+                <a id='ENG_flag' class="nav-link" style="display:none;" ><img src="{% static 'warhammer/ENG.png' %}" height="24"></a>
+            </li>
         </ul>
         {% else %}
 
@@ -75,12 +79,15 @@
                             </a>
                       </div>
                 </li>
+            <li class="nav-item mr-3" id="language_switch">
+                <a id="PL_flag" class="nav-link" style="display:block;" ><img src="{% static 'warhammer/PL.png' %}" height="24"></a>
+                <a id='ENG_flag' class="nav-link" style="display:none;" ><img src="{% static 'warhammer/ENG.png' %}" height="24"></a>
+            </li>
         </ul>
         {% endif %}
         </div>
     </div>
 </nav>
-<button id="language_switch">Zmień język!!!!</button>
 {% block body %}
 {% endblock %}
 <footer class="footer mt-4">
