@@ -164,7 +164,8 @@ def create_modal_links(all_skill_list, user_skill_list):
     radio_string = '\n'.join(user_skill_list)
     for skill in all_skill_list:
         modal_link = f"<a href=\"#\" data-toggle=\"modal\" " \
-                     f"data-target=\"#{skill.slug}\">{skill.name}</a>"
+                     f"data-target=\"#{skill.slug}\" " \
+                     f"data-en=\"{skill.name_en}\">{skill.name}</a>"
         radio_string = radio_string.replace(skill.name, modal_link)
 
     # check just in case
