@@ -13,7 +13,8 @@ class ClaimCharacterForm(forms.Form):
     pk = forms.CharField(label='', min_length=36, max_length=36)
     pk.widget.attrs.update({
         'class': 'form-control form-control-lg',
-        'placeholder': 'Identyfikator bohatera'
+        'placeholder': 'Identyfikator bohatera',
+        'data-placeholder': 'Character\'s ID'
     })
 
     def __init__(self, *args, **kwargs):
@@ -157,18 +158,21 @@ class ContactForm(forms.Form):
 
     email_widget = {
         'class': 'form-control form-control-lg',
-        'placeholder': 'Email (opcjonalnie)'
+        'placeholder': 'Email (opcjonalnie)',
+        'data-placeholder': 'Email (optional)'
     }
     subject_widget = {
         'class': 'form-control form-control-lg',
-        'placeholder': 'Temat'
+        'placeholder': 'Temat',
+        'data-placeholder': 'Subject'
     }
     message_widget = {
         'class': 'form-control',
         'placeholder': 'Treść wiadomości',
         'rows': '8',
         'cols': '20',
-        'style': 'font-size:small'
+        'style': 'font-size:small',
+        'data-placeholder': 'Message'
     }
 
     email.widget.attrs.update(email_widget)
@@ -181,9 +185,9 @@ class CoinsForm(forms.Form):
     silver = forms.IntegerField(label='', required=False)
     bronze = forms.IntegerField(label='', required=False)
 
-    gold.widget.attrs.update({'placeholder': 'zk'})
+    gold.widget.attrs.update({'placeholder': 'zk', 'data-placeholder': 'g'})
     silver.widget.attrs.update({'placeholder': 's'})
-    bronze.widget.attrs.update({'placeholder': 'p'})
+    bronze.widget.attrs.update({'placeholder': 'p', 'data-placeholder': 'c'})
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -194,7 +198,12 @@ class CoinsForm(forms.Form):
 
 class ExperienceForm(forms.Form):
     exp = forms.IntegerField(label='')
-    exp.widget.attrs.update({'class': 'form-control', 'placeholder': 'dodaj PD'})
+    exp.widget.attrs.update(
+        {'class': 'form-control',
+         'placeholder': 'dodaj PD',
+         'data-placeholder': 'Exp'
+         }
+    )
 
 
 class EquipmentForm(forms.Form):

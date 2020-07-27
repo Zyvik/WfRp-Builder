@@ -18,7 +18,7 @@
 <body>
 
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-5">
+<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-5">
     <div class="container">
         <!-- brand -->
         <a class="navbar-brand" href="{% url 'wh:index' %}" style="font-size:large; font-family: 'Germania One', cursive;">
@@ -32,14 +32,14 @@
         <div class="collapse navbar-collapse" id="navbarText">
             <ul class="navbar-nav">
             <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" id="navbardrop1" data-toggle="dropdown" style="font-size:medium">
+                  <a class="nav-link dropdown-toggle" href="#" id="navbardrop1" data-toggle="dropdown" style="font-size:medium" data-en="Compendium">
                       Kompendium
                   </a>
                   <div class="dropdown-menu">
-                      <a class="dropdown-item" href="{% static 'warhammer/krytyki.pdf' %}" target="_blank" style="font-size:medium">Tabela krytyków</a>
-                        <a class="dropdown-item" href="{% url 'wh:skills_list' %}" style="font-size:medium">Umiejętności</a>
-                        <a class="dropdown-item" href="{% url 'wh:abilities_list' %}" style="font-size:medium">Zdolności</a>
-                      <a class="dropdown-item" href="{% url 'wh:professions' %}" style="font-size:medium">Profesje</a>
+                      <a class="dropdown-item" href="{% static 'warhammer/krytyki.pdf' %}" target="_blank" style="font-size:medium" data-en="Critical hits">Tabela krytyków</a>
+                        <a class="dropdown-item" href="{% url 'wh:skills_list' %}" style="font-size:medium" data-en="Skills">Umiejętności</a>
+                        <a class="dropdown-item" href="{% url 'wh:abilities_list' %}" style="font-size:medium" data-en="Abilities">Zdolności</a>
+                      <a class="dropdown-item" href="{% url 'wh:professions' %}" style="font-size:medium" data-en="Professions">Profesje</a>
                   </div>
             </li>
          </ul>
@@ -47,17 +47,23 @@
             {% if not user.is_authenticated %}
         <ul class="navbar-nav ml-auto" id="navbarNav">
             <li class="nav-item mr-3">
-                <a class="nav-link" style="font-size:medium;" href="{% url 'wh:contact' %}"><img src="{% static 'warhammer/QUILL.png' %}" height="24" width="24">Kontakt</a>
+                <a class="nav-link" style="font-size:medium;" href="{% url 'wh:contact' %}">
+                    <img src="{% static 'warhammer/QUILL.png' %}" height="24" width="24"><span data-en="Contact">Kontakt</span>
+                </a>
             </li>
             <li class="nav-item-active">
-                <a class="nav-link" href="{% url 'wh:login' %}" style="font-size:medium">Logowanie</a>
+                <a class="nav-link" href="{% url 'wh:login' %}" style="font-size:medium" data-en="Login">Logowanie</a>
+            </li>
+            <li class="nav-item mr-3" id="language_switch">
+                <a id="PL_flag" class="nav-link" style="display:block;" href=""><img src="{% static 'warhammer/PL.png' %}" height="24"></a>
+                <a id='ENG_flag' class="nav-link" style="display:none;" href=""><img src="{% static 'warhammer/ENG.png' %}" height="24"></a>
             </li>
         </ul>
         {% else %}
 
         <ul class="navbar-nav ml-auto">
             <li class="nav-item mr-3">
-                <a class="nav-link" style="font-size:medium;" href="{% url 'wh:contact' %}"><img src="{% static 'warhammer/QUILL.png' %}" height="24" width="24">Kontakt</a>
+                <a class="nav-link" style="font-size:medium;" href="{% url 'wh:contact' %}"><img src="{% static 'warhammer/QUILL.png' %}" height="24" width="24" data-en="Contact"><span data-en="Contact">Kontakt</span></a>
             </li>
             <!-- User's options dropdown -->
             <li class="nav-item dropdown">
@@ -66,19 +72,22 @@
                           {{user.username}}
                       </a>
                       <div class="dropdown-menu">
-                            <a class="dropdown-item" href="{% url 'wh:profile' %}" style="font-size:medium">Profil</a>
-                            <a class="dropdown-item" href="{% url 'wh:settings' %}" style="font-size:medium">Ustawienia</a>
+                            <a class="dropdown-item" href="{% url 'wh:profile' %}" style="font-size:medium" data-en="Profile">Profil</a>
+                            <a class="dropdown-item" href="{% url 'wh:settings' %}" style="font-size:medium" data-en="Settings">Ustawienia</a>
                             <a class="dropdown-item" href="{% url 'wh:logout' %}" style="font-size:medium">
-                                <span class="glyphicon glyphicon-off"></span> Wyloguj się
+                                <span class="glyphicon glyphicon-off"></span> <span data-en="Logout">Wyloguj się</span>
                             </a>
                       </div>
                 </li>
+            <li class="nav-item mr-3" id="language_switch">
+                <a id="PL_flag" class="nav-link" style="display:block;" href=""><img src="{% static 'warhammer/PL.png' %}" height="24"></a>
+                <a id='ENG_flag' class="nav-link" style="display:none;" href=""><img src="{% static 'warhammer/ENG.png' %}" height="24"></a>
+            </li>
         </ul>
         {% endif %}
         </div>
     </div>
 </nav>
-
 {% block body %}
 {% endblock %}
 <footer class="footer mt-4">
@@ -87,3 +96,6 @@
         <p class="text-white"> Paweł Gawrych</p>
     </div>
 </footer>
+
+<!-- language change script-->
+<script src="{% static 'warhammer/language.js' %}"></script>

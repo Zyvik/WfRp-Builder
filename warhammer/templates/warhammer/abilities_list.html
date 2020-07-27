@@ -9,11 +9,11 @@
     <div class="card mb-5">
         <div class="card-header">
             <div class="row">
-                <div class="col">
+                <div class="col" data-en="Talents">
                     Zdolności
                 </div>
                 <div class="col">
-                    <input id="search" class="form-control form-control-lg" type="text" placeholder="Szukaj" onkeyup="">
+                    <input id="search" class="form-control form-control-lg" type="text" placeholder="Szukaj" onkeyup="" data-placeholder="Search">
                 </div>
             </div>
 
@@ -22,13 +22,13 @@
             <table class="table table-hover" id="example">
                 <thead>
                 <tr>
-                    <th>Nazwa</th>
+                    <th data-en="Name">Nazwa</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for ability in object_list %}
                 <tr>
-                    <td><a href="" data-toggle="modal" data-target="#{{ability.slug}}">{{ability.name}}</a></td>
+                    <td><a href="" data-toggle="modal" data-target="#{{ability.slug}}" data-en="{{ability.name_en}}">{{ability.name}}</a></td>
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -42,13 +42,13 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{ability.name}}</h5>
+        <h5 class="modal-title" data-en="{{ability.name_en}}">{{ability.name}}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-          <p>{{ability.description | linebreaks}}</p>
+          <span data-en="{{ability.description_en}}">{{ability.description}}</span>
       </div>
     </div>
   </div>

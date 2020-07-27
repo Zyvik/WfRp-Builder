@@ -16,18 +16,18 @@
             {% endif %}
              <form method="post">
             <div class="card">
-                <div class="card-header text-center"><h2>Zmien hasło</h2></div>
+                <div class="card-header text-center"><h2 data-en="Change password">Zmien hasło</h2></div>
                 <div class="card-body text-center">
                     {% csrf_token %}
-                    <label for="old_password"><h3>Stare hasło:</h3></label>
+                    <label for="old_password"><h3 data-en="Old password:">Stare hasło:</h3></label>
                     <input class="form-control form-control-lg mb-3" type="password" name="old_password">
-                    <label for="new_password1"><h3>Nowe hasło:</h3></label>
+                    <label for="new_password1"><h3 data-en="New password:">Nowe hasło:</h3></label>
                     <input class="form-control form-control-lg mb-3" type="password" name="new_password1">
-                    <label for="new_password2"><h3>Potwierdź nowe hasło:</h3></label>
+                    <label for="new_password2"><h3 data-en="Confirm new password:">Potwierdź nowe hasło:</h3></label>
                     <input class="form-control form-control-lg mb-3" type="password" name="new_password2">
                 </div>
             </div>
-                 <button class="btn btn-dark btn-lg btn-block" type="submit" style="font-size:large">Zmień hasło</button>
+                 <button class="btn btn-dark btn-lg btn-block" type="submit" style="font-size:large" data-en="Change password">Zmień hasło</button>
                  </form>
         </div>
         <div class="col-md-3 col-sm-2"></div>
