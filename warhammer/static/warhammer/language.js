@@ -14,6 +14,13 @@ function switch_display_language(){
         objects[i].innerText = objects[i].dataset.en;
         objects[i].dataset.en = temp;
     }
+
+     let inputs = document.querySelectorAll("[data-placeholder]")
+     for (let i=0; i<inputs.length; i++){
+        let temp = inputs[i].placeholder;
+        inputs[i].placeholder = inputs[i].dataset.placeholder;
+        inputs[i].dataset.placeholder = temp;
+    }
 }
 
 function click_switch_language(){
