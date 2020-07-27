@@ -27,8 +27,8 @@
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header pb-2" data-en="Basic information">Podstawowe informacje</div>
-                    <p class="pl-3 pr-3 pt-4"><input required placeholder="Nazwa" type="text" name="name" class="form-control form-control-lg"></p>
-                    <p class="pl-3"><span data-en="Race:">Rasa:</span> {{ race.name }}</p>
+                    <p class="pl-3 pr-3 pt-4"><input required placeholder="Nazwa" type="text" name="name" class="form-control form-control-lg" data-placeholder="Name"></p>
+                    <p class="pl-3"><span data-en="Race: {{ race.name_en }}">Rasa: {{ race.name }}</span></p>
                     <p class="pl-3" data-en="Profession: {{ form.profession.name_en }}">Profesja: {{ form.profession.name }}</p>
                     <p class="pl-3" data-en="Exp: 0">PD: 0 </p>
                 </div>
@@ -194,7 +194,7 @@
                     <ul class="list-group">
                     {% for stat in form.develop_stats_form %}
                     <li class="list-group-item ml-3 mr-3">
-                        <label><input required type="radio" name="develop_stat" value="{{ stat.stat.short }}"><a href="" data-toggle="modal" data-target="#{{ stat.stat.short }}" data-en="{{ stat.stat.short_en }}"> {{ stat.stat.name }}</a> {{ stat.bonus }} </label>
+                        <label><input required type="radio" name="develop_stat" value="{{ stat.stat.short }}"><a href="" data-toggle="modal" data-target="#{{ stat.stat.short }}" data-en=" {{ stat.stat.name_en }}"> {{ stat.stat.name }}</a> {{ stat.bonus }} </label>
                     </li>
                     {% endfor %}
                     </ul>
@@ -204,7 +204,7 @@
             <div class="col-md mb-4">
                 <div class="card">
                     <div class="card-header" data-en="Equipment">Ekwipunek</div>
-                    <textarea name="eq" class="form-control rounded-0" id="eq" rows="10" style="font-size:small;">{{ form.profession.equipment }}</textarea>
+                    <textarea name="eq" class="form-control rounded-0" id="eq" rows="10" style="font-size:small;" data-en="{{ form.profession.equipment_en }}">{{ form.profession.equipment }}</textarea>
                     <p class="ml-3 mt-3" data-en="Coins (gold): ">Pieniądze (zk): </p>
                     <div class="row">
                         <div class="col">
@@ -264,7 +264,7 @@
         </button>
       </div>
       <div class="modal-body">
-          <p data-en=" {{ skill.description_en }} ">{{ skill.description | linebreaks }}</p>
+          <span data-en=" {{ skill.description_en }} ">{{ skill.description }}</span>
       </div>
     </div>
   </div>
@@ -283,7 +283,7 @@
         </button>
       </div>
       <div class="modal-body">
-          <p data-en="{{ skill.description_en }}">{{ skill.description | linebreaks }}</p>
+          <span data-en="{{ skill.description_en}}">{{ skill.description}}</span>
       </div>
     </div>
   </div>
@@ -302,7 +302,7 @@
         </button>
       </div>
       <div class="modal-body">
-          <p data-en="{{ stat.stat.description_en }}">{{ stat.stat.description }}</p>
+          <span data-en="{{ stat.stat.description_en }}">{{ stat.stat.description }}</span>
       </div>
     </div>
   </div>

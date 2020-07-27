@@ -13,7 +13,7 @@
                     Zdolności
                 </div>
                 <div class="col">
-                    <input id="search" class="form-control form-control-lg" type="text" placeholder="Szukaj" onkeyup="">
+                    <input id="search" class="form-control form-control-lg" type="text" placeholder="Szukaj" onkeyup="" data-placeholder="Search">
                 </div>
             </div>
 
@@ -48,7 +48,7 @@
         </button>
       </div>
       <div class="modal-body">
-          <p data-en="{{ability.description_en | linebreaks}}">{{ability.description | linebreaks}}</p>
+          <span data-en="{{ability.description_en}}">{{ability.description}}</span>
       </div>
     </div>
   </div>

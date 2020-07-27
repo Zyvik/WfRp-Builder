@@ -4,24 +4,24 @@
     <div class="sidebar-header">
         <h2 class="ml-3 mt-3">
             <span id="dismiss-right" class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
-            <span style="font-family: 'Germania One', cursive; font-size:x-large;">Kostko-turlacz</span>
+            <span style="font-family: 'Germania One', cursive; font-size:x-large;" data-en="Dice roller">Kostko-turlacz</span>
         </h2>
     </div>
 
     <div class="card ml-3 mr-3 mb-3">
         <div class="btn-group justify-content-center" role="group" aria-label="Basic example" style="font-size:lg;">
-          <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_WW')">WW</button>
-          <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_US')">US</button>
-          <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_K')">K</button>
-          <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_Odp')">Odp</button>
+          <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_WW')" data-en="WS">WW</button>
+          <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_US')" data-en="BS">US</button>
+          <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_K')" data-en="S">K</button>
+          <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_Odp')" data-en="T">Odp</button>
         </div>
 
         <div class="btn-group justify-content-center mb-2" role="group" aria-label="Basic example">
-            <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_ZR')">ZR</button>
+            <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_ZR')" data-en="Ag">ZR</button>
             <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_Int')">Int</button>
-            <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_SW')">SW</button>
-            <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_Ogd')">Ogd</button>
-            <button type="button" class="btn btn-dark btn-lg" onclick="roll_initiative()">Inicjatywa</button>
+            <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_SW')" data-en="WP">SW</button>
+            <button type="button" class="btn btn-dark btn-lg" onclick="roll_stat('R_Ogd')" data-en="Fel">Ogd</button>
+            <button type="button" class="btn btn-dark btn-lg" onclick="roll_initiative()" data-en="Initiative">Inicjatywa</button>
         </div>
 
         <div class="row form-inline ml-1 mr-1">
@@ -49,7 +49,7 @@
         <div class="col">
             <div class="sidebar-header float-right">
                 <h2 class="mr-3 mt-3">
-                    <span style="font-family: 'Germania One', cursive; font-size:x-large;">Mapa taktyczna</span>
+                    <span style="font-family: 'Germania One', cursive; font-size:x-large;" data-en="Map">Mapa taktyczna</span>
                     <span id="dismiss-left" class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
                 </h2>
             </div>
@@ -58,7 +58,7 @@
     <div class="row mt-3">
         <div class="col">
             <!-- Tokens -->
-            <h3 class="ml-4 mb-3">Tokeny:</h3>
+            <h3 class="ml-4 mb-3" data-en="Tokens:">Tokeny:</h3>
             <div class="map" style="margin-left:16px;">
                 <div class="empty"><div data-token="0" class="filled" draggable="true"><img src="{% static 'wh_chat/token0.png' %}" class="img-fluid"></div></div>
                 <div class="empty"><div data-token="1" class="filled" draggable="true"><img id="token1" class="img-fluid" src="{% static 'wh_chat/token1.png' %}"></div></div>

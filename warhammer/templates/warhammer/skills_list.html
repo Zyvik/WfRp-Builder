@@ -13,7 +13,7 @@
                     Umiejętności
                 </div>
                 <div class="col">
-                    <input id="search" class="form-control form-control-lg" type="text" placeholder="Szukaj" onkeyup="">
+                    <input id="search" class="form-control form-control-lg" type="text" placeholder="Szukaj" onkeyup="" data-placeholder="Search">
                 </div>
             </div>
 
@@ -58,7 +58,7 @@
         </button>
       </div>
       <div class="modal-body">
-          <p data-en="{{skill.description_en | linebreaks}}">{{skill.description | linebreaks}}</p>
+          <span data-en="{{skill.description_en }}">{{skill.description }}</span>
       </div>
     </div>
   </div>

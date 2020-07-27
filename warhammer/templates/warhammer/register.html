@@ -7,7 +7,11 @@
         <div class="col-md-6 col-sm-8">
             <form method="post">
             <div class="card text-center">
-                <div class="card-header mb-3" style="font-size:x-large;">Rejestracja</div>
+                {% if form.confirm_password %}
+                <div class="card-header mb-3" style="font-size:x-large;" data-en="Register">Rejestracja</div>
+                {% else %}
+                <div class="card-header mb-3" style="font-size:x-large;" data-en="Login">Logowanie</div>
+                {% endif %}
                 <div class="card-body">
                     {% csrf_token %}
                     {% for field in form %}
@@ -20,9 +24,9 @@
                     <div class="row">
                         <div class="col">
                             {% if form.confirm_password %}
-                                <p class="mt-4">Masz już konto? <a href="{% url 'wh:login' %}">Zaloguj się!</a></p>
+                            <p class="mt-4"><span data-en="Already got an account?">Masz już konto?</span> <a href="{% url 'wh:login' %}" data-en="Login!">Zaloguj się!</a></p>
                             {% else %}
-                                <p class="mt-4">Nie masz konta? <a href="{% url 'wh:register' %}">Zarejestruj się!</a></p>
+                            <p class="mt-4"> <span data-en="Don't have an account?">Nie masz konta?</span> <a href="{% url 'wh:register' %}" data-en="Register!">Zarejestruj się!</a></p>
                             {% endif %}
                         </div>
                     </div>
@@ -31,9 +35,9 @@
                     <div class="row">
                         <div class="col">
                             {% if form.confirm_password %}
-                                <button class="btn btn-lg btn-block btn-dark" type="submit" style="font-size:large;">Zarejestruj się</button>
+                                <button class="btn btn-lg btn-block btn-dark" type="submit" style="font-size:large;" data-en="Register">Zarejestruj się</button>
                             {% else %}
-                                <button class="btn btn-lg btn-block btn-dark" type="submit" style="font-size:large;">Zaloguj się</button>
+                                <button class="btn btn-lg btn-block btn-dark" type="submit" style="font-size:large;" data-en="Login">Zaloguj się</button>
                             {% endif %}
                         </div>
                     </div>
