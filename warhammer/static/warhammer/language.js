@@ -1,7 +1,8 @@
 // change language of 'static' tags
-let language_switch = document.getElementById("language_switch"); // right now its a button
+let language_switch = document.getElementById("language_switch");
 let PL_flag = document.getElementById("PL_flag");
 let ENG_flag = document.getElementById("ENG_flag");
+let modal = document.getElementById("englishModal");
 language_switch.addEventListener('click', click_switch_language);
 
 
@@ -30,7 +31,7 @@ function click_switch_language(){
 
     } else {
         localStorage.english = 'true';
-
+        $('#englishModal').modal();
     }
     switch_display_language();
 }

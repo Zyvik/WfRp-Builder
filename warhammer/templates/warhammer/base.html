@@ -55,8 +55,8 @@
                 <a class="nav-link" href="{% url 'wh:login' %}" style="font-size:medium" data-en="Login">Logowanie</a>
             </li>
             <li class="nav-item mr-3" id="language_switch">
-                <a id="PL_flag" class="nav-link" style="display:block;" href=""><img src="{% static 'warhammer/PL.png' %}" height="24"></a>
-                <a id='ENG_flag' class="nav-link" style="display:none;" href=""><img src="{% static 'warhammer/ENG.png' %}" height="24"></a>
+                <a id="PL_flag" class="nav-link" style="display:block; cursor:pointer"><img src="{% static 'warhammer/PL.png' %}" height="24"></a>
+                <a id='ENG_flag' class="nav-link" style="display:none; cursor:pointer" ><img src="{% static 'warhammer/ENG.png' %}" height="24"></a>
             </li>
         </ul>
         {% else %}
@@ -80,8 +80,8 @@
                       </div>
                 </li>
             <li class="nav-item mr-3" id="language_switch">
-                <a id="PL_flag" class="nav-link" style="display:block;" href=""><img src="{% static 'warhammer/PL.png' %}" height="24"></a>
-                <a id='ENG_flag' class="nav-link" style="display:none;" href=""><img src="{% static 'warhammer/ENG.png' %}" height="24"></a>
+                <a id="PL_flag" class="nav-link" style="display:block; cursor:pointer"><img src="{% static 'warhammer/PL.png' %}" height="24"></a>
+                <a id='ENG_flag' class="nav-link" style="display:none; cursor:pointer"><img src="{% static 'warhammer/ENG.png' %}" height="24"></a>
             </li>
         </ul>
         {% endif %}
@@ -96,6 +96,25 @@
         <p class="text-white"> Paweł Gawrych</p>
     </div>
 </footer>
+
+<div class="modal fade" id="englishModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" >Attention! :)</h2>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p>English version is still <strong>in development</strong>.</p>
+          <p>I'm fully aware that some content is still in Polish and there still are some <s>minor bugs</s> happy little accidents.</p>
+          <p>Please be assured that I'm slowly but surely working on fixing it (more slowly than surely).</p>
+          <p>Have a great day!</p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- language change script-->
 <script src="{% static 'warhammer/language.js' %}"></script>
