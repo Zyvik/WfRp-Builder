@@ -2,6 +2,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from warhammer import models, forms
 
 
+class ErrorMessage:
+    def __init__(self, polish, english):
+        self.polish = polish
+        self.english = english
+
+
 def get_coins(character):
     """
     Prepare coins to display
@@ -433,11 +439,39 @@ def get_error_message(error_code):
         'HTML': 'Jeśli widzisz tą wiadomość i nie majstrowałeś/(aś) '
                 'przy formularzach to daj mi znać.',
     }
-    return error_dict.get(error_code, 'Zły kod błędu.')
+
+    error_dict_en = {
+        '1': 'You can\'t have negative amount of coins.',
+        '2': 'Skill/talent doesn\'t exist...',
+        '3': 'You are trying to delete skill/talent of an other character...',
+        '4': 'Skill/talent doesn\'t exist...',
+        '5': 'Characteristics have to be integers from 0 to 100.',
+        '6': 'There was an error while saving one or more characteristics.',
+        '7': 'Profession you have chosen doesn\'t exist.',
+        '8': 'Characteristic that you want to advance doesn\'t exist.',
+        '9': 'Insufficient EXP, or characteristic is already at maximum.',
+        '10': 'Insufficient EXP.',
+        '11': 'You can\'t develop this talent.',
+        '12': 'You can\'t develop this skill.',
+        'HTML': 'You shouldn\'t see this error unless you mess with the HTML.'
+    }
+
+    error = ErrorMessage(
+        polish=error_dict.get(error_code, 'Zły kod błędu.'),
+        english=error_dict_en.get(error_code, 'Wrong error code.')
+    )
+    return error
 
 
 def get_claim_message(request, character):
-    message = 'Aktualnie każdy kto ma link do tej postaci jest w stanie dowolnie ją edytować.' \
-              'Jeśli chcesz mieć nad tym kontrolę to zaloguj się i użyj opcji: ' \
-              '\'dodaj istniejącego bohatera\' wykorzysująć identyfikator: ' + str(character.pk)
-    return message if not request.user.is_authenticated else None
+    msg_pl = 'Aktualnie każdy kto ma link do tej postaci jest w stanie '\
+             'dowolnie ją edytować. Jeśli chcesz mieć nad tym kontrolę to '\
+             'zaloguj się i użyj opcji: \'dodaj istniejącego bohatera\' '\
+             'wykorzysująć identyfikator: ' + str(character.pk)
+
+    msg_en = "Right now everyone who opens this URL can edit this character. "\
+             "If you are not ok with this login and claim this character "\
+             f"using following id: {str(character.pk)}"
+
+    msg = ErrorMessage(msg_pl, msg_en)
+    return msg if not request.user.is_authenticated else None
